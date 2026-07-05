@@ -138,9 +138,9 @@ function Console({ session, role, canPick, initialSchool }) {
   const items = [];
   items.push(['dashboard', 'Dashboard', '🏠']);
   items.push(['attendance', 'Attendance', '📋'], ['students', 'Students', '👤'], ['marks', 'Marks', '📝'], ['reportcards', 'Report cards', '📄'], ['reports', 'Attendance report', '📊'], ['announcements', 'Announcements', '📣']);
-  if (!isTeacher) { items.push(['academics', 'Academics', '📈']); items.push(['classes', 'Classes', '🏫']); items.push(['subjects', 'Subjects', '📚']); items.push(['teachers', 'Teachers', '👥']); items.push(['staff', 'Staff', '👔']); items.push(['admissions', 'Admissions', '🎓']); items.push(['timetable', 'Timetable', '📅']); items.push(['finance', 'Finance', '💵']); items.push(['inventory', 'Inventory', '📦']); items.push(['assets', 'Assets', '🏢']); items.push(['school', 'School', '⚙️']); }
+  if (!isTeacher) { items.push(['academics', 'Academics', '📈']); items.push(['fees', 'Fees', '💰']); items.push(['classes', 'Classes', '🏫']); items.push(['subjects', 'Subjects', '📚']); items.push(['teachers', 'Teachers', '👥']); items.push(['staff', 'Staff', '👔']); items.push(['admissions', 'Admissions', '🎓']); items.push(['timetable', 'Timetable', '📅']); items.push(['finance', 'Finance', '💵']); items.push(['inventory', 'Inventory', '📦']); items.push(['assets', 'Assets', '🏢']); items.push(['school', 'School', '⚙️']); }
   const sideItem = (id, label, icon) => (<button key={id} className={'side-item' + (nav === id ? ' active' : '')} onClick={() => setNav(id)}><span className="si">{icon}</span>{label}</button>);
-  const title = { dashboard: 'Dashboard', academics: 'Academics', announcements: 'Announcements', staff: 'Staff', admissions: 'Admissions', timetable: 'Timetable', attendance: 'Attendance', students: 'Students', classes: 'Classes', teachers: 'Teachers', reports: 'Attendance report', marks: 'Enter marks', reportcards: 'Report cards', subjects: 'Subjects', school: 'School letterhead', finance: 'Income & expenses', inventory: 'Inventory', assets: 'Asset register' }[nav];
+  const title = { dashboard: 'Dashboard', academics: 'Academics', fees: 'Fees', announcements: 'Announcements', staff: 'Staff', admissions: 'Admissions', timetable: 'Timetable', attendance: 'Attendance', students: 'Students', classes: 'Classes', teachers: 'Teachers', reports: 'Attendance report', marks: 'Enter marks', reportcards: 'Report cards', subjects: 'Subjects', school: 'School letterhead', finance: 'Income & expenses', inventory: 'Inventory', assets: 'Asset register' }[nav];
 
   return (<div className="shell">
     <aside className="sidebar">
@@ -156,6 +156,7 @@ function Console({ session, role, canPick, initialSchool }) {
         {canPick && <select value={schoolId || ''} onChange={e => setSchoolId(e.target.value)} style={{ width: 'auto', minWidth: 200 }}>{schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>}
       </div>
       {!schoolId ? <p className="muted">No school selected.</p> :
+        nav === 'fees' ? <FeesPanel schoolId={schoolId} classes={allClasses} school={school} settings={settings} /> :
         nav === 'academics' ? <AcademicsPanel schoolId={schoolId} classes={allClasses} subjects={subjects} /> :
         nav === 'dashboard' ? (isTeacher ? <TeacherDashboardPanel schoolId={schoolId} classes={available} session={session} /> : <DashboardPanel schoolId={schoolId} school={school} />) :
         nav === 'announcements' ? <AnnouncementsPanel schoolId={schoolId} canPost={!isTeacher} /> :
@@ -1069,6 +1070,121 @@ function AcademicsPanel({ schoolId, classes, subjects }) {
         </tbody></table>
       </div>)}
     </>)}
+  </div>);
+}
+
+function FeesPanel({ schoolId, classes, school, settings }) {
+  const [mode, setMode] = useState('collect');
+  const [classId, setClassId] = useState(''); const [term, setTerm] = useState(termOptions[0]);
+  useEffect(() => { if (!classId && classes.length) setClassId(classes[0].id); }, [classes]);
+  if (classes.length === 0) return <p className="muted">No classes yet — add them in the Classes tab first.</p>;
+  const className = (classes.find(c => c.id === classId) || {}).name || '';
+  return (<div>
+    <div style={{ display: 'flex', gap: 12, alignItems: 'end', marginBottom: 16, flexWrap: 'wrap' }}>
+      <div style={{ minWidth: 180 }}><label style={labelStyle}>Class</label><select style={inputStyle} value={classId} onChange={e => setClassId(e.target.value)}>{classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+      <div style={{ minWidth: 150 }}><label style={labelStyle}>Term</label><select style={inputStyle} value={term} onChange={e => setTerm(e.target.value)}>{termOptions.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
+      <div style={{ display: 'flex', gap: 6 }}>
+        <button className={mode === 'collect' ? '' : 'ghost'} onClick={() => setMode('collect')}>Collect & receipts</button>
+        <button className={mode === 'setup' ? '' : 'ghost'} onClick={() => setMode('setup')}>Set fees</button>
+      </div>
+    </div>
+    {mode === 'setup' ? <FeeSetup schoolId={schoolId} classId={classId} term={term} /> : <FeeCollect schoolId={schoolId} classId={classId} term={term} className={className} school={school} settings={settings} />}
+  </div>);
+}
+
+function FeeSetup({ schoolId, classId, term }) {
+  const [rows, setRows] = useState([]); const [name, setName] = useState(''); const [amount, setAmount] = useState(''); const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
+  async function load() { const { data } = await supabase.from('fee_items').select('*').eq('school_id', schoolId).eq('class_id', classId).eq('term', term).order('created_at'); setRows(data || []); }
+  useEffect(() => { load(); }, [classId, term, schoolId]);
+  async function add() { if (!name.trim()) { setErr('Enter a name.'); return; } if (!amount) { setErr('Enter an amount.'); return; } setBusy(true); setErr('');
+    const { error } = await supabase.from('fee_items').insert({ school_id: schoolId, class_id: classId, term, name: name.trim(), amount: Number(amount) });
+    if (error) setErr(error.message); else { setName(''); setAmount(''); await load(); } setBusy(false); }
+  async function remove(id) { await supabase.from('fee_items').delete().eq('id', id); await load(); }
+  const money = n => '$' + Number(n || 0).toLocaleString();
+  const total = rows.reduce((a, r) => a + Number(r.amount || 0), 0);
+  return (<div>
+    <p className="muted" style={{ marginTop: 0 }}>Set the fee items for this class and term (e.g. Tuition, Sports levy). Each class/form/grade can have different fees.</p>
+    <div className="card" style={{ marginBottom: 18 }}>
+      <div style={{ fontWeight: 700, marginBottom: 10 }}>Add a fee item</div>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'end', flexWrap: 'wrap' }}>
+        <div style={{ flex: 1, minWidth: 180 }}><label style={labelStyle}>Item</label><input style={inputStyle} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Tuition" /></div>
+        <div style={{ width: 150 }}><label style={labelStyle}>Amount ($)</label><input style={inputStyle} value={amount} onChange={e => setAmount(e.target.value)} placeholder="0" /></div>
+        <button onClick={add} disabled={busy}>{busy ? 'Adding…' : 'Add'}</button>
+      </div>
+      {err && <p className="error">{err}</p>}
+    </div>
+    <table><thead><tr><th>Item</th><th className="r">Amount</th><th></th></tr></thead><tbody>
+      {rows.map(r => (<tr key={r.id}><td className="strong">{r.name}</td><td className="r">{money(r.amount)}</td><td className="r"><button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={() => remove(r.id)}>Remove</button></td></tr>))}
+      {rows.length === 0 && <tr><td colSpan="3" className="muted">No fee items yet.</td></tr>}
+      {rows.length > 0 && <tr><td className="strong">Total per pupil</td><td className="r strong">{money(total)}</td><td></td></tr>}
+    </tbody></table>
+  </div>);
+}
+
+function FeeCollect({ schoolId, classId, term, className, school, settings }) {
+  const [students, setStudents] = useState([]); const [items, setItems] = useState([]); const [payments, setPayments] = useState([]);
+  const [openId, setOpenId] = useState(null);
+  const [pay, setPay] = useState({ amount: '', method: 'cash', reference: '', paid_on: new Date().toISOString().slice(0, 10) });
+  const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
+  async function load() {
+    const { data: st } = await supabase.from('students').select('id,full_name').eq('school_id', schoolId).eq('class_id', classId).order('full_name'); setStudents(st || []);
+    const { data: fi } = await supabase.from('fee_items').select('*').eq('school_id', schoolId).eq('class_id', classId).eq('term', term); setItems(fi || []);
+    const ids = (st || []).map(s => s.id);
+    if (ids.length) { const { data: fp } = await supabase.from('fee_payments').select('*').eq('term', term).in('student_id', ids); setPayments(fp || []); } else setPayments([]);
+  }
+  useEffect(() => { load(); }, [classId, term, schoolId]);
+  const money = n => '$' + Number(n || 0).toLocaleString();
+  const due = items.reduce((a, r) => a + Number(r.amount || 0), 0);
+  const paidOf = sid => payments.filter(p => p.student_id === sid).reduce((a, p) => a + Number(p.amount || 0), 0);
+  async function recordPay() {
+    if (!pay.amount) { setErr('Enter an amount.'); return; } setBusy(true); setErr('');
+    const { error } = await supabase.from('fee_payments').insert({ school_id: schoolId, student_id: openId, term, amount: Number(pay.amount), method: pay.method, reference: pay.reference || null, paid_on: pay.paid_on });
+    if (error) setErr(error.message); else { setPay({ amount: '', method: 'cash', reference: '', paid_on: new Date().toISOString().slice(0, 10) }); await load(); } setBusy(false);
+  }
+  async function delPay(id) { await supabase.from('fee_payments').delete().eq('id', id); await load(); }
+  function printDoc(kind, student, lastPayment) {
+    const paid = paidOf(student.id); const bal = due - paid;
+    const itemRows = items.map(i => '<tr><td>' + esc(i.name) + '</td><td class=r>' + money(i.amount) + '</td></tr>').join('');
+    const payRows = payments.filter(p => p.student_id === student.id).sort((a, b) => a.paid_on < b.paid_on ? -1 : 1).map(p => '<tr><td>' + esc(p.paid_on || '') + '</td><td>' + esc(p.method || '') + '</td><td>' + esc(p.reference || '') + '</td><td class=r>' + money(p.amount) + '</td></tr>').join('');
+    let inner;
+    if (kind === 'receipt' && lastPayment) {
+      inner = '<h3 style="margin:0 0 8px">Receipt</h3><div class=m>' + esc(student.full_name) + ' · ' + esc(className) + ' · ' + esc(term) + '</div><table style="margin-top:12px;max-width:380px"><tbody><tr><td>Date</td><td class=r>' + esc(lastPayment.paid_on || '') + '</td></tr><tr><td>Method</td><td class=r>' + esc(lastPayment.method || '') + '</td></tr>' + (lastPayment.reference ? '<tr><td>Reference</td><td class=r>' + esc(lastPayment.reference) + '</td></tr>' : '') + '<tr><td><b>Amount paid</b></td><td class=r><b>' + money(lastPayment.amount) + '</b></td></tr><tr><td>Balance after</td><td class=r>' + money(bal) + '</td></tr></tbody></table>';
+    } else {
+      inner = '<h3 style="margin:0 0 8px">Fee statement</h3><div class=m>' + esc(student.full_name) + ' · ' + esc(className) + ' · ' + esc(term) + '</div><table style="margin-top:12px"><thead><tr><th>Fee item</th><th class=r>Amount</th></tr></thead><tbody>' + itemRows + '<tr><td><b>Total due</b></td><td class=r><b>' + money(due) + '</b></td></tr></tbody></table><table style="margin-top:14px"><thead><tr><th>Payment date</th><th>Method</th><th>Reference</th><th class=r>Amount</th></tr></thead><tbody>' + (payRows || '<tr><td colspan=4>No payments yet</td></tr>') + '<tr><td colspan=3><b>Total paid</b></td><td class=r><b>' + money(paid) + '</b></td></tr></tbody></table><div style="margin-top:14px;font-weight:700">Balance: ' + money(bal) + '</div>';
+    }
+    const html = '<html><head><title>' + (kind === 'receipt' ? 'Receipt' : 'Statement') + '</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:26px;color:#1f2328}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}.r{text-align:right}.m{color:#666;font-size:13px}</style></head><body>' + letterheadHtml(school, settings) + inner + '</body></html>';
+    const w = window.open('', '_blank'); if (!w) { alert('Allow pop-ups to print.'); return; } w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 350);
+  }
+  const openStudent = students.find(s => s.id === openId);
+  const myPayments = openStudent ? payments.filter(p => p.student_id === openId).sort((a, b) => a.paid_on < b.paid_on ? 1 : -1) : [];
+  return (<div>
+    {due === 0 && <div style={{ background: '#fff8e1', border: '1px solid #f4d58a', color: '#8a6d1a', padding: '10px 14px', borderRadius: 8, fontSize: 14, marginBottom: 14 }}>No fees set for this class/term yet — use "Set fees" to add them.</div>}
+    <div className="muted" style={{ marginBottom: 10, fontSize: 14 }}>Fee due per pupil: <b>{money(due)}</b></div>
+    <table><thead><tr><th>Student</th><th className="r">Due</th><th className="r">Paid</th><th className="r">Balance</th><th></th></tr></thead><tbody>
+      {students.map(s => { const paid = paidOf(s.id); const bal = due - paid; return (<tr key={s.id} onClick={() => { setOpenId(openId === s.id ? null : s.id); setErr(''); }} style={{ cursor: 'pointer', background: openId === s.id ? '#eafaf3' : 'transparent' }}><td className="strong">{s.full_name}</td><td className="r">{money(due)}</td><td className="r" style={{ color: '#1a7f5a' }}>{money(paid)}</td><td className="r" style={{ fontWeight: 600, color: bal <= 0 ? '#1a7f5a' : '#c0392b' }}>{money(bal)}</td><td className="r muted" style={{ fontSize: 13 }}>{openId === s.id ? 'Hide' : 'Open'}</td></tr>); })}
+      {students.length === 0 && <tr><td colSpan="5" className="muted">No students in this class.</td></tr>}
+    </tbody></table>
+    {openStudent && (<div className="card" style={{ marginTop: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+        <div style={{ fontWeight: 700, fontSize: 16 }}>{openStudent.full_name}</div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button className="ghost" onClick={() => printDoc('statement', openStudent)}>Print statement</button>
+          {myPayments.length > 0 && <button className="ghost" onClick={() => printDoc('receipt', openStudent, myPayments[0])}>Receipt (last)</button>}
+        </div>
+      </div>
+      <div className="muted" style={{ fontSize: 13, margin: '2px 0 12px' }}>Due {money(due)} · Paid {money(paidOf(openStudent.id))} · Balance {money(due - paidOf(openStudent.id))}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+        <div><label style={labelStyle}>Amount ($)</label><input style={inputStyle} value={pay.amount} onChange={e => setPay(o => ({ ...o, amount: e.target.value }))} placeholder="0" /></div>
+        <div><label style={labelStyle}>Method</label><select style={inputStyle} value={pay.method} onChange={e => setPay(o => ({ ...o, method: e.target.value }))}><option value="cash">Cash</option><option value="bank">Bank</option><option value="paynow">Paynow</option></select></div>
+        <div><label style={labelStyle}>Reference</label><input style={inputStyle} value={pay.reference} onChange={e => setPay(o => ({ ...o, reference: e.target.value }))} placeholder="optional" /></div>
+        <div><label style={labelStyle}>Date</label><input type="date" style={inputStyle} value={pay.paid_on} onChange={e => setPay(o => ({ ...o, paid_on: e.target.value }))} /></div>
+      </div>
+      <div style={{ marginTop: 12 }}><button onClick={recordPay} disabled={busy}>{busy ? 'Saving…' : 'Record payment'}</button></div>
+      {err && <p className="error">{err}</p>}
+      {myPayments.length > 0 && (<table style={{ marginTop: 16 }}><thead><tr><th>Date</th><th>Method</th><th>Reference</th><th className="r">Amount</th><th></th></tr></thead><tbody>
+        {myPayments.map(p => (<tr key={p.id}><td>{p.paid_on}</td><td style={{ textTransform: 'capitalize' }}>{p.method}</td><td className="muted">{p.reference || '—'}</td><td className="r">{money(p.amount)}</td><td className="r"><button className="ghost" style={{ padding: '3px 9px', fontSize: 12 }} onClick={() => delPay(p.id)}>Delete</button></td></tr>))}
+      </tbody></table>)}
+    </div>)}
   </div>);
 }
 
