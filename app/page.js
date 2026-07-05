@@ -138,9 +138,9 @@ function Console({ session, role, canPick, initialSchool }) {
   const items = [];
   items.push(['dashboard', 'Dashboard', '🏠']);
   items.push(['attendance', 'Attendance', '📋'], ['students', 'Students', '👤'], ['marks', 'Marks', '📝'], ['reportcards', 'Report cards', '📄'], ['reports', 'Attendance report', '📊'], ['announcements', 'Announcements', '📣']);
-  if (!isTeacher) { items.push(['academics', 'Academics', '📈']); items.push(['fees', 'Fees', '💰']); items.push(['classes', 'Classes', '🏫']); items.push(['subjects', 'Subjects', '📚']); items.push(['teachers', 'Teachers', '👥']); items.push(['staff', 'Staff', '👔']); items.push(['admissions', 'Admissions', '🎓']); items.push(['timetable', 'Timetable', '📅']); items.push(['finance', 'Finance', '💵']); items.push(['banking', 'Banking', '🏦']); items.push(['inventory', 'Inventory', '📦']); items.push(['assets', 'Assets', '🏢']); items.push(['school', 'School', '⚙️']); }
+  if (!isTeacher) { items.push(['academics', 'Academics', '📈']); items.push(['fees', 'Fees', '💰']); items.push(['arrears', 'Arrears', '⚠️']); items.push(['classes', 'Classes', '🏫']); items.push(['subjects', 'Subjects', '📚']); items.push(['teachers', 'Teachers', '👥']); items.push(['staff', 'Staff', '👔']); items.push(['admissions', 'Admissions', '🎓']); items.push(['timetable', 'Timetable', '📅']); items.push(['finance', 'Finance', '💵']); items.push(['banking', 'Banking', '🏦']); items.push(['inventory', 'Inventory', '📦']); items.push(['assets', 'Assets', '🏢']); items.push(['school', 'School', '⚙️']); }
   const sideItem = (id, label, icon) => (<button key={id} className={'side-item' + (nav === id ? ' active' : '')} onClick={() => setNav(id)}><span className="si">{icon}</span>{label}</button>);
-  const title = { dashboard: 'Dashboard', academics: 'Academics', fees: 'Fees', announcements: 'Announcements', staff: 'Staff', admissions: 'Admissions', timetable: 'Timetable', attendance: 'Attendance', students: 'Students', classes: 'Classes', teachers: 'Teachers', reports: 'Attendance report', marks: 'Enter marks', reportcards: 'Report cards', subjects: 'Subjects', school: 'School letterhead', finance: 'Income & expenses', banking: 'Banking', inventory: 'Inventory', assets: 'Asset register' }[nav];
+  const title = { dashboard: 'Dashboard', academics: 'Academics', fees: 'Fees', arrears: 'Fee arrears', announcements: 'Announcements', staff: 'Staff', admissions: 'Admissions', timetable: 'Timetable', attendance: 'Attendance', students: 'Students', classes: 'Classes', teachers: 'Teachers', reports: 'Attendance report', marks: 'Enter marks', reportcards: 'Report cards', subjects: 'Subjects', school: 'School letterhead', finance: 'Income & expenses', banking: 'Banking', inventory: 'Inventory', assets: 'Asset register' }[nav];
 
   return (<div className="shell">
     <aside className="sidebar">
@@ -156,6 +156,7 @@ function Console({ session, role, canPick, initialSchool }) {
         {canPick && <select value={schoolId || ''} onChange={e => setSchoolId(e.target.value)} style={{ width: 'auto', minWidth: 200 }}>{schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>}
       </div>
       {!schoolId ? <p className="muted">No school selected.</p> :
+        nav === 'arrears' ? <ArrearsPanel schoolId={schoolId} classes={allClasses} school={school} settings={settings} /> :
         nav === 'fees' ? <FeesPanel schoolId={schoolId} classes={allClasses} school={school} settings={settings} /> :
         nav === 'academics' ? <AcademicsPanel schoolId={schoolId} classes={allClasses} subjects={subjects} /> :
         nav === 'dashboard' ? (isTeacher ? <TeacherDashboardPanel schoolId={schoolId} classes={available} session={session} /> : <DashboardPanel schoolId={schoolId} school={school} />) :
@@ -1086,10 +1087,11 @@ function FeesPanel({ schoolId, classes, school, settings }) {
       <div style={{ minWidth: 150 }}><label style={labelStyle}>Term</label><select style={inputStyle} value={term} onChange={e => setTerm(e.target.value)}>{termOptions.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
       <div style={{ display: 'flex', gap: 6 }}>
         <button className={mode === 'collect' ? '' : 'ghost'} onClick={() => setMode('collect')}>Collect & receipts</button>
+        <button className={mode === 'arrears' ? '' : 'ghost'} onClick={() => setMode('arrears')}>Arrears</button>
         <button className={mode === 'setup' ? '' : 'ghost'} onClick={() => setMode('setup')}>Set fees</button>
       </div>
     </div>
-    {mode === 'setup' ? <FeeSetup schoolId={schoolId} classId={classId} term={term} /> : <FeeCollect schoolId={schoolId} classId={classId} term={term} className={className} school={school} settings={settings} />}
+    {mode === 'setup' ? <FeeSetup schoolId={schoolId} classId={classId} term={term} /> : mode === 'arrears' ? <FeeArrears schoolId={schoolId} term={term} classes={classes} school={school} settings={settings} /> : <FeeCollect schoolId={schoolId} classId={classId} term={term} className={className} school={school} settings={settings} />}
   </div>);
 }
 
@@ -1233,6 +1235,85 @@ function BankingPanel({ schoolId }) {
     <table><thead><tr><th>Date</th><th>Type</th><th>Note</th><th className="r">Amount</th><th></th></tr></thead><tbody>
       {txns.map(t => (<tr key={t.id}><td>{t.date}</td><td className="strong">{label(t.type)}</td><td className="muted">{t.note || '—'}</td><td className="r">{money(t.amount)}</td><td className="r"><button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={() => remove(t.id)}>Remove</button></td></tr>))}
       {txns.length === 0 && <tr><td colSpan="5" className="muted">No bank movements yet.</td></tr>}
+    </tbody></table>
+  </div>);
+}
+
+function ArrearsPanel({ schoolId, classes, school, settings }) {
+  const [term, setTerm] = useState(termOptions[0]);
+  const [classFilter, setClassFilter] = useState('all');
+  const [students, setStudents] = useState([]); const [items, setItems] = useState([]); const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  async function load() {
+    if (!schoolId) return; setLoading(true);
+    const { data: st } = await supabase.from('students').select('id,full_name,class_id').eq('school_id', schoolId); setStudents(st || []);
+    const { data: fi } = await supabase.from('fee_items').select('class_id,amount').eq('school_id', schoolId).eq('term', term); setItems(fi || []);
+    const { data: fp } = await supabase.from('fee_payments').select('student_id,amount').eq('school_id', schoolId).eq('term', term); setPayments(fp || []);
+    setLoading(false);
+  }
+  useEffect(() => { load(); }, [schoolId, term]);
+  const money = n => '$' + Number(n || 0).toLocaleString();
+  const clsName = id => { const c = classes.find(x => x.id === id); return c ? c.name : '—'; };
+  const dueByClass = {}; items.forEach(i => { dueByClass[i.class_id] = (dueByClass[i.class_id] || 0) + Number(i.amount || 0); });
+  const paidByStudent = {}; payments.forEach(pp => { paidByStudent[pp.student_id] = (paidByStudent[pp.student_id] || 0) + Number(pp.amount || 0); });
+  let rows = students.map(s => { const due = dueByClass[s.class_id] || 0; const paid = paidByStudent[s.id] || 0; return { id: s.id, name: s.full_name, cls: clsName(s.class_id), class_id: s.class_id, due, paid, bal: due - paid }; }).filter(r => r.bal > 0);
+  if (classFilter !== 'all') rows = rows.filter(r => r.class_id === classFilter);
+  rows.sort((a, b) => b.bal - a.bal);
+  const totalOwed = rows.reduce((a, r) => a + r.bal, 0);
+  function printReport() {
+    const scope = classFilter === 'all' ? 'All classes' : clsName(classFilter);
+    const body = rows.map(r => '<tr><td>' + esc(r.name) + '</td><td>' + esc(r.cls) + '</td><td class=r>' + money(r.due) + '</td><td class=r>' + money(r.paid) + '</td><td class=r>' + money(r.bal) + '</td></tr>').join('');
+    const html = '<html><head><title>Fee arrears</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:26px;color:#1f2328}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}.r{text-align:right}.m{color:#666;font-size:13px}</style></head><body>' + letterheadHtml(school, settings) + '<h3 style="margin:0 0 4px">Fee arrears — ' + esc(term) + '</h3><div class=m>' + esc(scope) + ' · ' + rows.length + ' pupil(s) owing</div><table style="margin-top:12px"><thead><tr><th>Student</th><th>Class</th><th class=r>Due</th><th class=r>Paid</th><th class=r>Balance</th></tr></thead><tbody>' + body + '<tr><td colspan=4><b>Total owed</b></td><td class=r><b>' + money(totalOwed) + '</b></td></tr></tbody></table></body></html>';
+    const w = window.open('', '_blank'); if (!w) { alert('Allow pop-ups to print.'); return; } w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 350);
+  }
+  return (<div>
+    <div style={{ display: 'flex', gap: 12, alignItems: 'end', marginBottom: 14, flexWrap: 'wrap' }}>
+      <div style={{ minWidth: 150 }}><label style={labelStyle}>Term</label><select style={inputStyle} value={term} onChange={e => setTerm(e.target.value)}>{termOptions.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
+      <div style={{ minWidth: 180 }}><label style={labelStyle}>Class</label><select style={inputStyle} value={classFilter} onChange={e => setClassFilter(e.target.value)}><option value="all">All classes</option>{classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+      <button className="ghost" onClick={printReport} disabled={rows.length === 0}>Print</button>
+    </div>
+    {loading ? <p className="muted">Loading…</p> : (<>
+      <div className="muted" style={{ marginBottom: 10, fontSize: 14 }}>{rows.length} pupil(s) owing · Total owed: <b>{money(totalOwed)}</b></div>
+      <table><thead><tr><th>Student</th><th>Class</th><th className="r">Due</th><th className="r">Paid</th><th className="r">Balance</th></tr></thead><tbody>
+        {rows.map(r => (<tr key={r.id}><td className="strong">{r.name}</td><td>{r.cls}</td><td className="r">{money(r.due)}</td><td className="r" style={{ color: '#1a7f5a' }}>{money(r.paid)}</td><td className="r" style={{ fontWeight: 600, color: '#c0392b' }}>{money(r.bal)}</td></tr>))}
+        {rows.length === 0 && <tr><td colSpan="5" className="muted">No arrears — everyone is paid up for this term (or fees not set yet).</td></tr>}
+      </tbody></table>
+    </>)}
+  </div>);
+}
+
+function FeeArrears({ schoolId, term, classes, school, settings }) {
+  const [rows, setRows] = useState(null);
+  useEffect(() => { (async () => {
+    const { data: st } = await supabase.from('students').select('id,full_name,class_id').eq('school_id', schoolId);
+    const students = st || [];
+    const { data: fi } = await supabase.from('fee_items').select('class_id,amount').eq('school_id', schoolId).eq('term', term);
+    const items = fi || [];
+    const ids = students.map(s => s.id);
+    let pays = [];
+    if (ids.length) { const { data: fp } = await supabase.from('fee_payments').select('student_id,amount').eq('term', term).in('student_id', ids); pays = fp || []; }
+    const dueByClass = {}; items.forEach(i => { dueByClass[i.class_id] = (dueByClass[i.class_id] || 0) + Number(i.amount || 0); });
+    const paidBy = {}; pays.forEach(p => { paidBy[p.student_id] = (paidBy[p.student_id] || 0) + Number(p.amount || 0); });
+    const out = students.map(s => { const due = dueByClass[s.class_id] || 0; const paid = paidBy[s.id] || 0; return { name: s.full_name, class_id: s.class_id, due, paid, bal: due - paid }; }).filter(r => r.bal > 0).sort((a, b) => b.bal - a.bal);
+    setRows(out);
+  })(); }, [schoolId, term]);
+  const money = n => '$' + Number(n || 0).toLocaleString();
+  const clsName = id => { const c = classes.find(x => x.id === id); return c ? c.name : '—'; };
+  if (rows === null) return <p className="muted">Loading…</p>;
+  const total = rows.reduce((a, r) => a + r.bal, 0);
+  function printArrears() {
+    const body = rows.map(r => '<tr><td>' + esc(r.name) + '</td><td>' + esc(clsName(r.class_id)) + '</td><td class=r>' + money(r.due) + '</td><td class=r>' + money(r.paid) + '</td><td class=r>' + money(r.bal) + '</td></tr>').join('');
+    const html = '<html><head><title>Fee arrears</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:24px;color:#1f2328}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}.r{text-align:right}</style></head><body>' + letterheadHtml(school, settings) + '<h3 style="margin:0 0 4px">Fee arrears — ' + esc(term) + '</h3><div style="color:#666;font-size:13px">' + rows.length + ' pupils owing · total ' + money(total) + '</div><table style="margin-top:12px"><thead><tr><th>Student</th><th>Class</th><th class=r>Due</th><th class=r>Paid</th><th class=r>Balance</th></tr></thead><tbody>' + body + '<tr><td colspan=4><b>Total owed</b></td><td class=r><b>' + money(total) + '</b></td></tr></tbody></table></body></html>';
+    const w = window.open('', '_blank'); if (!w) { alert('Allow pop-ups to print.'); return; } w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 350);
+  }
+  return (<div>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, marginBottom: 10 }}>
+      <div className="muted" style={{ fontSize: 14 }}>{rows.length} pupil(s) owing · total <b style={{ color: '#c0392b' }}>{money(total)}</b> · {term}, all classes</div>
+      <button className="ghost" onClick={printArrears} disabled={rows.length === 0}>Print</button>
+    </div>
+    <table><thead><tr><th>Student</th><th>Class</th><th className="r">Due</th><th className="r">Paid</th><th className="r">Balance</th></tr></thead><tbody>
+      {rows.map((r, i) => (<tr key={i}><td className="strong">{r.name}</td><td>{clsName(r.class_id)}</td><td className="r">{money(r.due)}</td><td className="r" style={{ color: '#1a7f5a' }}>{money(r.paid)}</td><td className="r" style={{ fontWeight: 600, color: '#c0392b' }}>{money(r.bal)}</td></tr>))}
+      {rows.length === 0 && <tr><td colSpan="5" className="muted">No arrears — everyone is paid up for {term}.</td></tr>}
     </tbody></table>
   </div>);
 }
