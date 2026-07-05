@@ -135,17 +135,31 @@ function Console({ session, role, canPick, initialSchool }) {
 
   const available = isTeacher ? allClasses.filter(c => myIds.includes(c.id)) : allClasses;
 
-  const items = [];
-  items.push(['dashboard', 'Dashboard', '🏠']);
-  items.push(['attendance', 'Attendance', '📋'], ['students', 'Students', '👤'], ['marks', 'Marks', '📝'], ['reportcards', 'Report cards', '📄'], ['reports', 'Attendance report', '📊'], ['announcements', 'Announcements', '📣']);
-  if (!isTeacher) { items.push(['academics', 'Academics', '📈']); items.push(['fees', 'Fees', '💰']); items.push(['arrears', 'Arrears', '⚠️']); items.push(['classes', 'Classes', '🏫']); items.push(['subjects', 'Subjects', '📚']); items.push(['teachers', 'Teachers', '👥']); items.push(['staff', 'Staff', '👔']); items.push(['admissions', 'Admissions', '🎓']); items.push(['timetable', 'Timetable', '📅']); items.push(['finance', 'Finance', '💵']); items.push(['banking', 'Banking', '🏦']); items.push(['inventory', 'Inventory', '📦']); items.push(['assets', 'Assets', '🏢']); items.push(['school', 'School', '⚙️']); }
-  const sideItem = (id, label, icon) => (<button key={id} className={'side-item' + (nav === id ? ' active' : '')} onClick={() => setNav(id)}><span className="si">{icon}</span>{label}</button>);
+  const A = !isTeacher;
+  const groups = [
+    { key: 'academics', label: 'Academics', icon: '📚', items: [['attendance', 'Attendance', '📋'], ['marks', 'Marks', '📝'], ['reportcards', 'Report cards', '📄'], ['reports', 'Attendance report', '📊']].concat(A ? [['academics', 'Class overview', '📈']] : []) },
+    { key: 'people', label: 'People', icon: '👥', items: [['students', 'Students', '👤']].concat(A ? [['teachers', 'Teachers', '👥'], ['staff', 'Staff', '👔'], ['admissions', 'Admissions', '🎓']] : []) },
+    { key: 'money', label: 'Money', icon: '💰', items: A ? [['fees', 'Fees', '💰'], ['arrears', 'Arrears', '⚠️'], ['finance', 'Finance', '💵'], ['banking', 'Banking', '🏦']] : [] },
+    { key: 'operations', label: 'Operations', icon: '🗂️', items: A ? [['timetable', 'Timetable', '📅'], ['inventory', 'Inventory', '📦'], ['assets', 'Assets', '🏢']] : [] },
+    { key: 'comms', label: 'Communication', icon: '📣', items: [['announcements', 'Announcements', '📣']] },
+    { key: 'setup', label: 'Setup', icon: '⚙️', items: A ? [['classes', 'Classes', '🏫'], ['subjects', 'Subjects', '📚'], ['school', 'School', '⚙️']] : [] },
+  ].filter(g => g.items.length > 0);
+  const groupOf = k => { const g = groups.find(gr => gr.items.some(it => it[0] === k)); return g ? g.key : null; };
+  const [openGroup, setOpenGroup] = useState(groupOf(nav));
+  const goto = k => { setNav(k); const g = groupOf(k); if (g) setOpenGroup(g); };
+  const grpHdr = { display: 'flex', alignItems: 'center', gap: 11, padding: '9px 12px', borderRadius: 8, fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#8a94a0', cursor: 'pointer', border: 0, background: 'transparent', textAlign: 'left', width: '100%', fontFamily: 'inherit' };
   const title = { dashboard: 'Dashboard', academics: 'Academics', fees: 'Fees', arrears: 'Fee arrears', announcements: 'Announcements', staff: 'Staff', admissions: 'Admissions', timetable: 'Timetable', attendance: 'Attendance', students: 'Students', classes: 'Classes', teachers: 'Teachers', reports: 'Attendance report', marks: 'Enter marks', reportcards: 'Report cards', subjects: 'Subjects', school: 'School letterhead', finance: 'Income & expenses', banking: 'Banking', inventory: 'Inventory', assets: 'Asset register' }[nav];
 
   return (<div className="shell">
     <aside className="sidebar">
       <div className="side-brand">{ChalkMark(28)}<span>Chalkboard</span></div>
-      <nav className="side-nav">{items.map(it => sideItem(it[0], it[1], it[2]))}</nav>
+      <nav className="side-nav">
+        <button className={'side-item' + (nav === 'dashboard' ? ' active' : '')} onClick={() => setNav('dashboard')}><span className="si">🏠</span>Dashboard</button>
+        {groups.map(g => (<div key={g.key}>
+          <button style={grpHdr} onClick={() => setOpenGroup(openGroup === g.key ? null : g.key)}><span className="si">{g.icon}</span><span style={{ flex: 1 }}>{g.label}</span><span style={{ fontSize: 10 }}>{openGroup === g.key ? '▾' : '▸'}</span></button>
+          {openGroup === g.key && g.items.map(it => (<button key={it[0]} className={'side-item' + (nav === it[0] ? ' active' : '')} style={{ paddingLeft: 24 }} onClick={() => goto(it[0])}><span className="si">{it[2]}</span>{it[1]}</button>))}
+        </div>))}
+      </nav>
       <div style={{ fontSize: 12, color: '#5b6570', padding: '8px 12px', wordBreak: 'break-all' }}>{session.user.email}{isTeacher ? ' · teacher' : ''}</div>
       <button className="side-item" onClick={installApp}><span className="si">⬇</span>Download app</button>
       <button className="side-item" onClick={() => supabase.auth.signOut()} style={{ color: '#c0392b' }}><span className="si">⏏</span>Sign out</button>
