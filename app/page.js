@@ -103,6 +103,7 @@ function Console({ session, role, canPick, initialSchool }) {
   const [subjects, setSubjects] = useState([]);
   const [school, setSchool] = useState(null);
   const [settings, setSettings] = useState(null);
+  const [sub, setSub] = useState(undefined);
   const isTeacher = role === 'teacher';
 
   useEffect(() => { (async () => {
@@ -131,11 +132,13 @@ function Console({ session, role, canPick, initialSchool }) {
     const { data: ss } = await supabase.from('school_settings').select('*').eq('school_id', schoolId).maybeSingle();
     setSettings(ss || null);
   }
-  useEffect(() => { loadClasses(); loadMine(); loadSubjects(); loadSchoolMeta(); }, [schoolId]);
+  async function loadSub() { if (!schoolId) { setSub(null); return; } const { data } = await supabase.from('subscriptions').select('*').eq('school_id', schoolId).maybeSingle(); setSub(data || null); }
+  useEffect(() => { loadClasses(); loadMine(); loadSubjects(); loadSchoolMeta(); loadSub(); }, [schoolId]);
 
   const available = isTeacher ? allClasses.filter(c => myIds.includes(c.id)) : allClasses;
 
   const A = !isTeacher;
+  const O = role === 'operator';
   const groups = [
     { key: 'academics', label: 'Academics', icon: '📚', items: [['attendance', 'Attendance', '📋'], ['marks', 'Marks', '📝'], ['reportcards', 'Report cards', '📄'], ['reports', 'Attendance report', '📊']].concat(A ? [['academics', 'Class overview', '📈']] : []) },
     { key: 'people', label: 'People', icon: '👥', items: [['students', 'Students', '👤']].concat(A ? [['teachers', 'Teachers', '👥'], ['staff', 'Staff', '👔'], ['admissions', 'Admissions', '🎓']] : []) },
@@ -143,13 +146,24 @@ function Console({ session, role, canPick, initialSchool }) {
     { key: 'operations', label: 'Operations', icon: '🗂️', items: A ? [['timetable', 'Timetable', '📅'], ['inventory', 'Inventory', '📦'], ['assets', 'Assets', '🏢']] : [] },
     { key: 'comms', label: 'Communication', icon: '📣', items: [['announcements', 'Announcements', '📣']] },
     { key: 'setup', label: 'Setup', icon: '⚙️', items: A ? [['classes', 'Classes', '🏫'], ['subjects', 'Subjects', '📚'], ['school', 'School', '⚙️']] : [] },
+    { key: 'platform', label: 'Platform', icon: '🛡️', items: O ? [['billing', 'Subscriptions', '💳']] : [] },
   ].filter(g => g.items.length > 0);
   const groupOf = k => { const g = groups.find(gr => gr.items.some(it => it[0] === k)); return g ? g.key : null; };
   const [openGroup, setOpenGroup] = useState(groupOf(nav));
   const goto = k => { setNav(k); const g = groupOf(k); if (g) setOpenGroup(g); };
   const grpHdr = { display: 'flex', alignItems: 'center', gap: 11, padding: '9px 12px', borderRadius: 8, fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#8a94a0', cursor: 'pointer', border: 0, background: 'transparent', textAlign: 'left', width: '100%', fontFamily: 'inherit' };
-  const title = { dashboard: 'Dashboard', academics: 'Academics', fees: 'Fees', arrears: 'Fee arrears', announcements: 'Announcements', staff: 'Staff', admissions: 'Admissions', timetable: 'Timetable', attendance: 'Attendance', students: 'Students', classes: 'Classes', teachers: 'Teachers', reports: 'Attendance report', marks: 'Enter marks', reportcards: 'Report cards', subjects: 'Subjects', school: 'School letterhead', finance: 'Income & expenses', banking: 'Banking', inventory: 'Inventory', assets: 'Asset register' }[nav];
+  const title = { dashboard: 'Dashboard', billing: 'Subscriptions', academics: 'Academics', fees: 'Fees', arrears: 'Fee arrears', announcements: 'Announcements', staff: 'Staff', admissions: 'Admissions', timetable: 'Timetable', attendance: 'Attendance', students: 'Students', classes: 'Classes', teachers: 'Teachers', reports: 'Attendance report', marks: 'Enter marks', reportcards: 'Report cards', subjects: 'Subjects', school: 'School letterhead', finance: 'Income & expenses', banking: 'Banking', inventory: 'Inventory', assets: 'Asset register' }[nav];
 
+  const subToday = new Date().toISOString().slice(0, 10);
+  const subStatus = (() => {
+    if (!sub || !sub.next_due) return { code: 'none' };
+    const soon = new Date(sub.next_due); soon.setDate(soon.getDate() - 7);
+    const grace = new Date(sub.next_due); grace.setDate(grace.getDate() + 7);
+    if (subToday <= sub.next_due) return { code: subToday >= soon.toISOString().slice(0, 10) ? 'due_soon' : 'current', due: sub.next_due };
+    if (subToday <= grace.toISOString().slice(0, 10)) return { code: 'overdue', due: sub.next_due };
+    return { code: 'locked', due: sub.next_due };
+  })();
+  if (!O && subStatus.code === 'locked') return <SubscriptionLock due={subStatus.due} />;
   return (<div className="shell">
     <aside className="sidebar">
       <div className="side-brand">{ChalkMark(28)}<span>Chalkboard</span></div>
@@ -169,7 +183,9 @@ function Console({ session, role, canPick, initialSchool }) {
         <h1>{title}</h1>
         {canPick && <select value={schoolId || ''} onChange={e => setSchoolId(e.target.value)} style={{ width: 'auto', minWidth: 200 }}>{schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>}
       </div>
+      {!O && (subStatus.code === 'due_soon' || subStatus.code === 'overdue') && (<div style={{ background: subStatus.code === 'overdue' ? '#fdeaea' : '#fff8e1', border: '1px solid ' + (subStatus.code === 'overdue' ? '#f3c2c2' : '#f4d58a'), color: subStatus.code === 'overdue' ? '#c0392b' : '#8a6d1a', padding: '10px 14px', borderRadius: 8, fontSize: 14, marginBottom: 16 }}>{subStatus.code === 'overdue' ? 'Subscription overdue (due ' + subStatus.due + '). Please pay to avoid losing access.' : 'Subscription due on ' + subStatus.due + '.'}</div>)}
       {!schoolId ? <p className="muted">No school selected.</p> :
+        nav === 'billing' ? <BillingPanel /> :
         nav === 'arrears' ? <ArrearsPanel schoolId={schoolId} classes={allClasses} school={school} settings={settings} /> :
         nav === 'fees' ? <FeesPanel schoolId={schoolId} classes={allClasses} school={school} settings={settings} /> :
         nav === 'academics' ? <AcademicsPanel schoolId={schoolId} classes={allClasses} subjects={subjects} /> :
@@ -1328,6 +1344,61 @@ function FeeArrears({ schoolId, term, classes, school, settings }) {
     <table><thead><tr><th>Student</th><th>Class</th><th className="r">Due</th><th className="r">Paid</th><th className="r">Balance</th></tr></thead><tbody>
       {rows.map((r, i) => (<tr key={i}><td className="strong">{r.name}</td><td>{clsName(r.class_id)}</td><td className="r">{money(r.due)}</td><td className="r" style={{ color: '#1a7f5a' }}>{money(r.paid)}</td><td className="r" style={{ fontWeight: 600, color: '#c0392b' }}>{money(r.bal)}</td></tr>))}
       {rows.length === 0 && <tr><td colSpan="5" className="muted">No arrears — everyone is paid up for {term}.</td></tr>}
+    </tbody></table>
+  </div>);
+}
+
+function SubscriptionLock({ due }) {
+  return (<div className="center"><div className="card" style={{ maxWidth: 440, textAlign: 'center' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>{ChalkMark(44)}</div>
+    <h1 style={{ fontSize: 20 }}>Subscription overdue</h1>
+    <p className="muted">Access to Chalkboard is paused because your school's subscription (due {due}) has not been paid. Please settle it to restore access, or contact your administrator.</p>
+    <button className="ghost" onClick={() => supabase.auth.signOut()} style={{ marginTop: 12 }}>Sign out</button>
+  </div></div>);
+}
+
+function BillingPanel() {
+  const [rows, setRows] = useState([]); const [edit, setEdit] = useState(null); const [form, setForm] = useState({ amount: '', next_due: '' });
+  async function load() {
+    const { data: schools } = await supabase.from('schools').select('id,name').order('name');
+    const { data: subs } = await supabase.from('subscriptions').select('*');
+    const map = {}; (subs || []).forEach(x => { map[x.school_id] = x; });
+    setRows((schools || []).map(sc => ({ id: sc.id, name: sc.name, sub: map[sc.id] || null })));
+  }
+  useEffect(() => { load(); }, []);
+  const money = n => '$' + Number(n || 0).toLocaleString();
+  const today = new Date().toISOString().slice(0, 10);
+  function status(sub) {
+    if (!sub || !sub.next_due) return { t: 'Not set', c: '#5b6570' };
+    if (today <= sub.next_due) return { t: 'Current', c: '#1a7f5a' };
+    const g = new Date(sub.next_due); g.setDate(g.getDate() + 7);
+    if (today <= g.toISOString().slice(0, 10)) return { t: 'Overdue', c: '#b8860b' };
+    return { t: 'Locked', c: '#c0392b' };
+  }
+  function startEdit(r) { setEdit(r.id); setForm({ amount: r.sub ? String(r.sub.amount) : '', next_due: (r.sub && r.sub.next_due) || '' }); }
+  async function saveEdit() { await supabase.from('subscriptions').upsert({ school_id: edit, amount: Number(form.amount || 0), next_due: form.next_due || null, updated_at: new Date().toISOString() }, { onConflict: 'school_id' }); setEdit(null); await load(); }
+  async function markPaid(r) {
+    const amt = r.sub ? Number(r.sub.amount || 0) : 0;
+    const base = (r.sub && r.sub.next_due) ? new Date(r.sub.next_due) : new Date();
+    const nd = new Date(base); nd.setMonth(nd.getMonth() + 1);
+    await supabase.from('subscription_payments').insert({ school_id: r.id, amount: amt, paid_on: today, method: 'manual' });
+    await supabase.from('subscriptions').upsert({ school_id: r.id, amount: amt, next_due: nd.toISOString().slice(0, 10), last_paid: today, updated_at: new Date().toISOString() }, { onConflict: 'school_id' });
+    await load();
+  }
+  const mrr = rows.reduce((a, r) => a + (r.sub ? Number(r.sub.amount || 0) : 0), 0);
+  const overdue = rows.filter(r => { const st = status(r.sub); return st.t === 'Overdue' || st.t === 'Locked'; }).length;
+  return (<div>
+    <p className="muted" style={{ marginTop: 0 }}>Set each school's monthly subscription and next due date. Schools get reminders as it falls due, and are locked out if it stays unpaid past a 7-day grace period. This is our billing, separate from school fees.</p>
+    <StatRow items={[{ value: money(mrr), label: 'Monthly recurring' }, { value: rows.length, label: 'Schools' }, { value: overdue, label: 'Overdue', color: overdue ? '#c0392b' : undefined }]} />
+    <table><thead><tr><th>School</th><th className="r">Amount / mo</th><th>Next due</th><th>Status</th><th></th></tr></thead><tbody>
+      {rows.map(r => { const st = status(r.sub); const isE = edit === r.id; return (<tr key={r.id}>
+        <td className="strong">{r.name}</td>
+        <td className="r">{isE ? <input style={{ ...inputStyle, margin: 0, width: 90 }} value={form.amount} onChange={e => setForm(f => ({ ...f, amount: e.target.value }))} /> : (r.sub ? money(r.sub.amount) : '—')}</td>
+        <td>{isE ? <input type="date" style={{ ...inputStyle, margin: 0 }} value={form.next_due} onChange={e => setForm(f => ({ ...f, next_due: e.target.value }))} /> : ((r.sub && r.sub.next_due) || '—')}</td>
+        <td style={{ color: st.c, fontWeight: 600 }}>{st.t}</td>
+        <td className="r">{isE ? (<><button style={{ padding: '4px 10px', fontSize: 13 }} onClick={saveEdit}>Save</button> <button className="ghost" style={{ padding: '4px 10px', fontSize: 13, marginLeft: 6 }} onClick={() => setEdit(null)}>Cancel</button></>) : (<><button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={() => startEdit(r)}>Set</button> <button style={{ padding: '4px 10px', fontSize: 13, marginLeft: 6 }} onClick={() => markPaid(r)}>Mark paid</button></>)}</td>
+      </tr>); })}
+      {rows.length === 0 && <tr><td colSpan="5" className="muted">No schools yet.</td></tr>}
     </tbody></table>
   </div>);
 }
