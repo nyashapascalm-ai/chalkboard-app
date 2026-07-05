@@ -138,9 +138,9 @@ function Console({ session, role, canPick, initialSchool }) {
   const items = [];
   items.push(['dashboard', 'Dashboard', '🏠']);
   items.push(['attendance', 'Attendance', '📋'], ['students', 'Students', '👤'], ['marks', 'Marks', '📝'], ['reportcards', 'Report cards', '📄'], ['reports', 'Attendance report', '📊'], ['announcements', 'Announcements', '📣']);
-  if (!isTeacher) { items.push(['classes', 'Classes', '🏫']); items.push(['subjects', 'Subjects', '📚']); items.push(['teachers', 'Teachers', '👥']); items.push(['staff', 'Staff', '👔']); items.push(['admissions', 'Admissions', '🎓']); items.push(['timetable', 'Timetable', '📅']); items.push(['finance', 'Finance', '💵']); items.push(['inventory', 'Inventory', '📦']); items.push(['assets', 'Assets', '🏢']); items.push(['school', 'School', '⚙️']); }
+  if (!isTeacher) { items.push(['academics', 'Academics', '📈']); items.push(['classes', 'Classes', '🏫']); items.push(['subjects', 'Subjects', '📚']); items.push(['teachers', 'Teachers', '👥']); items.push(['staff', 'Staff', '👔']); items.push(['admissions', 'Admissions', '🎓']); items.push(['timetable', 'Timetable', '📅']); items.push(['finance', 'Finance', '💵']); items.push(['inventory', 'Inventory', '📦']); items.push(['assets', 'Assets', '🏢']); items.push(['school', 'School', '⚙️']); }
   const sideItem = (id, label, icon) => (<button key={id} className={'side-item' + (nav === id ? ' active' : '')} onClick={() => setNav(id)}><span className="si">{icon}</span>{label}</button>);
-  const title = { dashboard: 'Dashboard', announcements: 'Announcements', staff: 'Staff', admissions: 'Admissions', timetable: 'Timetable', attendance: 'Attendance', students: 'Students', classes: 'Classes', teachers: 'Teachers', reports: 'Attendance report', marks: 'Enter marks', reportcards: 'Report cards', subjects: 'Subjects', school: 'School letterhead', finance: 'Income & expenses', inventory: 'Inventory', assets: 'Asset register' }[nav];
+  const title = { dashboard: 'Dashboard', academics: 'Academics', announcements: 'Announcements', staff: 'Staff', admissions: 'Admissions', timetable: 'Timetable', attendance: 'Attendance', students: 'Students', classes: 'Classes', teachers: 'Teachers', reports: 'Attendance report', marks: 'Enter marks', reportcards: 'Report cards', subjects: 'Subjects', school: 'School letterhead', finance: 'Income & expenses', inventory: 'Inventory', assets: 'Asset register' }[nav];
 
   return (<div className="shell">
     <aside className="sidebar">
@@ -156,6 +156,7 @@ function Console({ session, role, canPick, initialSchool }) {
         {canPick && <select value={schoolId || ''} onChange={e => setSchoolId(e.target.value)} style={{ width: 'auto', minWidth: 200 }}>{schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>}
       </div>
       {!schoolId ? <p className="muted">No school selected.</p> :
+        nav === 'academics' ? <AcademicsPanel schoolId={schoolId} classes={allClasses} subjects={subjects} /> :
         nav === 'dashboard' ? (isTeacher ? <TeacherDashboardPanel schoolId={schoolId} classes={available} session={session} /> : <DashboardPanel schoolId={schoolId} school={school} />) :
         nav === 'announcements' ? <AnnouncementsPanel schoolId={schoolId} canPost={!isTeacher} /> :
         nav === 'staff' ? <StaffPanel schoolId={schoolId} /> :
@@ -1004,6 +1005,70 @@ function TeacherDashboardPanel({ schoolId, classes, session }) {
       <div style={{ fontWeight: 700, marginBottom: 8 }}>Latest announcements</div>
       {d.ann.length === 0 ? <p className="muted">No announcements yet.</p> : d.ann.map(a => (<div key={a.id} style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}><div style={{ fontWeight: 600 }}>{a.title}</div><div className="muted" style={{ fontSize: 13, whiteSpace: 'pre-wrap' }}>{a.body}</div></div>))}
     </div>
+  </div>);
+}
+
+function AcademicsPanel({ schoolId, classes, subjects }) {
+  const [term, setTerm] = useState(termOptions[0]);
+  const [students, setStudents] = useState([]); const [marks, setMarks] = useState([]); const [att, setAtt] = useState([]);
+  const [loading, setLoading] = useState(false); const [openClass, setOpenClass] = useState(null);
+  useEffect(() => { (async () => {
+    if (!schoolId) return; setLoading(true);
+    const { data: st } = await supabase.from('students').select('id,full_name,class_id').eq('school_id', schoolId);
+    const list = st || []; setStudents(list);
+    const ids = list.map(s => s.id);
+    const { data: mk } = await supabase.from('marks').select('student_id,subject_id,score').eq('term', term).in('student_id', ids.length ? ids : ['00000000-0000-0000-0000-000000000000']);
+    setMarks(mk || []);
+    const { data: at } = await supabase.from('attendance').select('student_id,status').eq('school_id', schoolId);
+    setAtt(at || []); setLoading(false);
+  })(); }, [schoolId, term]);
+  const marksByStudent = {}; marks.forEach(m => { (marksByStudent[m.student_id] = marksByStudent[m.student_id] || []).push(m); });
+  const attByStudent = {}; att.forEach(a => { const o = attByStudent[a.student_id] || { att: 0, tot: 0 }; o.tot++; if (a.status === 'present' || a.status === 'late') o.att++; attByStudent[a.student_id] = o; });
+  const studAvg = sid => { const ms = marksByStudent[sid] || []; return ms.length ? ms.reduce((a, m) => a + Number(m.score || 0), 0) / ms.length : null; };
+  const studAtt = sid => { const o = attByStudent[sid]; return o && o.tot ? Math.round(o.att / o.tot * 100) : null; };
+  const classRows = classes.map(c => {
+    const inClass = students.filter(s => s.class_id === c.id);
+    const avgs = inClass.map(s => studAvg(s.id)).filter(v => v != null);
+    const avg = avgs.length ? Math.round(avgs.reduce((a, v) => a + v, 0) / avgs.length) : null;
+    let attNum = 0, attDen = 0; inClass.forEach(s => { const o = attByStudent[s.id]; if (o) { attNum += o.att; attDen += o.tot; } });
+    return { c, students: inClass.length, avg, attPct: attDen ? Math.round(attNum / attDen * 100) : null };
+  });
+  const detail = (() => {
+    if (!openClass) return null;
+    const inClass = students.filter(s => s.class_id === openClass);
+    const bySubj = {}; subjects.forEach(su => { bySubj[su.id] = []; });
+    marks.forEach(m => { const s = students.find(x => x.id === m.student_id); if (s && s.class_id === openClass && bySubj[m.subject_id]) bySubj[m.subject_id].push(Number(m.score || 0)); });
+    const subjRows = subjects.map(su => { const arr = bySubj[su.id] || []; return { name: su.name, avg: arr.length ? Math.round(arr.reduce((a, v) => a + v, 0) / arr.length) : null, n: arr.length }; }).filter(r => r.n > 0);
+    const rows = inClass.map(s => ({ name: s.full_name, avg: studAvg(s.id), att: studAtt(s.id) })).sort((a, b) => (b.avg == null ? -1 : b.avg) - (a.avg == null ? -1 : a.avg));
+    return { subjRows, rows };
+  })();
+  const clr = p => p == null ? '#5b6570' : p >= 75 ? '#1a7f5a' : p >= 50 ? '#b8860b' : '#c0392b';
+  return (<div>
+    <div style={{ display: 'flex', gap: 12, alignItems: 'end', marginBottom: 16, flexWrap: 'wrap' }}>
+      <div style={{ minWidth: 160 }}><label style={labelStyle}>Term</label><select style={inputStyle} value={term} onChange={e => { setTerm(e.target.value); setOpenClass(null); }}>{termOptions.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
+    </div>
+    {loading ? <p className="muted">Loading…</p> : (<>
+      <div style={{ fontWeight: 700, marginBottom: 8 }}>All classes · {term}</div>
+      <p className="muted" style={{ marginTop: 0, fontSize: 13 }}>Click a class to see subject averages and every pupil ranked.</p>
+      <table><thead><tr><th>Class</th><th className="r">Students</th><th className="r">Avg exam mark</th><th className="r">Attendance</th><th></th></tr></thead><tbody>
+        {classRows.map(r => (<tr key={r.c.id} onClick={() => setOpenClass(openClass === r.c.id ? null : r.c.id)} style={{ cursor: 'pointer', background: openClass === r.c.id ? '#eafaf3' : 'transparent' }}>
+          <td className="strong">{r.c.name}</td><td className="r">{r.students}</td>
+          <td className="r" style={{ fontWeight: 600, color: clr(r.avg) }}>{r.avg != null ? r.avg + '%' : '—'}</td>
+          <td className="r" style={{ fontWeight: 600, color: clr(r.attPct) }}>{r.attPct != null ? r.attPct + '%' : '—'}</td>
+          <td className="r muted" style={{ fontSize: 13 }}>{openClass === r.c.id ? 'Hide' : 'View'}</td></tr>))}
+        {classRows.length === 0 && <tr><td colSpan="5" className="muted">No classes yet.</td></tr>}
+      </tbody></table>
+      {detail && (<div style={{ marginTop: 20 }}>
+        <div style={{ fontWeight: 700, marginBottom: 8 }}>{(classes.find(c => c.id === openClass) || {}).name} — subject averages</div>
+        <table><thead><tr><th>Subject</th><th className="r">Class average</th><th className="r">Marks entered</th></tr></thead><tbody>
+          {detail.subjRows.length === 0 ? <tr><td colSpan="3" className="muted">No marks entered for this class this term.</td></tr> : detail.subjRows.map((r, i) => (<tr key={i}><td className="strong">{r.name}</td><td className="r" style={{ fontWeight: 600, color: clr(r.avg) }}>{r.avg}%</td><td className="r">{r.n}</td></tr>))}
+        </tbody></table>
+        <div style={{ fontWeight: 700, margin: '18px 0 8px' }}>Pupils · ranked by average</div>
+        <table><thead><tr><th>#</th><th>Student</th><th className="r">Average</th><th className="r">Attendance</th></tr></thead><tbody>
+          {detail.rows.map((r, i) => (<tr key={i}><td className="muted">{i + 1}</td><td className="strong">{r.name}</td><td className="r" style={{ fontWeight: 600, color: clr(r.avg) }}>{r.avg != null ? Math.round(r.avg) + '%' : '—'}</td><td className="r" style={{ color: clr(r.att) }}>{r.att != null ? r.att + '%' : '—'}</td></tr>))}
+        </tbody></table>
+      </div>)}
+    </>)}
   </div>);
 }
 
