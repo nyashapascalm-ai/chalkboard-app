@@ -138,9 +138,9 @@ function Console({ session, role, canPick, initialSchool }) {
   const items = [];
   items.push(['dashboard', 'Dashboard', '🏠']);
   items.push(['attendance', 'Attendance', '📋'], ['students', 'Students', '👤'], ['marks', 'Marks', '📝'], ['reportcards', 'Report cards', '📄'], ['reports', 'Attendance report', '📊'], ['announcements', 'Announcements', '📣']);
-  if (!isTeacher) { items.push(['academics', 'Academics', '📈']); items.push(['fees', 'Fees', '💰']); items.push(['classes', 'Classes', '🏫']); items.push(['subjects', 'Subjects', '📚']); items.push(['teachers', 'Teachers', '👥']); items.push(['staff', 'Staff', '👔']); items.push(['admissions', 'Admissions', '🎓']); items.push(['timetable', 'Timetable', '📅']); items.push(['finance', 'Finance', '💵']); items.push(['inventory', 'Inventory', '📦']); items.push(['assets', 'Assets', '🏢']); items.push(['school', 'School', '⚙️']); }
+  if (!isTeacher) { items.push(['academics', 'Academics', '📈']); items.push(['fees', 'Fees', '💰']); items.push(['classes', 'Classes', '🏫']); items.push(['subjects', 'Subjects', '📚']); items.push(['teachers', 'Teachers', '👥']); items.push(['staff', 'Staff', '👔']); items.push(['admissions', 'Admissions', '🎓']); items.push(['timetable', 'Timetable', '📅']); items.push(['finance', 'Finance', '💵']); items.push(['banking', 'Banking', '🏦']); items.push(['inventory', 'Inventory', '📦']); items.push(['assets', 'Assets', '🏢']); items.push(['school', 'School', '⚙️']); }
   const sideItem = (id, label, icon) => (<button key={id} className={'side-item' + (nav === id ? ' active' : '')} onClick={() => setNav(id)}><span className="si">{icon}</span>{label}</button>);
-  const title = { dashboard: 'Dashboard', academics: 'Academics', fees: 'Fees', announcements: 'Announcements', staff: 'Staff', admissions: 'Admissions', timetable: 'Timetable', attendance: 'Attendance', students: 'Students', classes: 'Classes', teachers: 'Teachers', reports: 'Attendance report', marks: 'Enter marks', reportcards: 'Report cards', subjects: 'Subjects', school: 'School letterhead', finance: 'Income & expenses', inventory: 'Inventory', assets: 'Asset register' }[nav];
+  const title = { dashboard: 'Dashboard', academics: 'Academics', fees: 'Fees', announcements: 'Announcements', staff: 'Staff', admissions: 'Admissions', timetable: 'Timetable', attendance: 'Attendance', students: 'Students', classes: 'Classes', teachers: 'Teachers', reports: 'Attendance report', marks: 'Enter marks', reportcards: 'Report cards', subjects: 'Subjects', school: 'School letterhead', finance: 'Income & expenses', banking: 'Banking', inventory: 'Inventory', assets: 'Asset register' }[nav];
 
   return (<div className="shell">
     <aside className="sidebar">
@@ -163,6 +163,7 @@ function Console({ session, role, canPick, initialSchool }) {
         nav === 'staff' ? <StaffPanel schoolId={schoolId} /> :
         nav === 'admissions' ? <AdmissionsPanel schoolId={schoolId} classes={allClasses} /> :
         nav === 'timetable' ? <TimetablePanel schoolId={schoolId} classes={allClasses} subjects={subjects} school={school} settings={settings} /> :
+        nav === 'banking' ? <BankingPanel schoolId={schoolId} /> :
         nav === 'finance' ? <FinancePanel schoolId={schoolId} /> :
         nav === 'inventory' ? <InventoryPanel schoolId={schoolId} school={school} settings={settings} /> :
         nav === 'assets' ? <AssetsPanel schoolId={schoolId} school={school} settings={settings} /> :
@@ -1138,10 +1139,13 @@ function FeeCollect({ schoolId, classId, term, className, school, settings }) {
   const paidOf = sid => payments.filter(p => p.student_id === sid).reduce((a, p) => a + Number(p.amount || 0), 0);
   async function recordPay() {
     if (!pay.amount) { setErr('Enter an amount.'); return; } setBusy(true); setErr('');
-    const { error } = await supabase.from('fee_payments').insert({ school_id: schoolId, student_id: openId, term, amount: Number(pay.amount), method: pay.method, reference: pay.reference || null, paid_on: pay.paid_on });
-    if (error) setErr(error.message); else { setPay({ amount: '', method: 'cash', reference: '', paid_on: new Date().toISOString().slice(0, 10) }); await load(); } setBusy(false);
+    const { data: ins, error } = await supabase.from('fee_payments').insert({ school_id: schoolId, student_id: openId, term, amount: Number(pay.amount), method: pay.method, reference: pay.reference || null, paid_on: pay.paid_on }).select('id').single();
+    if (error) { setErr(error.message); setBusy(false); return; }
+    const st = students.find(s => s.id === openId);
+    await supabase.from('finance_entries').insert({ school_id: schoolId, date: pay.paid_on, kind: 'income', category: 'Fees', description: (st ? st.full_name : '') + ' · ' + term, amount: Number(pay.amount), fee_payment_id: ins ? ins.id : null });
+    setPay({ amount: '', method: 'cash', reference: '', paid_on: new Date().toISOString().slice(0, 10) }); await load(); setBusy(false);
   }
-  async function delPay(id) { await supabase.from('fee_payments').delete().eq('id', id); await load(); }
+  async function delPay(id) { await supabase.from('finance_entries').delete().eq('fee_payment_id', id); await supabase.from('fee_payments').delete().eq('id', id); await load(); }
   function printDoc(kind, student, lastPayment) {
     const paid = paidOf(student.id); const bal = due - paid;
     const itemRows = items.map(i => '<tr><td>' + esc(i.name) + '</td><td class=r>' + money(i.amount) + '</td></tr>').join('');
@@ -1185,6 +1189,51 @@ function FeeCollect({ schoolId, classId, term, className, school, settings }) {
         {myPayments.map(p => (<tr key={p.id}><td>{p.paid_on}</td><td style={{ textTransform: 'capitalize' }}>{p.method}</td><td className="muted">{p.reference || '—'}</td><td className="r">{money(p.amount)}</td><td className="r"><button className="ghost" style={{ padding: '3px 9px', fontSize: 12 }} onClick={() => delPay(p.id)}>Delete</button></td></tr>))}
       </tbody></table>)}
     </div>)}
+  </div>);
+}
+
+function BankingPanel({ schoolId }) {
+  const [txns, setTxns] = useState([]); const [feePays, setFeePays] = useState([]);
+  const [f, setF] = useState({ type: 'banked', amount: '', date: new Date().toISOString().slice(0, 10), note: '' });
+  const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
+  async function load() {
+    const { data: t } = await supabase.from('bank_transactions').select('*').eq('school_id', schoolId).order('date', { ascending: false }); setTxns(t || []);
+    const { data: fp } = await supabase.from('fee_payments').select('method,amount').eq('school_id', schoolId); setFeePays(fp || []);
+  }
+  useEffect(() => { load(); }, [schoolId]);
+  function set(k, v) { setF(o => ({ ...o, [k]: v })); }
+  async function add() { if (!f.amount) { setErr('Enter an amount.'); return; } setBusy(true); setErr('');
+    const { error } = await supabase.from('bank_transactions').insert({ school_id: schoolId, type: f.type, amount: Number(f.amount), date: f.date, note: f.note || null });
+    if (error) setErr(error.message); else { setF({ type: 'banked', amount: '', date: new Date().toISOString().slice(0, 10), note: '' }); await load(); } setBusy(false); }
+  async function remove(id) { await supabase.from('bank_transactions').delete().eq('id', id); await load(); }
+  const money = n => '$' + Number(n || 0).toLocaleString();
+  const sum = (arr, fn) => arr.filter(fn).reduce((a, x) => a + Number(x.amount || 0), 0);
+  const cashFees = sum(feePays, p => p.method === 'cash');
+  const bankFees = sum(feePays, p => p.method === 'bank' || p.method === 'paynow');
+  const banked = sum(txns, t => t.type === 'banked');
+  const withdrawn = sum(txns, t => t.type === 'withdrawn');
+  const transferred = sum(txns, t => t.type === 'transferred');
+  const cashInHand = cashFees - banked + withdrawn;
+  const atBank = bankFees + banked - withdrawn - transferred;
+  const label = t => ({ banked: 'Banked', withdrawn: 'Withdrawn', transferred: 'Transferred' }[t] || t);
+  return (<div>
+    <StatRow items={[{ value: money(cashInHand), label: 'Cash in hand' }, { value: money(atBank), label: 'At bank' }]} />
+    <p className="muted" style={{ marginTop: 0, fontSize: 13 }}>Balances come from fee collections (cash vs bank/Paynow) and the movements below. General income/expenses aren't split by cash vs bank yet.</p>
+    <div className="card" style={{ marginBottom: 18 }}>
+      <div style={{ fontWeight: 700, marginBottom: 10 }}>Record a bank movement</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+        <div><label style={labelStyle}>Type</label><select style={inputStyle} value={f.type} onChange={e => set('type', e.target.value)}><option value="banked">Banked (cash in)</option><option value="withdrawn">Withdrawn (cash out)</option><option value="transferred">Transferred</option></select></div>
+        <div><label style={labelStyle}>Amount ($)</label><input style={inputStyle} value={f.amount} onChange={e => set('amount', e.target.value)} placeholder="0" /></div>
+        <div><label style={labelStyle}>Date</label><input type="date" style={inputStyle} value={f.date} onChange={e => set('date', e.target.value)} /></div>
+        <div><label style={labelStyle}>Note</label><input style={inputStyle} value={f.note} onChange={e => set('note', e.target.value)} placeholder="optional" /></div>
+      </div>
+      <div style={{ marginTop: 12 }}><button onClick={add} disabled={busy}>{busy ? 'Saving…' : 'Record'}</button></div>
+      {err && <p className="error">{err}</p>}
+    </div>
+    <table><thead><tr><th>Date</th><th>Type</th><th>Note</th><th className="r">Amount</th><th></th></tr></thead><tbody>
+      {txns.map(t => (<tr key={t.id}><td>{t.date}</td><td className="strong">{label(t.type)}</td><td className="muted">{t.note || '—'}</td><td className="r">{money(t.amount)}</td><td className="r"><button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={() => remove(t.id)}>Remove</button></td></tr>))}
+      {txns.length === 0 && <tr><td colSpan="5" className="muted">No bank movements yet.</td></tr>}
+    </tbody></table>
   </div>);
 }
 
