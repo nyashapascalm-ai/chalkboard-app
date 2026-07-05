@@ -2,6 +2,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
+function installApp() {
+  const p = typeof window !== 'undefined' ? window.__cbPrompt : null;
+  if (p) { p.prompt(); if (p.userChoice) p.userChoice.finally(() => { window.__cbPrompt = null; }); }
+  else { alert('To install Chalkboard as an app: on desktop Chrome or Edge, click the install icon in the address bar. On iPhone (Safari): Share then Add to Home Screen. On Android: menu then Install app.'); }
+}
+
 function ChalkMark(size) {
   return (<svg width={size} height={size} viewBox="0 0 96 96"><defs><linearGradient id="cb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#1e4a38"/><stop offset="1" stopColor="#2f7a52"/></linearGradient></defs><rect width="96" height="96" rx="22" fill="url(#cb)"/><path d="M28 49 L43 64 L69 33" fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round"/></svg>);
 }
@@ -14,6 +20,14 @@ export default function Home() {
     supabase.auth.getSession().then(({ data }) => { setSession(data.session); setChecking(false); });
     const { data: sub } = supabase.auth.onAuthStateChange((e, sn) => { setSession(sn); if (e === 'PASSWORD_RECOVERY') setRecovery(true); });
     return () => sub.subscription.unsubscribe();
+  }, []);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!document.querySelector('link[rel="manifest"]')) { const l = document.createElement('link'); l.rel = 'manifest'; l.href = '/manifest.json'; document.head.appendChild(l); }
+    if (!document.querySelector('meta[name="theme-color"]')) { const m = document.createElement('meta'); m.name = 'theme-color'; m.content = '#2f7a52'; document.head.appendChild(m); }
+    if (!document.querySelector('link[rel="apple-touch-icon"]')) { const a = document.createElement('link'); a.rel = 'apple-touch-icon'; a.href = '/apple-touch-icon.png'; document.head.appendChild(a); }
+    window.addEventListener('beforeinstallprompt', ev => { ev.preventDefault(); window.__cbPrompt = ev; });
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
   }, []);
   if (checking) return <div className="center muted">Loading…</div>;
   if (recovery) return <SetNewPassword onDone={() => setRecovery(false)} />;
@@ -133,6 +147,7 @@ function Console({ session, role, canPick, initialSchool }) {
       <div className="side-brand">{ChalkMark(28)}<span>Chalkboard</span></div>
       <nav className="side-nav">{items.map(it => sideItem(it[0], it[1], it[2]))}</nav>
       <div style={{ fontSize: 12, color: '#5b6570', padding: '8px 12px', wordBreak: 'break-all' }}>{session.user.email}{isTeacher ? ' · teacher' : ''}</div>
+      <button className="side-item" onClick={installApp}><span className="si">⬇</span>Download app</button>
       <button className="side-item" onClick={() => supabase.auth.signOut()} style={{ color: '#c0392b' }}><span className="si">⏏</span>Sign out</button>
     </aside>
     <main className="main">
