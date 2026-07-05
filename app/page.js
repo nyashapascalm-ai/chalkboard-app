@@ -9,24 +9,47 @@ function ChalkMark(size) {
 export default function Home() {
   const [session, setSession] = useState(null);
   const [checking, setChecking] = useState(true);
+  const [recovery, setRecovery] = useState(false);
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => { setSession(data.session); setChecking(false); });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    const { data: sub } = supabase.auth.onAuthStateChange((e, sn) => { setSession(sn); if (e === 'PASSWORD_RECOVERY') setRecovery(true); });
     return () => sub.subscription.unsubscribe();
   }, []);
   if (checking) return <div className="center muted">Loading…</div>;
+  if (recovery) return <SetNewPassword onDone={() => setRecovery(false)} />;
   return session ? <App session={session} /> : <Login />;
+}
+
+function SetNewPassword({ onDone }) {
+  const [pw, setPw] = useState(''); const [busy, setBusy] = useState(false); const [err, setErr] = useState(''); const [ok, setOk] = useState(false);
+  async function save(e) { e.preventDefault(); if (pw.length < 6) { setErr('Use at least 6 characters.'); return; } setBusy(true); setErr('');
+    const { error } = await supabase.auth.updateUser({ password: pw }); if (error) setErr(error.message); else setOk(true); setBusy(false); }
+  return (<div className="center"><div className="card" style={{ maxWidth: 400 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 8 }}>{ChalkMark(42)}<div style={{ fontWeight: 800, fontSize: 21 }}>Set a new password</div></div>
+    {ok ? (<><p className="muted">Password updated.</p><button style={{ width: '100%' }} onClick={onDone}>Continue</button></>) : (<form onSubmit={save}>
+      <input type="password" placeholder="New password" value={pw} onChange={e => setPw(e.target.value)} />
+      <button disabled={busy} style={{ width: '100%' }}>{busy ? 'Saving…' : 'Update password'}</button>
+    </form>)}
+    {err && <p className="error">{err}</p>}
+  </div></div>);
 }
 
 function Login() {
   const [email, setEmail] = useState(''); const [password, setPassword] = useState('');
   const [err, setErr] = useState(''); const [busy, setBusy] = useState(false); const [showPw, setShowPw] = useState(false);
+  const [mode, setMode] = useState('signin'); const [sent, setSent] = useState(false);
   async function signIn(e) { e.preventDefault(); setBusy(true); setErr('');
     const { error } = await supabase.auth.signInWithPassword({ email, password }); if (error) setErr(error.message); setBusy(false); }
+  async function sendReset(e) { e.preventDefault(); if (!email.trim()) { setErr('Enter your email.'); return; } setBusy(true); setErr('');
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), { redirectTo: window.location.origin }); if (error) setErr(error.message); else setSent(true); setBusy(false); }
   return (<div className="center"><div className="card" style={{ maxWidth: 400 }}>
     <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 4 }}>{ChalkMark(42)}<div style={{ fontWeight: 800, fontSize: 24 }}>Chalkboard</div></div>
     <p className="muted" style={{ marginTop: 0 }}>Run your school — attendance, records and reports.</p>
-    <form onSubmit={signIn}>
+    {mode === 'reset' ? (sent ? (<><p>Check your email for a reset link, then open it on this device to set a new password.</p><button className="ghost" style={{ width: '100%', marginTop: 8 }} onClick={() => { setMode('signin'); setSent(false); }}>Back to sign in</button></>) : (<form onSubmit={sendReset}>
+      <input placeholder="Your email" value={email} onChange={e => setEmail(e.target.value)} />
+      <button disabled={busy} style={{ width: '100%' }}>{busy ? 'Sending…' : 'Send reset link'}</button>
+      <p className="muted" style={{ fontSize: 13, marginTop: 12, cursor: 'pointer' }} onClick={() => { setMode('signin'); setErr(''); }}>Back to sign in</p>
+    </form>)) : (<><form onSubmit={signIn}>
       <input placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
       <div style={{ position: 'relative' }}>
         <input placeholder="Password" type={showPw ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)} style={{ paddingRight: 44 }} />
@@ -34,6 +57,7 @@ function Login() {
       </div>
       <button disabled={busy} style={{ width: '100%' }}>{busy ? 'Signing in…' : 'Sign in'}</button>
     </form>
+    <p className="muted" style={{ fontSize: 13, marginTop: 12, cursor: 'pointer' }} onClick={() => { setMode('reset'); setErr(''); }}>Forgot password?</p></>)}
     {err && <p className="error">{err}</p>}
     <p className="muted" style={{ fontSize: 12, marginTop: 14 }}>Use the login your operator created for you.</p>
   </div></div>);
@@ -59,7 +83,7 @@ function App({ session }) {
 function Console({ session, role, canPick, initialSchool }) {
   const [schools, setSchools] = useState([]);
   const [schoolId, setSchoolId] = useState(initialSchool);
-  const [nav, setNav] = useState(role === 'teacher' ? 'attendance' : 'dashboard');
+  const [nav, setNav] = useState('dashboard');
   const [allClasses, setAllClasses] = useState([]);
   const [myIds, setMyIds] = useState([]);
   const [subjects, setSubjects] = useState([]);
@@ -98,7 +122,7 @@ function Console({ session, role, canPick, initialSchool }) {
   const available = isTeacher ? allClasses.filter(c => myIds.includes(c.id)) : allClasses;
 
   const items = [];
-  if (!isTeacher) items.push(['dashboard', 'Dashboard', '🏠']);
+  items.push(['dashboard', 'Dashboard', '🏠']);
   items.push(['attendance', 'Attendance', '📋'], ['students', 'Students', '👤'], ['marks', 'Marks', '📝'], ['reportcards', 'Report cards', '📄'], ['reports', 'Attendance report', '📊'], ['announcements', 'Announcements', '📣']);
   if (!isTeacher) { items.push(['classes', 'Classes', '🏫']); items.push(['subjects', 'Subjects', '📚']); items.push(['teachers', 'Teachers', '👥']); items.push(['staff', 'Staff', '👔']); items.push(['admissions', 'Admissions', '🎓']); items.push(['timetable', 'Timetable', '📅']); items.push(['finance', 'Finance', '💵']); items.push(['inventory', 'Inventory', '📦']); items.push(['assets', 'Assets', '🏢']); items.push(['school', 'School', '⚙️']); }
   const sideItem = (id, label, icon) => (<button key={id} className={'side-item' + (nav === id ? ' active' : '')} onClick={() => setNav(id)}><span className="si">{icon}</span>{label}</button>);
@@ -117,7 +141,7 @@ function Console({ session, role, canPick, initialSchool }) {
         {canPick && <select value={schoolId || ''} onChange={e => setSchoolId(e.target.value)} style={{ width: 'auto', minWidth: 200 }}>{schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>}
       </div>
       {!schoolId ? <p className="muted">No school selected.</p> :
-        nav === 'dashboard' ? <DashboardPanel schoolId={schoolId} school={school} /> :
+        nav === 'dashboard' ? (isTeacher ? <TeacherDashboardPanel schoolId={schoolId} classes={available} session={session} /> : <DashboardPanel schoolId={schoolId} school={school} />) :
         nav === 'announcements' ? <AnnouncementsPanel schoolId={schoolId} canPost={!isTeacher} /> :
         nav === 'staff' ? <StaffPanel schoolId={schoolId} /> :
         nav === 'admissions' ? <AdmissionsPanel schoolId={schoolId} classes={allClasses} /> :
@@ -932,6 +956,39 @@ function TimetablePanel({ schoolId, classes, subjects, school, settings }) {
       <datalist id="subj-list">{subjects.map(su => <option key={su.id} value={su.name} />)}</datalist>
       <div style={{ marginTop: 16 }}><button onClick={save} disabled={busy}>{busy ? 'Saving…' : (saved ? 'Saved ✓' : 'Save ' + day + ' timetable')}</button></div>
     </>)}
+  </div>);
+}
+
+function TeacherDashboardPanel({ schoolId, classes, session }) {
+  const [d, setD] = useState(null);
+  const classIds = classes.map(c => c.id);
+  useEffect(() => { (async () => {
+    if (!schoolId) return;
+    const today = new Date().toISOString().slice(0, 10);
+    let students = 0, attPresent = 0, attTotal = 0;
+    if (classIds.length) {
+      const { data: st } = await supabase.from('students').select('id').eq('school_id', schoolId).in('class_id', classIds);
+      students = (st || []).length;
+      const ids = (st || []).map(x => x.id);
+      if (ids.length) { const { data: at } = await supabase.from('attendance').select('status').eq('date', today).in('student_id', ids); attTotal = (at || []).length; attPresent = (at || []).filter(r => r.status === 'present' || r.status === 'late').length; }
+    }
+    const { data: ann } = await supabase.from('announcements').select('*').eq('school_id', schoolId).order('created_at', { ascending: false }).limit(3);
+    setD({ students, attPresent, attTotal, ann: ann || [] });
+  })(); }, [schoolId, classes.length]);
+  if (!d) return <p className="muted">Loading…</p>;
+  const attPct = d.attTotal ? Math.round(d.attPresent / d.attTotal * 100) : null;
+  return (<div>
+    <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 2 }}>Welcome back</div>
+    <p className="muted" style={{ marginTop: 0 }}>{session.user.email}</p>
+    <StatRow items={[{ value: classes.length, label: 'My classes' }, { value: d.students, label: 'My students' }, { value: attPct != null ? attPct + '%' : '—', label: 'Today’s attendance' }]} />
+    <div className="card" style={{ marginBottom: 16 }}>
+      <div style={{ fontWeight: 700, marginBottom: 8 }}>My classes</div>
+      {classes.length === 0 ? <p className="muted">No classes assigned yet — ask your admin.</p> : classes.map(c => <div key={c.id} style={{ padding: '6px 0', borderBottom: '1px solid #eee' }}>{c.name}</div>)}
+    </div>
+    <div className="card">
+      <div style={{ fontWeight: 700, marginBottom: 8 }}>Latest announcements</div>
+      {d.ann.length === 0 ? <p className="muted">No announcements yet.</p> : d.ann.map(a => (<div key={a.id} style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}><div style={{ fontWeight: 600 }}>{a.title}</div><div className="muted" style={{ fontSize: 13, whiteSpace: 'pre-wrap' }}>{a.body}</div></div>))}
+    </div>
   </div>);
 }
 
