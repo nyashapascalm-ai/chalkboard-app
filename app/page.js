@@ -104,6 +104,7 @@ function Console({ session, role, canPick, initialSchool }) {
   const [school, setSchool] = useState(null);
   const [settings, setSettings] = useState(null);
   const [sub, setSub] = useState(undefined);
+  const [subModalOff, setSubModalOff] = useState(false);
   const isTeacher = role === 'teacher';
 
   useEffect(() => { (async () => {
@@ -134,25 +135,34 @@ function Console({ session, role, canPick, initialSchool }) {
   }
   async function loadSub() { if (!schoolId) { setSub(null); return; } const { data } = await supabase.from('subscriptions').select('*').eq('school_id', schoolId).maybeSingle(); setSub(data || null); }
   useEffect(() => { loadClasses(); loadMine(); loadSubjects(); loadSchoolMeta(); loadSub(); }, [schoolId]);
+  useEffect(() => { (async () => {
+    if (typeof window === 'undefined' || !schoolId || O) return;
+    const u = new URL(window.location.href);
+    if (u.searchParams.get('subpay') === '1') {
+      try { const res = await fetch('/api/subscription-pay/status', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ schoolId }) }); const d = await res.json(); if (d.status === 'paid') { await loadSub(); alert('Payment received — your subscription is updated. Thank you!'); } } catch (e) {}
+      u.searchParams.delete('subpay'); window.history.replaceState({}, '', u.toString());
+    }
+  })(); }, [schoolId]);
 
   const available = isTeacher ? allClasses.filter(c => myIds.includes(c.id)) : allClasses;
 
   const A = !isTeacher;
   const O = role === 'operator';
+  const SA = role === 'school_admin';
   const groups = [
     { key: 'academics', label: 'Academics', icon: '📚', items: [['attendance', 'Attendance', '📋'], ['marks', 'Marks', '📝'], ['reportcards', 'Report cards', '📄'], ['reports', 'Attendance report', '📊']].concat(A ? [['academics', 'Class overview', '📈']] : []) },
     { key: 'people', label: 'People', icon: '👥', items: [['students', 'Students', '👤']].concat(A ? [['teachers', 'Teachers', '👥'], ['staff', 'Staff', '👔'], ['admissions', 'Admissions', '🎓']] : []) },
     { key: 'money', label: 'Money', icon: '💰', items: A ? [['fees', 'Fees', '💰'], ['arrears', 'Arrears', '⚠️'], ['finance', 'Finance', '💵'], ['banking', 'Banking', '🏦']] : [] },
     { key: 'operations', label: 'Operations', icon: '🗂️', items: A ? [['timetable', 'Timetable', '📅'], ['inventory', 'Inventory', '📦'], ['assets', 'Assets', '🏢']] : [] },
     { key: 'comms', label: 'Communication', icon: '📣', items: [['announcements', 'Announcements', '📣']] },
-    { key: 'setup', label: 'Setup', icon: '⚙️', items: A ? [['classes', 'Classes', '🏫'], ['subjects', 'Subjects', '📚'], ['school', 'School', '⚙️']] : [] },
+    { key: 'setup', label: 'Setup', icon: '⚙️', items: A ? [['classes', 'Classes', '🏫'], ['subjects', 'Subjects', '📚'], ['school', 'School', '⚙️']].concat(SA ? [['mybilling', 'Subscription', '💳']] : []) : [] },
     { key: 'platform', label: 'Platform', icon: '🛡️', items: O ? [['billing', 'Subscriptions', '💳']] : [] },
   ].filter(g => g.items.length > 0);
   const groupOf = k => { const g = groups.find(gr => gr.items.some(it => it[0] === k)); return g ? g.key : null; };
   const [openGroup, setOpenGroup] = useState(groupOf(nav));
   const goto = k => { setNav(k); const g = groupOf(k); if (g) setOpenGroup(g); };
   const grpHdr = { display: 'flex', alignItems: 'center', gap: 11, padding: '9px 12px', borderRadius: 8, fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#8a94a0', cursor: 'pointer', border: 0, background: 'transparent', textAlign: 'left', width: '100%', fontFamily: 'inherit' };
-  const title = { dashboard: 'Dashboard', billing: 'Subscriptions', academics: 'Academics', fees: 'Fees', arrears: 'Fee arrears', announcements: 'Announcements', staff: 'Staff', admissions: 'Admissions', timetable: 'Timetable', attendance: 'Attendance', students: 'Students', classes: 'Classes', teachers: 'Teachers', reports: 'Attendance report', marks: 'Enter marks', reportcards: 'Report cards', subjects: 'Subjects', school: 'School letterhead', finance: 'Income & expenses', banking: 'Banking', inventory: 'Inventory', assets: 'Asset register' }[nav];
+  const title = { dashboard: 'Dashboard', billing: 'Subscriptions', mybilling: 'Subscription', academics: 'Academics', fees: 'Fees', arrears: 'Fee arrears', announcements: 'Announcements', staff: 'Staff', admissions: 'Admissions', timetable: 'Timetable', attendance: 'Attendance', students: 'Students', classes: 'Classes', teachers: 'Teachers', reports: 'Attendance report', marks: 'Enter marks', reportcards: 'Report cards', subjects: 'Subjects', school: 'School letterhead', finance: 'Income & expenses', banking: 'Banking', inventory: 'Inventory', assets: 'Asset register' }[nav];
 
   const subToday = new Date().toISOString().slice(0, 10);
   const subStatus = (() => {
@@ -165,6 +175,7 @@ function Console({ session, role, canPick, initialSchool }) {
   })();
   if (!O && subStatus.code === 'locked') return <SubscriptionLock due={subStatus.due} />;
   return (<div className="shell">
+    {!O && (subStatus.code === 'due_soon' || subStatus.code === 'overdue') && !subModalOff && (<div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 }}><div className="card" style={{ maxWidth: 400, textAlign: 'center' }}><div style={{ fontWeight: 800, fontSize: 19, marginBottom: 6, color: subStatus.code === 'overdue' ? '#c0392b' : '#8a6d1a' }}>{subStatus.code === 'overdue' ? 'Subscription overdue' : 'Subscription due soon'}</div><p className="muted">{subStatus.code === 'overdue' ? ('Your subscription was due on ' + subStatus.due + '. Please pay to keep access.') : ('Your subscription is due on ' + subStatus.due + '.')}</p><div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 12 }}><button onClick={() => { setNav('mybilling'); setOpenGroup('setup'); setSubModalOff(true); }}>Pay now</button><button className="ghost" onClick={() => setSubModalOff(true)}>Later</button></div></div></div>)}
     <aside className="sidebar">
       <div className="side-brand">{ChalkMark(28)}<span>Chalkboard</span></div>
       <nav className="side-nav">
@@ -186,6 +197,7 @@ function Console({ session, role, canPick, initialSchool }) {
       {!O && (subStatus.code === 'due_soon' || subStatus.code === 'overdue') && (<div style={{ background: subStatus.code === 'overdue' ? '#fdeaea' : '#fff8e1', border: '1px solid ' + (subStatus.code === 'overdue' ? '#f3c2c2' : '#f4d58a'), color: subStatus.code === 'overdue' ? '#c0392b' : '#8a6d1a', padding: '10px 14px', borderRadius: 8, fontSize: 14, marginBottom: 16 }}>{subStatus.code === 'overdue' ? 'Subscription overdue (due ' + subStatus.due + '). Please pay to avoid losing access.' : 'Subscription due on ' + subStatus.due + '.'}</div>)}
       {!schoolId ? <p className="muted">No school selected.</p> :
         nav === 'billing' ? <BillingPanel /> :
+        nav === 'mybilling' ? <SchoolBillingPanel schoolId={schoolId} /> :
         nav === 'arrears' ? <ArrearsPanel schoolId={schoolId} classes={allClasses} school={school} settings={settings} /> :
         nav === 'fees' ? <FeesPanel schoolId={schoolId} classes={allClasses} school={school} settings={settings} /> :
         nav === 'academics' ? <AcademicsPanel schoolId={schoolId} classes={allClasses} subjects={subjects} /> :
@@ -1399,6 +1411,53 @@ function BillingPanel() {
         <td className="r">{isE ? (<><button style={{ padding: '4px 10px', fontSize: 13 }} onClick={saveEdit}>Save</button> <button className="ghost" style={{ padding: '4px 10px', fontSize: 13, marginLeft: 6 }} onClick={() => setEdit(null)}>Cancel</button></>) : (<><button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={() => startEdit(r)}>Set</button> <button style={{ padding: '4px 10px', fontSize: 13, marginLeft: 6 }} onClick={() => markPaid(r)}>Mark paid</button></>)}</td>
       </tr>); })}
       {rows.length === 0 && <tr><td colSpan="5" className="muted">No schools yet.</td></tr>}
+    </tbody></table>
+  </div>);
+}
+
+function SchoolBillingPanel({ schoolId }) {
+  const [sub, setSub] = useState(undefined); const [pays, setPays] = useState([]); const [busy, setBusy] = useState(false); const [msg, setMsg] = useState('');
+  async function load() {
+    const { data } = await supabase.from('subscriptions').select('*').eq('school_id', schoolId).maybeSingle(); setSub(data || null);
+    const { data: pp } = await supabase.from('subscription_payments').select('*').eq('school_id', schoolId).eq('status', 'paid').order('paid_on', { ascending: false }); setPays(pp || []);
+  }
+  useEffect(() => { load(); }, [schoolId]);
+  const money = n => '$' + Number(n || 0).toLocaleString();
+  const today = new Date().toISOString().slice(0, 10);
+  const daysLeft = sub && sub.next_due ? Math.round((new Date(sub.next_due) - new Date(today)) / 86400000) : null;
+  const si = (() => {
+    if (!sub || !sub.next_due) return { t: 'No subscription set', c: '#5b6570' };
+    if (daysLeft < 0) return { t: 'Overdue by ' + Math.abs(daysLeft) + ' day(s)', c: '#c0392b' };
+    if (daysLeft <= 7) return { t: 'Due in ' + daysLeft + ' day(s)', c: '#b8860b' };
+    return { t: 'Active · renews in ' + daysLeft + ' day(s)', c: '#1a7f5a' };
+  })();
+  async function payNow() {
+    setBusy(true); setMsg('');
+    try {
+      const res = await fetch('/api/subscription-pay', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ schoolId, origin: window.location.origin }) });
+      const data = await res.json();
+      if (!res.ok || !data.browserurl) { setMsg(data.error || 'Could not start payment.'); setBusy(false); return; }
+      window.location.href = data.browserurl;
+    } catch (e) { setMsg(String(e.message || e)); setBusy(false); }
+  }
+  if (sub === undefined) return <p className="muted">Loading…</p>;
+  return (<div>
+    <div className="card" style={{ maxWidth: 520, marginBottom: 18 }}>
+      <div style={{ fontWeight: 700, fontSize: 18, marginBottom: 4 }}>Your Chalkboard subscription</div>
+      <div style={{ color: si.c, fontWeight: 600, marginBottom: 14 }}>{si.t}</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 14 }}>
+        <div><div className="muted" style={{ fontSize: 12 }}>Amount</div><div style={{ fontWeight: 600 }}>{sub && sub.amount ? money(sub.amount) + ' / month' : '—'}</div></div>
+        <div><div className="muted" style={{ fontSize: 12 }}>Next due</div><div style={{ fontWeight: 600 }}>{(sub && sub.next_due) || '—'}</div></div>
+        <div><div className="muted" style={{ fontSize: 12 }}>Last paid</div><div>{(sub && sub.last_paid) || '—'}</div></div>
+      </div>
+      <div style={{ marginTop: 16 }}><button onClick={payNow} disabled={busy || !sub || !sub.amount}>{busy ? 'Starting…' : 'Pay now'}</button></div>
+      {msg && <p className="error">{msg}</p>}
+      {(!sub || !sub.amount) && <p className="muted" style={{ fontSize: 13, marginTop: 8 }}>No amount set yet — the platform admin will set your subscription.</p>}
+    </div>
+    <div style={{ fontWeight: 700, marginBottom: 8 }}>Payment history</div>
+    <table><thead><tr><th>Date</th><th>Method</th><th className="r">Amount</th></tr></thead><tbody>
+      {pays.map(pp => (<tr key={pp.id}><td>{pp.paid_on}</td><td style={{ textTransform: 'capitalize' }}>{pp.method || '—'}</td><td className="r">{money(pp.amount)}</td></tr>))}
+      {pays.length === 0 && <tr><td colSpan="3" className="muted">No payments yet.</td></tr>}
     </tbody></table>
   </div>);
 }
