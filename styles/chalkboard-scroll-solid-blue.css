@@ -1,0 +1,328 @@
+:root{
+  --chalk-primary:#1E5EF7;
+  --chalk-primary-hover:#174DCC;
+  --chalk-navy:#061E50;
+  --chalk-page:#F3F6FA;
+  --chalk-panel:#FFFFFF;
+  --chalk-line:#DCE4EF;
+  --chalk-ink:#14213A;
+  --chalk-muted:#66758A;
+}
+
+/* Restore normal scrolling for the public website and login page. */
+html{
+  min-height:100%;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  scroll-behavior:auto!important;
+}
+
+body{
+  min-height:100%;
+  height:auto!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  background:var(--chalk-page)!important;
+}
+
+/* Do not lock the entire application to a hidden viewport. */
+.shell,
+.cb-portal-shell{
+  min-height:100vh!important;
+  height:auto!important;
+  overflow:visible!important;
+  align-items:stretch!important;
+}
+
+/* Sidebar remains visible but no longer disables page scrolling. */
+.sidebar,
+.cb-portal-sidebar{
+  position:sticky!important;
+  top:0!important;
+  align-self:flex-start!important;
+  width:282px!important;
+  min-width:282px!important;
+  flex:0 0 282px!important;
+  height:100vh!important;
+  max-height:100vh!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  color:#fff!important;
+  background:var(--chalk-navy)!important;
+  border-right:1px solid rgba(255,255,255,.10)!important;
+  box-shadow:10px 0 30px rgba(6,30,80,.12)!important;
+}
+
+/* Main content participates in normal page scrolling. */
+.main,
+.cb-portal-main{
+  width:100%!important;
+  min-width:0!important;
+  min-height:100vh!important;
+  height:auto!important;
+  overflow:visible!important;
+  padding:30px 34px 70px!important;
+  background:var(--chalk-page)!important;
+}
+
+/* Login and public website must remain vertically scrollable. */
+.center{
+  min-height:100vh!important;
+  height:auto!important;
+  overflow:visible!important;
+}
+
+.site,
+main,
+header,
+footer{
+  overflow:visible;
+}
+
+/* Solid brand colour across interactive controls. */
+button,
+button[type="button"],
+button[type="submit"],
+[data-no-export="true"] button:first-child,
+.side-item.active,
+.cb-portal-nav-item.active{
+  color:#fff!important;
+  background:var(--chalk-primary)!important;
+  background-image:none!important;
+  border-color:var(--chalk-primary)!important;
+  box-shadow:0 7px 18px rgba(30,94,247,.20)!important;
+}
+
+button:hover,
+button[type="button"]:hover,
+button[type="submit"]:hover,
+.side-item.active:hover,
+.cb-portal-nav-item.active:hover{
+  color:#fff!important;
+  background:var(--chalk-primary-hover)!important;
+  background-image:none!important;
+}
+
+button.ghost,
+.ghost,
+[data-no-export="true"] button:not(:first-child){
+  color:var(--chalk-navy)!important;
+  background:#fff!important;
+  background-image:none!important;
+  border:1px solid #C9D5E5!important;
+  box-shadow:none!important;
+}
+
+button.ghost:hover,
+.ghost:hover,
+[data-no-export="true"] button:not(:first-child):hover{
+  color:var(--chalk-primary)!important;
+  background:#EDF3FF!important;
+  border-color:#AFC4F5!important;
+}
+
+/* Remove all earlier gradients from branded UI. */
+.sidebar,
+.cb-portal-sidebar,
+.side-item.active,
+.cb-portal-nav-item.active,
+.cb-executive-hero,
+.role-card,
+.login-role,
+.role-option,
+.portal-role,
+.auth-role,
+.center button,
+.center [role="button"]{
+  background-image:none!important;
+}
+
+/* Sidebar hierarchy. */
+.side-brand,
+.cb-portal-brand{
+  min-height:126px!important;
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+  margin:0 0 14px!important;
+  padding:10px 12px 22px!important;
+  border-bottom:1px solid rgba(255,255,255,.14)!important;
+  color:transparent!important;
+  font-size:0!important;
+}
+
+.side-brand img,
+.cb-portal-brand img{
+  width:auto!important;
+  height:102px!important;
+  max-width:190px!important;
+  max-height:102px!important;
+  object-fit:contain!important;
+}
+
+.side-nav{
+  padding-bottom:70px!important;
+}
+
+.side-item,
+.cb-portal-nav-item{
+  min-height:43px!important;
+  padding:9px 13px!important;
+  border-radius:9px!important;
+  color:#E6EDF8!important;
+  background:transparent!important;
+  background-image:none!important;
+  font-size:14px!important;
+  font-weight:700!important;
+  box-shadow:none!important;
+}
+
+.side-item:hover,
+.cb-portal-nav-item:hover{
+  color:#fff!important;
+  background:rgba(255,255,255,.09)!important;
+  background-image:none!important;
+}
+
+.side-item.active,
+.cb-portal-nav-item.active{
+  font-weight:800!important;
+}
+
+.sidebar .muted,
+.sidebar p,
+.sidebar a{
+  color:#C4D0E1!important;
+}
+
+/* Login role selectors: solid, restrained, readable. */
+.role-card,
+.login-role,
+.role-option,
+.portal-role,
+.auth-role,
+.center button[style],
+.center [role="button"]{
+  background:var(--chalk-navy)!important;
+  background-image:none!important;
+  border:1px solid #17376B!important;
+  box-shadow:0 8px 20px rgba(6,30,80,.14)!important;
+}
+
+.role-card:hover,
+.login-role:hover,
+.role-option:hover,
+.portal-role:hover,
+.auth-role:hover{
+  background:#0B2B66!important;
+  background-image:none!important;
+}
+
+.role-card strong,
+.role-card h2,
+.role-card h3,
+.login-role strong,
+.login-role h2,
+.login-role h3,
+.role-option strong,
+.role-option h2,
+.role-option h3,
+.portal-role strong,
+.auth-role strong{
+  color:#fff!important;
+}
+
+.role-card p,
+.role-card span,
+.login-role p,
+.login-role span,
+.role-option p,
+.role-option span,
+.portal-role p,
+.portal-role span,
+.auth-role p,
+.auth-role span{
+  color:#DCE6F5!important;
+  opacity:1!important;
+}
+
+/* Replace legacy green and other blue values. */
+[style*="background:#2f7a52"],
+[style*="background: #2f7a52"],
+[style*="background:#1e4a38"],
+[style*="background: #1e4a38"],
+[style*="background:#096df3"],
+[style*="background: #096df3"],
+[style*="background:#086ff5"],
+[style*="background: #086ff5"],
+[style*="background:#286fce"],
+[style*="background: #286fce"]{
+  background:var(--chalk-primary)!important;
+  background-image:none!important;
+}
+
+[style*="color:#2f7a52"],
+[style*="color: #2f7a52"],
+[style*="color:#096df3"],
+[style*="color: #096df3"],
+[style*="color:#086ff5"],
+[style*="color: #086ff5"],
+[style*="color:#286fce"],
+[style*="color: #286fce"]{
+  color:var(--chalk-primary)!important;
+}
+
+/* Solid dashboard hero using the requested colour. */
+.cb-executive-hero{
+  color:#fff!important;
+  background:var(--chalk-primary)!important;
+  border:0!important;
+}
+
+.cb-kpi-icon{
+  color:var(--chalk-primary)!important;
+  background:#EDF3FF!important;
+}
+
+/* Focus treatment. */
+input:focus,
+select:focus,
+textarea:focus{
+  border-color:var(--chalk-primary)!important;
+  box-shadow:0 0 0 4px rgba(30,94,247,.12)!important;
+}
+
+/* Compact screens use normal vertical flow. */
+@media(max-width:820px){
+  .shell,
+  .cb-portal-shell{
+    display:block!important;
+  }
+
+  .sidebar,
+  .cb-portal-sidebar{
+    position:relative!important;
+    width:100%!important;
+    min-width:0!important;
+    height:auto!important;
+    max-height:none!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+  }
+
+  .main,
+  .cb-portal-main{
+    min-height:100vh!important;
+    padding:22px 16px 52px!important;
+  }
+
+  .side-brand,
+  .cb-portal-brand{
+    min-height:78px!important;
+  }
+
+  .side-brand img,
+  .cb-portal-brand img{
+    height:64px!important;
+  }
+}
