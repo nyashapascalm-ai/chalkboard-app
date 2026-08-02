@@ -169,20 +169,98 @@ function Console({ session, role, canPick, initialSchool }) {
   const O = role === 'operator';
   const SA = role === 'school_admin';
   const groups = [
-  { key: 'academics', label: 'Academics', icon: '', items: [['attendance', 'Attendance', ''], ['marks', 'Marks', ''], ['reportcards', 'Report cards', ''], ['reports', 'Attendance report', '']].concat(A ? [['academics', 'Class overview', '']] : []) },
-  { key: 'people', label: 'People', icon: '', items: [['students', 'Students', '']].concat(A ? [['teachers', 'Teachers', ''], ['staff', 'Staff', ''], ['admissions', 'Admissions', '']] : []) },
-  { key: 'money', label: 'Money', icon: '', items: A ? [['fees', 'Fees', ''], ['arrears', 'Arrears', ''], ['finance', 'Finance', ''], ['banking', 'Banking', '']] : [] },
-  { key: 'operations', label: 'Operations', icon: '', items: A ? [['timetable', 'Timetable', ''], ['inventory', 'Inventory', ''], ['assets', 'Assets', '']] : [] },
-  { key: 'comms', label: 'Communication', icon: '', items: [['announcements', 'Announcements', '']] },
-  { key: 'setup', label: 'Setup', icon: '', items: A ? [['classes', 'Classes', ''], ['subjects', 'Subjects', ''], ['school', 'School', '']].concat(SA ? [['mybilling', 'Subscription', '']] : []) : [] },
-].filter(g => g.items.length > 0);
-  const groupOf = k => { const g = groups.find(gr => gr.items.some(it => it[0] === k)); return g ? g.key : null; };
+    {
+      key: 'setup',
+      label: 'School setup',
+      icon: '',
+      items: [
+        ['school', 'School profile', ''],
+        ['classes', 'Classes', ''],
+        ['subjects', 'Subjects', ''],
+      ],
+    },
+    {
+      key: 'people',
+      label: 'People',
+      icon: '',
+      items: [
+        ['students', 'Learners', ''],
+        ['teachers', 'Teachers and allocations', ''],
+        ['staff', 'Human Resources', ''],
+        ['admissions', 'Admissions', ''],
+      ],
+    },
+    {
+      key: 'reporting',
+      label: 'Reporting',
+      icon: '',
+      items: [
+        ['reports', 'Attendance reports', ''],
+      ],
+    },
+    {
+      key: 'money',
+      label: 'Finance',
+      icon: '',
+      items: [
+        ['fees', 'Fees', ''],
+        ['arrears', 'Arrears', ''],
+        ['finance', 'Income and expenses', ''],
+        ['banking', 'Banking', ''],
+      ],
+    },
+    {
+      key: 'operations',
+      label: 'Operations',
+      icon: '',
+      items: [
+        ['inventory', 'Inventory', ''],
+        ['assets', 'Assets', ''],
+      ],
+    },
+    {
+      key: 'communication',
+      label: 'Communication',
+      icon: '',
+      items: [
+        ['announcements', 'Announcements', ''],
+      ],
+    },
+    {
+      key: 'account',
+      label: 'Account',
+      icon: '',
+      items: [
+        ['mybilling', 'Subscription', ''],
+      ],
+    },
+  ].filter(g => g.items.length > 0);
+
+const groupOf = k => { const g = groups.find(gr => gr.items.some(it => it[0] === k)); return g ? g.key : null; };
   const [openGroup, setOpenGroup] = useState(groupOf(nav));
   const goto = k => { setNav(k); const g = groupOf(k); if (g) setOpenGroup(g); };
   const grpHdr = { display: 'flex', alignItems: 'center', gap: 11, padding: '9px 12px', borderRadius: 8, fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#8a94a0', cursor: 'pointer', border: 0, background: 'transparent', textAlign: 'left', width: '100%', fontFamily: 'inherit' };
-  const title = { dashboard: 'Dashboard', billing: 'Subscriptions', mybilling: 'Subscription', academics: 'Academics', fees: 'Fees', arrears: 'Fee arrears', announcements: 'Announcements', staff: 'Staff', admissions: 'Admissions', timetable: 'Timetable', attendance: 'Attendance', students: 'Students', classes: 'Classes', teachers: 'Teachers', reports: 'Attendance report', marks: 'Enter marks', reportcards: 'Report cards', subjects: 'Subjects', school: 'School letterhead', finance: 'Income & expenses', banking: 'Banking', inventory: 'Inventory', assets: 'Asset register' }[nav];
+  const title = {
+    dashboard: 'Dashboard',
+    mybilling: 'Subscription',
+    fees: 'Fees',
+    arrears: 'Arrears',
+    announcements: 'Announcements',
+    staff: 'Human Resources',
+    admissions: 'Admissions',
+    students: 'Learners',
+    classes: 'Classes',
+    teachers: 'Teachers and allocations',
+    reports: 'Attendance reports',
+    subjects: 'Subjects',
+    school: 'School profile',
+    finance: 'Income and expenses',
+    banking: 'Banking',
+    inventory: 'Inventory',
+    assets: 'Assets',
+  }[nav];
 
-  const subToday = new Date().toISOString().slice(0, 10);
+const subToday = new Date().toISOString().slice(0, 10);
   const subStatus = (() => {
     if (!sub || !sub.next_due) return { code: 'none' };
     const soon = new Date(sub.next_due); soon.setDate(soon.getDate() - 7);
@@ -223,7 +301,6 @@ function Console({ session, role, canPick, initialSchool }) {
         nav === 'announcements' ? <AnnouncementsPanel schoolId={schoolId} canPost={!isTeacher} /> :
         nav === 'staff' ? <StaffPanel schoolId={schoolId} /> :
         nav === 'admissions' ? <AdmissionsPanel schoolId={schoolId} classes={allClasses} /> :
-        nav === 'timetable' ? <TimetablePanel schoolId={schoolId} classes={allClasses} subjects={subjects} school={school} settings={settings} /> :
         nav === 'banking' ? <BankingPanel schoolId={schoolId} /> :
         nav === 'finance' ? <FinancePanel schoolId={schoolId} /> :
         nav === 'inventory' ? <InventoryPanel schoolId={schoolId} school={school} settings={settings} /> :
@@ -233,10 +310,10 @@ function Console({ session, role, canPick, initialSchool }) {
         nav === 'marks' ? <MarksPanel schoolId={schoolId} classes={available} subjects={subjects} teacherId={session.user.id} level={(settings && settings.level) || 'secondary'} /> :
         nav === 'reportcards' ? <ReportCardsPanel schoolId={schoolId} classes={available} subjects={subjects} school={school} settings={settings} level={(settings && settings.level) || 'secondary'} /> :
         nav === 'classes' ? <ClassesPanel schoolId={schoolId} classes={allClasses} onChange={loadClasses} /> :
-        nav === 'teachers' ? <TeachersPanel schoolId={schoolId} classes={allClasses} /> :
+        nav === 'teachers' ? <TeachersPanel schoolId={schoolId} classes={allClasses} subjects={subjects} /> :
         nav === 'reports' ? <ReportsPanel schoolId={schoolId} classes={available} school={school} settings={settings} /> :
-        nav === 'students' ? <StudentsPanel schoolId={schoolId} classes={available} isTeacher={isTeacher} /> :
-        <AttendancePanel schoolId={schoolId} classes={available} isTeacher={isTeacher} />}
+        nav === 'students' ? <LearnersPanel schoolId={schoolId} classes={available} isTeacher={isTeacher} /> :
+        <AttendancePanel schoolId={schoolId} classes={available} />}
     </main>
   </div>);
 }
@@ -266,75 +343,401 @@ function ClassesPanel({ schoolId, classes, onChange }) {
 
 function chip(on) { return { padding: '6px 12px', borderRadius: 20, border: '1px solid ' + (on ? '#2f7a52' : '#dde1e6'), background: on ? '#2f7a52' : '#fff', color: on ? '#fff' : '#5b6570', cursor: 'pointer', fontWeight: 600, fontSize: 13 }; }
 
-function TeachersPanel({ schoolId, classes }) {
-  const [list, setList] = useState([]);
-  const [links, setLinks] = useState([]);
-  const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [picked, setPicked] = useState([]);
-  const [result, setResult] = useState(null); const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
-  const [editId, setEditId] = useState(null); const [editPicked, setEditPicked] = useState([]);
+function TeachersPanel({ schoolId, classes, subjects }) {
+  const [teachers, setTeachers] = useState([]);
+  const [classAssignments, setClassAssignments] = useState([]);
+  const [subjectAssignments, setSubjectAssignments] = useState([]);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [pickedClasses, setPickedClasses] = useState([]);
+  const [pickedSubjects, setPickedSubjects] = useState([]);
+  const [result, setResult] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
   async function load() {
-    const { data: t } = await supabase.from('profiles').select('id,full_name').eq('role', 'teacher').eq('school_id', schoolId);
-    setList(t || []);
-    const { data: l } = await supabase.from('teacher_classes').select('teacher_id,class_id').eq('school_id', schoolId);
-    setLinks(l || []);
+    const [teachersResult, classResult, subjectResult] = await Promise.all([
+      supabase
+        .from('profiles')
+        .select('id,full_name,email,status')
+        .eq('role', 'teacher')
+        .eq('school_id', schoolId)
+        .order('full_name'),
+      supabase
+        .from('teacher_class_assignments')
+        .select('id,teacher_id,class_id')
+        .eq('school_id', schoolId),
+      supabase
+        .from('teacher_subject_assignments')
+        .select('id,teacher_id,subject_id')
+        .eq('school_id', schoolId),
+    ]);
+
+    setTeachers(teachersResult.data || []);
+    setClassAssignments(classResult.data || []);
+    setSubjectAssignments(subjectResult.data || []);
+
+    const loadError =
+      teachersResult.error ||
+      classResult.error ||
+      subjectResult.error;
+
+    if (loadError) setErr(loadError.message);
   }
-  useEffect(() => { load(); }, [schoolId]);
-  const clsName = id => { const c = classes.find(x => x.id === id); return c ? c.name : '?'; };
-  const teacherClassIds = tid => links.filter(l => l.teacher_id === tid).map(l => l.class_id);
-  function toggleNew(id) { setPicked(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]); }
-  function toggleEdit(id) { setEditPicked(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]); }
-  async function create() {
-    if (!email.trim()) { setErr('Enter an email.'); return; }
-    setBusy(true); setErr(''); setResult(null);
+
+  useEffect(() => {
+    load();
+  }, [schoolId]);
+
+  function toggle(list, setter, id) {
+    setter(
+      list.includes(id)
+        ? list.filter(item => item !== id)
+        : [...list, id]
+    );
+  }
+
+  async function createTeacher() {
+    if (!email.trim()) {
+      setErr('Enter a teacher email address.');
+      return;
+    }
+
+    setBusy(true);
+    setErr('');
+    setResult(null);
+
     try {
-      const res = await fetch('/api/teacher', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ schoolId, email: email.trim(), fullName: name.trim(), classIds: picked }) });
-      const data = await res.json();
-      if (!res.ok) setErr(data.error || 'Could not create teacher.'); else { setResult(data); setName(''); setEmail(''); setPicked([]); await load(); }
-    } catch (e) { setErr(String(e.message || e)); }
+      const response = await fetch('/api/teacher', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          schoolId,
+          email: email.trim(),
+          fullName: name.trim(),
+          classIds: [],
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Could not create teacher.');
+      }
+
+      const teacherId =
+        data.id ||
+        data.userId ||
+        data.teacherId;
+
+      if (!teacherId) {
+        const { data: createdProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('school_id', schoolId)
+          .eq('role', 'teacher')
+          .eq('email', email.trim())
+          .maybeSingle();
+
+        if (!createdProfile?.id) {
+          throw new Error(
+            'Teacher account was created, but its profile could not be found for allocation.'
+          );
+        }
+
+        await saveAllocations(createdProfile.id);
+      } else {
+        await saveAllocations(teacherId);
+      }
+
+      setResult(data);
+      setName('');
+      setEmail('');
+      setPickedClasses([]);
+      setPickedSubjects([]);
+      await load();
+    } catch (error) {
+      setErr(error.message || String(error));
+    }
+
     setBusy(false);
   }
-  function startEdit(t) { setEditId(t.id); setEditPicked(teacherClassIds(t.id)); }
-  async function saveEdit() {
-    const current = teacherClassIds(editId);
-    const toAdd = editPicked.filter(id => !current.includes(id));
-    const toRemove = current.filter(id => !editPicked.includes(id));
-    for (const cid of toRemove) { await supabase.from('teacher_classes').delete().eq('teacher_id', editId).eq('class_id', cid); }
-    if (toAdd.length) { await supabase.from('teacher_classes').insert(toAdd.map(cid => ({ school_id: schoolId, teacher_id: editId, class_id: cid }))); }
-    setEditId(null); await load();
+
+  async function saveAllocations(teacherId) {
+    if (pickedClasses.length) {
+      const { error } = await supabase
+        .from('teacher_class_assignments')
+        .upsert(
+          pickedClasses.map(classId => ({
+            school_id: schoolId,
+            teacher_id: teacherId,
+            class_id: classId,
+          })),
+          { onConflict: 'teacher_id,class_id' }
+        );
+
+      if (error) throw error;
+    }
+
+    if (pickedSubjects.length) {
+      const { error } = await supabase
+        .from('teacher_subject_assignments')
+        .upsert(
+          pickedSubjects.map(subjectId => ({
+            school_id: schoolId,
+            teacher_id: teacherId,
+            subject_id: subjectId,
+          })),
+          { onConflict: 'teacher_id,subject_id' }
+        );
+
+      if (error) throw error;
+    }
   }
-  return (<div>
-    <p className="muted" style={{ marginTop: 0 }}>Create a login for each teacher and tick the classes they teach. You can change a teacher's classes anytime.</p>
-    {result && (<div className="card" style={{ marginBottom: 18, borderColor: '#1a7f5a' }}>
-      <div style={{ fontWeight: 700, color: '#1a7f5a' }}>Teacher login created</div>
-      <p className="muted" style={{ marginTop: 4, marginBottom: 10 }}>Send these to the teacher. The password is shown once.</p>
-      <div><b>Email:</b> {result.email}</div>
-      <div style={{ marginTop: 4 }}><b>Password:</b> <span style={{ fontFamily: 'monospace', background: '#f3f5f7', padding: '2px 8px', borderRadius: 6 }}>{result.password}</span></div>
-    </div>)}
-    <div className="card" style={{ marginBottom: 18 }}>
-      <div style={{ fontWeight: 700, marginBottom: 10 }}>Add a teacher</div>
-      <div style={{ display: 'grid', gap: 10, gridTemplateColumns: '1fr 1fr' }}>
-        <div><label style={labelStyle}>Full name</label><input style={inputStyle} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Mr. Ncube" /></div>
-        <div><label style={labelStyle}>Email</label><input style={inputStyle} value={email} onChange={e => setEmail(e.target.value)} placeholder="teacher@school.co.zw" /></div>
-      </div>
-      <label style={{ ...labelStyle, marginTop: 12 }}>Classes they teach</label>
-      {classes.length === 0 ? <p className="muted">Add classes first in the Classes tab.</p> : (
+
+  async function toggleExisting(type, teacherId, targetId) {
+    const table =
+      type === 'class'
+        ? 'teacher_class_assignments'
+        : 'teacher_subject_assignments';
+
+    const targetColumn =
+      type === 'class'
+        ? 'class_id'
+        : 'subject_id';
+
+    const rows =
+      type === 'class'
+        ? classAssignments
+        : subjectAssignments;
+
+    const existing = rows.find(
+      row =>
+        row.teacher_id === teacherId &&
+        row[targetColumn] === targetId
+    );
+
+    if (existing) {
+      const { error } = await supabase
+        .from(table)
+        .delete()
+        .eq('id', existing.id);
+
+      if (error) {
+        setErr(error.message);
+        return;
+      }
+    } else {
+      const { error } = await supabase
+        .from(table)
+        .insert({
+          school_id: schoolId,
+          teacher_id: teacherId,
+          [targetColumn]: targetId,
+        });
+
+      if (error) {
+        setErr(error.message);
+        return;
+      }
+    }
+
+    await load();
+  }
+
+  function assigned(rows, teacherId, column, id) {
+    return rows.some(
+      row =>
+        row.teacher_id === teacherId &&
+        row[column] === id
+    );
+  }
+
+  return (
+    <div>
+      <p className="muted" style={{ marginTop: 0 }}>
+        Create teacher accounts and allocate their classes and
+        subjects. Dari reads these shared assignments automatically.
+      </p>
+
+      {result ? (
+        <div className="card" style={{ marginBottom: 18, borderColor: '#1a7f5a' }}>
+          <div style={{ fontWeight: 700, color: '#1a7f5a' }}>
+            Teacher login created
+          </div>
+          <p className="muted" style={{ marginBottom: 6 }}>
+            Send these credentials securely to the teacher.
+          </p>
+          <div><b>Email:</b> {result.email}</div>
+          {result.password ? (
+            <div style={{ marginTop: 4 }}>
+              <b>Temporary password:</b>{' '}
+              <span style={{ fontFamily: 'monospace' }}>
+                {result.password}
+              </span>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className="card" style={{ marginBottom: 18 }}>
+        <div style={{ fontWeight: 700, marginBottom: 12 }}>
+          Add a teacher
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div>
+            <label style={labelStyle}>Full name</label>
+            <input
+              style={inputStyle}
+              value={name}
+              onChange={event => setName(event.target.value)}
+            />
+          </div>
+          <div>
+            <label style={labelStyle}>Email</label>
+            <input
+              style={inputStyle}
+              value={email}
+              onChange={event => setEmail(event.target.value)}
+            />
+          </div>
+        </div>
+
+        <label style={{ ...labelStyle, marginTop: 14 }}>
+          Classes
+        </label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {classes.map(c => { const on = picked.includes(c.id); return (<button key={c.id} type="button" onClick={() => toggleNew(c.id)} style={chip(on)}>{c.name}</button>); })}
-        </div>)}
-      <div style={{ marginTop: 14 }}><button onClick={create} disabled={busy}>{busy ? 'Creating' : 'Create teacher login'}</button></div>
-      {err && <p className="error">{err}</p>}
+          {classes.map(item => (
+            <button
+              key={item.id}
+              type="button"
+              style={chip(pickedClasses.includes(item.id))}
+              onClick={() =>
+                toggle(
+                  pickedClasses,
+                  setPickedClasses,
+                  item.id
+                )
+              }
+            >
+              {item.name}
+            </button>
+          ))}
+        </div>
+
+        <label style={{ ...labelStyle, marginTop: 14 }}>
+          Subjects
+        </label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {subjects.map(item => (
+            <button
+              key={item.id}
+              type="button"
+              style={chip(pickedSubjects.includes(item.id))}
+              onClick={() =>
+                toggle(
+                  pickedSubjects,
+                  setPickedSubjects,
+                  item.id
+                )
+              }
+            >
+              {item.name}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={createTeacher}
+          disabled={busy}
+          style={{ marginTop: 16 }}
+        >
+          {busy ? 'Creating...' : 'Create teacher and allocations'}
+        </button>
+
+        {err ? <p className="error">{err}</p> : null}
+      </div>
+
+      <div style={{ display: 'grid', gap: 14 }}>
+        {teachers.map(teacher => (
+          <article className="card" key={teacher.id}>
+            <div style={{ fontWeight: 700, fontSize: 17 }}>
+              {teacher.full_name || teacher.email || 'Teacher'}
+            </div>
+            <div className="muted" style={{ fontSize: 12, marginTop: 3 }}>
+              {teacher.email || 'No email stored'}
+            </div>
+
+            <div style={{ marginTop: 14 }}>
+              <label style={labelStyle}>Assigned classes</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                {classes.map(item => {
+                  const on = assigned(
+                    classAssignments,
+                    teacher.id,
+                    'class_id',
+                    item.id
+                  );
+
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      style={chip(on)}
+                      onClick={() =>
+                        toggleExisting(
+                          'class',
+                          teacher.id,
+                          item.id
+                        )
+                      }
+                    >
+                      {item.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div style={{ marginTop: 14 }}>
+              <label style={labelStyle}>Assigned subjects</label>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                {subjects.map(item => {
+                  const on = assigned(
+                    subjectAssignments,
+                    teacher.id,
+                    'subject_id',
+                    item.id
+                  );
+
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      style={chip(on)}
+                      onClick={() =>
+                        toggleExisting(
+                          'subject',
+                          teacher.id,
+                          item.id
+                        )
+                      }
+                    >
+                      {item.name}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
     </div>
-    <table><thead><tr><th>Teacher</th><th>Classes</th><th></th></tr></thead><tbody>
-      {list.map(t => (<tr key={t.id}><td className="strong">{t.full_name || '(no name)'}</td>
-        <td>{editId === t.id ? (<div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>{classes.map(c => { const on = editPicked.includes(c.id); return (<button key={c.id} type="button" onClick={() => toggleEdit(c.id)} style={chip(on)}>{c.name}</button>); })}</div>) : (teacherClassIds(t.id).map(clsName).join(', ') || <span className="muted">none</span>)}</td>
-        <td className="r">{editId === t.id ? (<><button onClick={saveEdit} style={{ padding: '4px 10px', fontSize: 13 }}>Save</button> <button className="ghost" onClick={() => setEditId(null)} style={{ padding: '4px 10px', fontSize: 13, marginLeft: 6 }}>Cancel</button></>) : <button className="ghost" onClick={() => startEdit(t)} style={{ padding: '4px 10px', fontSize: 13 }}>Edit classes</button>}</td>
-      </tr>))}
-      {list.length === 0 && <tr><td colSpan="3" className="muted">No teachers yet.</td></tr>}
-    </tbody></table>
-  </div>);
+  );
 }
 
-function StudentsPanel({ schoolId, classes, isTeacher }) {
+function LearnersPanel({ schoolId, classes, isTeacher }) {
   const [classId, setClassId] = useState('');
   const [rows, setRows] = useState([]);
   const [name, setName] = useState(''); const [bulk, setBulk] = useState(''); const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
@@ -357,7 +760,7 @@ function StudentsPanel({ schoolId, classes, isTeacher }) {
     setBusy(false);
   }
   if (classes.length === 0) return <p className="muted">{isTeacher ? 'You have no classes yet.' : 'No classes yet  add them in the Classes tab first.'}</p>;
-  if (editing) return <StudentRecord student={editing} classes={classes} clsName={clsName} onBack={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />;
+  if (editing) return <LearnerRecord student={editing} classes={classes} clsName={clsName} onBack={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />;
   return (<div>
     <div style={{ marginBottom: 14, maxWidth: 300 }}>
       <label style={labelStyle}>Class</label>
@@ -385,7 +788,7 @@ function StudentsPanel({ schoolId, classes, isTeacher }) {
   </div>);
 }
 
-function StudentRecord({ student, classes, clsName, onBack, onSaved }) {
+function LearnerRecord({ student, classes, clsName, onBack, onSaved }) {
   const [f, setF] = useState({ full_name: student.full_name || '', class_id: student.class_id || '', gender: student.gender || '', dob: student.dob || '', guardian_name: student.guardian_name || '', guardian_phone: student.guardian_phone || '', address: student.address || '', notes: student.notes || '' });
   const [busy, setBusy] = useState(false); const [err, setErr] = useState(''); const [saved, setSaved] = useState(false);
   function set(k, v) { setF(o => ({ ...o, [k]: v })); }
@@ -421,53 +824,231 @@ function StudentRecord({ student, classes, clsName, onBack, onSaved }) {
   </div>);
 }
 
-function AttendancePanel({ schoolId, classes, isTeacher }) {
-  const today = new Date().toISOString().slice(0, 10);
+function AttendancePanel({ schoolId, classes }) {
   const [classId, setClassId] = useState('');
-  const [date, setDate] = useState(today);
-  const [students, setStudents] = useState([]);
-  const [marks, setMarks] = useState({});
-  const [saved, setSaved] = useState(false); const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
-  useEffect(() => { if (!classId && classes.length) setClassId(classes[0].id); }, [classes]);
-  async function load() {
-    if (!classId) { setStudents([]); setMarks({}); return; }
-    const { data: st } = await supabase.from('students').select('*').eq('school_id', schoolId).eq('class_id', classId).order('full_name');
-    setStudents(st || []);
-    const ids = (st || []).map(s => s.id);
-    let at = [];
-    if (ids.length) { const r = await supabase.from('attendance').select('student_id,status').eq('date', date).in('student_id', ids); at = r.data || []; }
-    const m = {}; (st || []).forEach(s => { m[s.id] = 'present'; }); at.forEach(a => { m[a.student_id] = a.status; });
-    setMarks(m);
+  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
+  const [students, setLearners] = useState([]);
+  const [records, setRecords] = useState([]);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+
+  useEffect(() => {
+    if (!classId && classes.length) {
+      setClassId(classes[0].id);
+    }
+  }, [classes, classId]);
+
+  useEffect(() => {
+    async function load() {
+      if (!schoolId || !classId || !date) {
+        setLearners([]);
+        setRecords([]);
+        return;
+      }
+
+      setBusy(true);
+      setErr('');
+
+      const [studentsResult, attendanceResult] = await Promise.all([
+        supabase
+          .from('students')
+          .select('id, full_name, class_id, klass')
+          .eq('school_id', schoolId)
+          .eq('class_id', classId)
+          .order('full_name'),
+
+        supabase
+          .from('attendance')
+          .select('*')
+          .eq('school_id', schoolId)
+          .eq('class_id', classId)
+          .eq('date', date),
+      ]);
+
+      if (studentsResult.error || attendanceResult.error) {
+        setErr(
+          studentsResult.error?.message ||
+          attendanceResult.error?.message ||
+          'Unable to load attendance.'
+        );
+        setLearners([]);
+        setRecords([]);
+      } else {
+        setLearners(studentsResult.data || []);
+        setRecords(attendanceResult.data || []);
+      }
+
+      setBusy(false);
+    }
+
+    load();
+  }, [schoolId, classId, date]);
+
+  const recordByLearner = new Map(
+    records.map(record => [record.student_id, record])
+  );
+
+  const statusFor = studentId => {
+    const record = recordByLearner.get(studentId);
+    return record?.status || 'not marked';
+  };
+
+  const counts = records.reduce(
+    (summary, record) => {
+      const status = String(record.status || '').toLowerCase();
+
+      if (status === 'present') summary.present += 1;
+      else if (status === 'absent') summary.absent += 1;
+      else if (status === 'late') summary.late += 1;
+
+      return summary;
+    },
+    { present: 0, absent: 0, late: 0 }
+  );
+
+  const notMarked = Math.max(students.length - records.length, 0);
+
+  if (classes.length === 0) {
+    return (
+      <div className="card" style={{ maxWidth: 680 }}>
+        <h3 style={{ marginTop: 0 }}>No classes configured</h3>
+        <p className="muted">
+          Add classes under School setup before reviewing attendance.
+        </p>
+      </div>
+    );
   }
-  useEffect(() => { load(); }, [classId, date, schoolId]);
-  function setMark(id, status) { setMarks(m => ({ ...m, [id]: status })); }
-  async function save() {
-    setBusy(true); setErr(''); setSaved(false);
-    const rows = students.map(s => ({ school_id: schoolId, student_id: s.id, date, status: marks[s.id] || 'present' }));
-    const { error } = await supabase.from('attendance').upsert(rows, { onConflict: 'student_id,date' });
-    if (error) setErr(error.message); else { setSaved(true); setTimeout(() => setSaved(false), 2000); }
-    setBusy(false);
-  }
-  const counts = students.reduce((a, s) => { const st = marks[s.id] || 'present'; a[st] = (a[st] || 0) + 1; return a; }, {});
-  const colors = { present: '#1a7f5a', absent: '#c0392b', late: '#b8860b' };
-  if (classes.length === 0) return <p className="muted">{isTeacher ? 'You have no classes yet  add them in My classes first.' : 'No classes yet  add them in the Classes tab first.'}</p>;
-  return (<div>
-    <div style={{ display: 'flex', gap: 16, alignItems: 'end', marginBottom: 16, flexWrap: 'wrap' }}>
-      <div style={{ minWidth: 220 }}><label style={labelStyle}>Class</label><select style={inputStyle} value={classId} onChange={e => setClassId(e.target.value)}>{classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-      <div><label style={labelStyle}>Date</label><input type="date" style={{ ...inputStyle, width: 'auto' }} value={date} onChange={e => setDate(e.target.value)} /></div>
-      <div className="muted" style={{ fontSize: 14, paddingBottom: 8 }}>Present {counts.present || 0}  Absent {counts.absent || 0}  Late {counts.late || 0}</div>
-    </div>
-    {students.length === 0 ? <p className="muted">No students in this class yet. Add students in the Students tab.</p> : (<>
-      <table><thead><tr><th>Student</th><th className="r">Mark</th></tr></thead><tbody>
-        {students.map(s => (<tr key={s.id}><td className="strong">{s.full_name}</td><td className="r">
-          <div style={{ display: 'inline-flex', gap: 6 }}>
-            {['present', 'absent', 'late'].map(st => { const on = (marks[s.id] || 'present') === st; return (<button key={st} onClick={() => setMark(s.id, st)} style={{ padding: '5px 12px', fontSize: 13, borderRadius: 6, border: '1px solid ' + (on ? colors[st] : '#dde1e6'), background: on ? colors[st] : '#fff', color: on ? '#fff' : '#5b6570', cursor: 'pointer', fontWeight: 600, textTransform: 'capitalize' }}>{st}</button>); })}
+
+  return (
+    <div>
+      <div
+        style={{
+          display: 'flex',
+          gap: 14,
+          alignItems: 'flex-end',
+          marginBottom: 18,
+          flexWrap: 'wrap',
+        }}
+      >
+        <div style={{ minWidth: 220 }}>
+          <label style={labelStyle}>Class</label>
+          <select
+            style={inputStyle}
+            value={classId}
+            onChange={event => setClassId(event.target.value)}
+          >
+            {classes.map(item => (
+              <option key={item.id} value={item.id}>
+                {item.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label style={labelStyle}>Date</label>
+          <input
+            type="date"
+            style={{ ...inputStyle, width: 'auto' }}
+            value={date}
+            onChange={event => setDate(event.target.value)}
+          />
+        </div>
+      </div>
+
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, minmax(130px, 1fr))',
+          gap: 12,
+          marginBottom: 20,
+        }}
+      >
+        {[
+          ['Present', counts.present, '#1a7f5a'],
+          ['Absent', counts.absent, '#c0392b'],
+          ['Late', counts.late, '#a66b00'],
+          ['Not marked', notMarked, '#687386'],
+        ].map(([label, value, color]) => (
+          <div
+            key={label}
+            className="card"
+            style={{ padding: 16 }}
+          >
+            <div
+              style={{
+                color,
+                fontSize: 27,
+                fontWeight: 800,
+              }}
+            >
+              {value}
+            </div>
+            <div className="muted" style={{ fontSize: 13 }}>
+              {label}
+            </div>
           </div>
-        </td></tr>))}
-      </tbody></table>
-      <div style={{ marginTop: 18 }}><button onClick={save} disabled={busy}>{busy ? 'Saving' : (saved ? 'Saved ' : 'Save attendance')}</button>{err && <p className="error">{err}</p>}</div>
-    </>)}
-  </div>);
+        ))}
+      </div>
+
+      <div
+        style={{
+          padding: '12px 14px',
+          borderRadius: 10,
+          background: '#eef5ff',
+          color: '#244d78',
+          fontSize: 13,
+          marginBottom: 18,
+        }}
+      >
+        Attendance is read-only in Chalkboard. Teachers record daily
+        attendance in Dari, and the submitted records appear here
+        automatically.
+      </div>
+
+      {err ? <p className="error">{err}</p> : null}
+
+      {busy ? (
+        <p className="muted">Loading attendance...</p>
+      ) : students.length === 0 ? (
+        <p className="muted">
+          No learners are assigned to this class.
+        </p>
+      ) : (
+        <table>
+          <thead>
+            <tr>
+              <th>Learner</th>
+              <th>Status</th>
+              <th>Recorded</th>
+            </tr>
+          </thead>
+          <tbody>
+            {students.map(student => {
+              const record = recordByLearner.get(student.id);
+              const status = statusFor(student.id);
+
+              return (
+                <tr key={student.id}>
+                  <td className="strong">{student.full_name}</td>
+                  <td style={{ textTransform: 'capitalize' }}>
+                    {status}
+                  </td>
+                  <td className="muted">
+                    {record
+                      ? record.created_at
+                        ? new Date(record.created_at).toLocaleString('en-GB')
+                        : 'Submitted'
+                      : 'No record'}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
 }
 
 function esc(v) { return String(v == null ? '' : v).replace(/[<>&]/g, function (c) { return { '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]; }); }
@@ -488,14 +1069,14 @@ function ReportsPanel({ schoolId, classes, school, settings }) {
   const monthAgo = new Date(Date.now() - 29 * 864e5).toISOString().slice(0, 10);
   const [classId, setClassId] = useState('');
   const [from, setFrom] = useState(monthAgo); const [to, setTo] = useState(today);
-  const [students, setStudents] = useState([]); const [att, setAtt] = useState([]); const [loading, setLoading] = useState(false);
+  const [students, setLearners] = useState([]); const [att, setAtt] = useState([]); const [loading, setLoading] = useState(false);
   const [openId, setOpenId] = useState(null);
   useEffect(() => { if (!classId && classes.length) setClassId(classes[0].id); }, [classes]);
   async function load() {
-    if (!classId) { setStudents([]); setAtt([]); return; }
+    if (!classId) { setLearners([]); setAtt([]); return; }
     setLoading(true);
     const { data: st } = await supabase.from('students').select('id,full_name').eq('school_id', schoolId).eq('class_id', classId).order('full_name');
-    setStudents(st || []);
+    setLearners(st || []);
     const ids = (st || []).map(s => s.id);
     let a = [];
     if (ids.length) { const r = await supabase.from('attendance').select('student_id,status,date').in('student_id', ids).gte('date', from).lte('date', to); a = r.data || []; }
@@ -511,12 +1092,12 @@ function ReportsPanel({ schoolId, classes, school, settings }) {
   const cname = (classes.find(c => c.id === classId) || {}).name || '';
   function printReport() {
     const rows = students.map(s => { const c = per[s.id]; return '<tr><td>' + esc(s.full_name) + '</td><td class=r>' + c.present + '</td><td class=r>' + c.absent + '</td><td class=r>' + c.late + '</td><td class=r>' + pct(c) + '%</td></tr>'; }).join('');
-    const html = '<html><head><title>Attendance report</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:24px;color:#1f2328}table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}th,td{border-bottom:1px solid #ccc;padding:8px;text-align:left}.r{text-align:right}.m{color:#666;font-size:13px}</style></head><body>' + letterheadHtml(school, settings) + '<h3 style="margin:0 0 4px">Attendance report  ' + esc(cname) + '</h3><div class=m>' + from + ' to ' + to + '  ' + dates.length + ' day(s)</div><table><thead><tr><th>Student</th><th class=r>Present</th><th class=r>Absent</th><th class=r>Late</th><th class=r>% present</th></tr></thead><tbody>' + rows + '</tbody></table></body></html>';
+    const html = '<html><head><title>Attendance report</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:24px;color:#1f2328}table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}th,td{border-bottom:1px solid #ccc;padding:8px;text-align:left}.r{text-align:right}.m{color:#666;font-size:13px}</style></head><body>' + letterheadHtml(school, settings) + '<h3 style="margin:0 0 4px">Attendance report  ' + esc(cname) + '</h3><div class=m>' + from + ' to ' + to + '  ' + dates.length + ' day(s)</div><table><thead><tr><th>Learner</th><th class=r>Present</th><th class=r>Absent</th><th class=r>Late</th><th class=r>% present</th></tr></thead><tbody>' + rows + '</tbody></table></body></html>';
     const w = window.open('', '_blank'); if (!w) { alert('Allow pop-ups to print the report.'); return; }
     w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 350);
   }
   if (classes.length === 0) return <p className="muted">No classes available yet.</p>;
-  const openStudent = students.find(x => x.id === openId);
+  const openLearner = students.find(x => x.id === openId);
   return (<div>
     <div style={{ display: 'flex', gap: 16, alignItems: 'end', marginBottom: 14, flexWrap: 'wrap' }}>
       <div style={{ minWidth: 200 }}><label style={labelStyle}>Class</label><select style={inputStyle} value={classId} onChange={e => { setClassId(e.target.value); setOpenId(null); }}>{classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
@@ -526,12 +1107,12 @@ function ReportsPanel({ schoolId, classes, school, settings }) {
     </div>
     <div className="muted" style={{ marginBottom: 12, fontSize: 14 }}>{dates.length} day(s) recorded  Class totals: Present {totals.present}  Absent {totals.absent}  Late {totals.late}</div>
     {loading ? <p className="muted">Loading</p> : (
-      <table><thead><tr><th>Student</th><th className="r">Present</th><th className="r">Absent</th><th className="r">Late</th><th className="r">% present</th></tr></thead><tbody>
+      <table><thead><tr><th>Learner</th><th className="r">Present</th><th className="r">Absent</th><th className="r">Late</th><th className="r">% present</th></tr></thead><tbody>
         {students.map(s => { const c = per[s.id]; const pp = pct(c); return (<tr key={s.id} onClick={() => setOpenId(openId === s.id ? null : s.id)} style={{ cursor: 'pointer', background: openId === s.id ? '#eafaf3' : 'transparent' }}><td className="strong">{s.full_name}</td><td className="r">{c.present}</td><td className="r">{c.absent}</td><td className="r">{c.late}</td><td className="r" style={{ color: pp >= 90 ? '#1a7f5a' : pp >= 75 ? '#b8860b' : '#c0392b', fontWeight: 600 }}>{pp}%</td></tr>); })}
         {students.length === 0 && <tr><td colSpan="5" className="muted">No students in this class.</td></tr>}
       </tbody></table>)}
-    {openStudent && (<div className="card" style={{ marginTop: 16 }}>
-      <div style={{ fontWeight: 700, marginBottom: 8 }}>{openStudent.full_name}  daily record</div>
+    {openLearner && (<div className="card" style={{ marginTop: 16 }}>
+      <div style={{ fontWeight: 700, marginBottom: 8 }}>{openLearner.full_name}  daily record</div>
       {(() => { const recs = att.filter(r => r.student_id === openId).sort((a, b) => a.date < b.date ? -1 : 1); return recs.length === 0 ? <p className="muted">No marks in this range.</p> : (<table><thead><tr><th>Date</th><th>Status</th></tr></thead><tbody>{recs.map((r, i) => (<tr key={i}><td>{r.date}</td><td style={{ textTransform: 'capitalize', color: colors[r.status], fontWeight: 600 }}>{r.status}</td></tr>))}</tbody></table>); })()}
     </div>)}
   </div>);
@@ -562,14 +1143,14 @@ function SubjectsPanel({ schoolId, subjects, onChange }) {
 
 function MarksPanel({ schoolId, classes, subjects, teacherId, level }) {
   const [classId, setClassId] = useState(''); const [subjectId, setSubjectId] = useState(''); const [term, setTerm] = useState(termOptions[0]);
-  const [students, setStudents] = useState([]); const [rowData, setRowData] = useState({});
+  const [students, setLearners] = useState([]); const [rowData, setRowData] = useState({});
   const [busy, setBusy] = useState(false); const [saved, setSaved] = useState(false); const [err, setErr] = useState('');
   useEffect(() => { if (!classId && classes.length) setClassId(classes[0].id); }, [classes]);
   useEffect(() => { if (!subjectId && subjects.length) setSubjectId(subjects[0].id); }, [subjects]);
   async function load() {
-    if (!classId) { setStudents([]); return; }
+    if (!classId) { setLearners([]); return; }
     const { data: st } = await supabase.from('students').select('id,full_name').eq('school_id', schoolId).eq('class_id', classId).order('full_name');
-    setStudents(st || []);
+    setLearners(st || []);
     const ids = (st || []).map(s => s.id); let existing = [];
     if (ids.length && subjectId) { const r = await supabase.from('marks').select('student_id,score,comment').eq('subject_id', subjectId).eq('term', term).in('student_id', ids); existing = r.data || []; }
     const d = {}; (st || []).forEach(s => { d[s.id] = { score: '', comment: '' }; }); existing.forEach(m => { d[m.student_id] = { score: m.score == null ? '' : m.score, comment: m.comment || '' }; }); setRowData(d);
@@ -594,7 +1175,7 @@ function MarksPanel({ schoolId, classes, subjects, teacherId, level }) {
       <div style={{ minWidth: 150 }}><label style={labelStyle}>Term</label><select style={inputStyle} value={term} onChange={e => setTerm(e.target.value)}>{termOptions.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
     </div>
     {students.length === 0 ? <p className="muted">No students in this class.</p> : (<>
-      <table><thead><tr><th>Student</th><th style={{ width: 90 }}>Mark</th><th style={{ width: 60 }}>{level === 'primary' ? 'Units' : 'Grade'}</th><th>Comment</th></tr></thead><tbody>
+      <table><thead><tr><th>Learner</th><th style={{ width: 90 }}>Mark</th><th style={{ width: 60 }}>{level === 'primary' ? 'Units' : 'Grade'}</th><th>Comment</th></tr></thead><tbody>
         {students.map(s => { const row = rowData[s.id] || { score: '', comment: '' }; const g = gradeFor(row.score, level); return (<tr key={s.id}><td className="strong">{s.full_name}</td>
           <td><input style={{ ...inputStyle, width: 70, margin: 0 }} value={row.score} onChange={e => setField(s.id, 'score', e.target.value)} placeholder="0-100" /></td>
           <td style={{ fontWeight: 700, color: g === 'A' ? '#1a7f5a' : g === 'E' ? '#c0392b' : '#1f2328' }}>{g || ''}</td>
@@ -607,32 +1188,32 @@ function MarksPanel({ schoolId, classes, subjects, teacherId, level }) {
 }
 
 function ReportCardsPanel({ schoolId, classes, subjects, school, settings, level }) {
-  const [classId, setClassId] = useState(''); const [studentId, setStudentId] = useState(''); const [term, setTerm] = useState(termOptions[0]);
+  const [classId, setClassId] = useState(''); const [studentId, setLearnerId] = useState(''); const [term, setTerm] = useState(termOptions[0]);
   const [rtype, setRtype] = useState('full');
-  const [students, setStudents] = useState([]); const [allMarks, setAllMarks] = useState([]); const [studentMarksAll, setStudentMarksAll] = useState([]);
+  const [students, setLearners] = useState([]); const [allMarks, setAllMarks] = useState([]); const [studentMarksAll, setLearnerMarksAll] = useState([]);
   const [att, setAtt] = useState({ attended: 0, total: 0 });
   const [meta, setMeta] = useState({ general_comment: '', head_comment: '', next_term: '', handwriting: '', homework: '', conduct: '' });
   const [savedMeta, setSavedMeta] = useState(false); const [busy, setBusy] = useState(false);
   useEffect(() => { if (!classId && classes.length) setClassId(classes[0].id); }, [classes]);
-  async function loadStudents() { if (!classId) { setStudents([]); return; } const { data } = await supabase.from('students').select('id,full_name').eq('school_id', schoolId).eq('class_id', classId).order('full_name'); setStudents(data || []); setStudentId((data && data.length) ? data[0].id : ''); }
-  useEffect(() => { loadStudents(); }, [classId]);
+  async function loadLearners() { if (!classId) { setLearners([]); return; } const { data } = await supabase.from('students').select('id,full_name').eq('school_id', schoolId).eq('class_id', classId).order('full_name'); setLearners(data || []); setLearnerId((data && data.length) ? data[0].id : ''); }
+  useEffect(() => { loadLearners(); }, [classId]);
   async function loadMarks() { const ids = students.map(s => s.id); if (!ids.length) { setAllMarks([]); return; } const { data } = await supabase.from('marks').select('student_id,subject_id,score,grade,comment').eq('term', term).in('student_id', ids); setAllMarks(data || []); }
   useEffect(() => { loadMarks(); }, [students, term]);
-  async function loadStudentAll() { if (!studentId) { setStudentMarksAll([]); return; } const { data } = await supabase.from('marks').select('subject_id,score,term').eq('student_id', studentId); setStudentMarksAll(data || []); }
-  useEffect(() => { loadStudentAll(); }, [studentId]);
+  async function loadLearnerAll() { if (!studentId) { setLearnerMarksAll([]); return; } const { data } = await supabase.from('marks').select('subject_id,score,term').eq('student_id', studentId); setLearnerMarksAll(data || []); }
+  useEffect(() => { loadLearnerAll(); }, [studentId]);
   async function loadAttendance() { if (!studentId) { setAtt({ attended: 0, total: 0 }); return; } const { data } = await supabase.from('attendance').select('status').eq('student_id', studentId); const total = (data || []).length; const attended = (data || []).filter(r => r.status === 'present' || r.status === 'late').length; setAtt({ attended, total }); }
   useEffect(() => { loadAttendance(); }, [studentId]);
   async function loadMeta() { if (!studentId) { setMeta({ general_comment: '', head_comment: '', next_term: '', handwriting: '', homework: '', conduct: '' }); return; } const { data } = await supabase.from('report_meta').select('*').eq('student_id', studentId).eq('term', term).maybeSingle(); setMeta({ general_comment: (data && data.general_comment) || '', head_comment: (data && data.head_comment) || '', next_term: (data && data.next_term) || '', handwriting: (data && data.handwriting) || '', homework: (data && data.homework) || '', conduct: (data && data.conduct) || '' }); }
   useEffect(() => { loadMeta(); }, [studentId, term]);
   async function saveMeta() { setBusy(true); setSavedMeta(false); await supabase.from('report_meta').upsert({ school_id: schoolId, student_id: studentId, term, general_comment: meta.general_comment || null, head_comment: meta.head_comment || null, next_term: meta.next_term || null, handwriting: meta.handwriting || null, homework: meta.homework || null, conduct: meta.conduct || null }, { onConflict: 'student_id,term' }); setSavedMeta(true); setTimeout(() => setSavedMeta(false), 2000); setBusy(false); }
   const subjName = id => { const s = subjects.find(x => x.id === id); return s ? s.name : '?'; };
-  const byStudent = {}; allMarks.forEach(m => { (byStudent[m.student_id] = byStudent[m.student_id] || []).push(m); });
-  const avgOf = sid => { const ms = byStudent[sid] || []; if (!ms.length) return null; return ms.reduce((a, m) => a + Number(m.score || 0), 0) / ms.length; };
+  const byLearner = {}; allMarks.forEach(m => { (byLearner[m.student_id] = byLearner[m.student_id] || []).push(m); });
+  const avgOf = sid => { const ms = byLearner[sid] || []; if (!ms.length) return null; return ms.reduce((a, m) => a + Number(m.score || 0), 0) / ms.length; };
   const ranked = students.map(s => ({ id: s.id, avg: avgOf(s.id) })).filter(x => x.avg != null).sort((a, b) => b.avg - a.avg);
   const outOf = ranked.length;
   const position = (() => { const i = ranked.findIndex(x => x.id === studentId); return i >= 0 ? i + 1 : null; })();
   const student = students.find(s => s.id === studentId);
-  const rows = (byStudent[studentId] || []).map(m => ({ name: subjName(m.subject_id), score: m.score, grade: gradeFor(m.score, level), comment: m.comment }));
+  const rows = (byLearner[studentId] || []).map(m => ({ name: subjName(m.subject_id), score: m.score, grade: gradeFor(m.score, level), comment: m.comment }));
   const avg = position != null ? Math.round(avgOf(studentId)) : (rows.length ? Math.round(rows.reduce((a, r) => a + Number(r.score || 0), 0) / rows.length) : 0);
   const cname = (classes.find(c => c.id === classId) || {}).name || '';
   const yr = (term.match(/\d{4}/) || [''])[0];
@@ -660,7 +1241,7 @@ function ReportCardsPanel({ schoolId, classes, subjects, school, settings, level
   return (<div>
     <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 14, alignItems: 'end' }}>
       <div style={{ minWidth: 160 }}><label style={labelStyle}>Class</label><select style={inputStyle} value={classId} onChange={e => setClassId(e.target.value)}>{classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-      <div style={{ minWidth: 190 }}><label style={labelStyle}>Student</label><select style={inputStyle} value={studentId} onChange={e => setStudentId(e.target.value)}>{students.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}</select></div>
+      <div style={{ minWidth: 190 }}><label style={labelStyle}>Learner</label><select style={inputStyle} value={studentId} onChange={e => setLearnerId(e.target.value)}>{students.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}</select></div>
       <div style={{ minWidth: 150 }}><label style={labelStyle}>Term</label><select style={inputStyle} value={term} onChange={e => setTerm(e.target.value)}>{termOptions.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
       <div style={{ minWidth: 160 }}><label style={labelStyle}>Report type</label><select style={inputStyle} value={rtype} onChange={e => setRtype(e.target.value)}><option value="full">Full term report</option><option value="mid">Mid-term report</option></select></div>
     </div>
@@ -874,7 +1455,7 @@ function DashboardPanel({ schoolId, school }) {
   const attPct = d.attTotal ? Math.round(d.attPresent / d.attTotal * 100) : null;
   return (<div>
     <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 12 }}>{school ? school.name : 'Overview'}</div>
-    <StatRow items={[{ value: d.students, label: 'Students' }, { value: d.classes, label: 'Classes' }, { value: d.teachers, label: 'Teachers' }, { value: attPct != null ? attPct + '%' : '', label: 'Attendance today' }]} />
+    <StatRow items={[{ value: d.students, label: 'Learners' }, { value: d.classes, label: 'Classes' }, { value: d.teachers, label: 'Teachers' }, { value: attPct != null ? attPct + '%' : '', label: 'Attendance today' }]} />
     <StatRow items={[{ value: money(d.income), label: 'Income', color: '#1a7f5a' }, { value: money(d.expense), label: 'Expenses', color: '#c0392b' }, { value: money(d.income - d.expense), label: 'Balance' }, { value: money(d.astTotal), label: 'Asset value' }]} />
     {d.low > 0 && <div style={{ background: '#fff8e1', border: '1px solid #f4d58a', color: '#8a6d1a', padding: '10px 14px', borderRadius: 8, fontSize: 14, marginBottom: 16 }}>{d.low} inventory item(s) low on stock  check the Inventory tab.</div>}
     <div className="card">
@@ -907,36 +1488,717 @@ function AnnouncementsPanel({ schoolId, canPost }) {
 }
 
 function StaffPanel({ schoolId }) {
-  const [rows, setRows] = useState([]);
-  const [f, setF] = useState({ full_name: '', role: '', phone: '', email: '', department: '', employed_on: '' });
-  const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
-  async function load() { const { data } = await supabase.from('staff').select('*').eq('school_id', schoolId).order('full_name'); setRows(data || []); }
-  useEffect(() => { load(); }, [schoolId]);
-  function set(k, v) { setF(o => ({ ...o, [k]: v })); }
-  async function add() { if (!f.full_name.trim()) { setErr('Enter a name.'); return; } setBusy(true); setErr('');
-    const { error } = await supabase.from('staff').insert({ school_id: schoolId, full_name: f.full_name.trim(), role: f.role || null, phone: f.phone || null, email: f.email || null, department: f.department || null, employed_on: f.employed_on || null });
-    if (error) setErr(error.message); else { setF({ full_name: '', role: '', phone: '', email: '', department: '', employed_on: '' }); await load(); } setBusy(false); }
-  async function remove(id) { await supabase.from('staff').delete().eq('id', id); await load(); }
-  return (<div>
-    <p className="muted" style={{ marginTop: 0 }}>A directory of all staff (separate from the login accounts you create in Teachers).</p>
-    <div className="card" style={{ marginBottom: 18 }}>
-      <div style={{ fontWeight: 700, marginBottom: 10 }}>Add a staff member</div>
-      <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(3, 1fr)' }}>
-        <div><label style={labelStyle}>Full name</label><input style={inputStyle} value={f.full_name} onChange={e => set('full_name', e.target.value)} placeholder="e.g. Mrs. Chikafu" /></div>
-        <div><label style={labelStyle}>Role</label><input style={inputStyle} value={f.role} onChange={e => set('role', e.target.value)} placeholder="e.g. Bursar" /></div>
-        <div><label style={labelStyle}>Department</label><input style={inputStyle} value={f.department} onChange={e => set('department', e.target.value)} placeholder="e.g. Admin" /></div>
-        <div><label style={labelStyle}>Phone</label><input style={inputStyle} value={f.phone} onChange={e => set('phone', e.target.value)} /></div>
-        <div><label style={labelStyle}>Email</label><input style={inputStyle} value={f.email} onChange={e => set('email', e.target.value)} /></div>
-        <div><label style={labelStyle}>Employed on</label><input type="date" style={inputStyle} value={f.employed_on} onChange={e => set('employed_on', e.target.value)} /></div>
+  const [tab, setTab] = useState('directory');
+  const [staff, setStaff] = useState([]);
+  const [leave, setLeave] = useState([]);
+  const [absences, setAbsences] = useState([]);
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const [staffForm, setStaffForm] = useState({
+    full_name: '',
+    employee_number: '',
+    position: '',
+    department: '',
+    employment_type: 'permanent',
+    phone: '',
+    email: '',
+    start_date: '',
+  });
+
+  const [leaveForm, setLeaveForm] = useState({
+    staff_id: '',
+    leave_type: 'annual',
+    start_date: '',
+    end_date: '',
+    reason: '',
+  });
+
+  const [absenceForm, setAbsenceForm] = useState({
+    staff_id: '',
+    absence_date: new Date().toISOString().slice(0, 10),
+    status: 'present',
+    notes: '',
+  });
+
+  async function load() {
+    const [staffResult, leaveResult, absenceResult] = await Promise.all([
+      supabase
+        .from('staff')
+        .select('*')
+        .eq('school_id', schoolId)
+        .order('full_name'),
+      supabase
+        .from('hr_leave_requests')
+        .select('*')
+        .eq('school_id', schoolId)
+        .order('created_at', { ascending: false }),
+      supabase
+        .from('hr_staff_absences')
+        .select('*')
+        .eq('school_id', schoolId)
+        .order('absence_date', { ascending: false })
+        .limit(100),
+    ]);
+
+    setStaff(staffResult.data || []);
+    setLeave(leaveResult.data || []);
+    setAbsences(absenceResult.data || []);
+
+    const loadError =
+      staffResult.error ||
+      leaveResult.error ||
+      absenceResult.error;
+
+    if (loadError) setErr(loadError.message);
+  }
+
+  useEffect(() => {
+    load();
+  }, [schoolId]);
+
+  async function addStaff() {
+    if (!staffForm.full_name.trim()) {
+      setErr('Enter the staff member name.');
+      return;
+    }
+
+    setBusy(true);
+    setErr('');
+
+    const { error } = await supabase
+      .from('staff')
+      .insert({
+        school_id: schoolId,
+        full_name: staffForm.full_name.trim(),
+        employee_number: staffForm.employee_number || null,
+        position: staffForm.position || null,
+        role: staffForm.position || null,
+        department: staffForm.department || null,
+        employment_type: staffForm.employment_type || null,
+        phone: staffForm.phone || null,
+        email: staffForm.email || null,
+        start_date: staffForm.start_date || null,
+        employed_on: staffForm.start_date || null,
+        status: 'active',
+      });
+
+    if (error) setErr(error.message);
+    else {
+      setStaffForm({
+        full_name: '',
+        employee_number: '',
+        position: '',
+        department: '',
+        employment_type: 'permanent',
+        phone: '',
+        email: '',
+        start_date: '',
+      });
+      await load();
+    }
+
+    setBusy(false);
+  }
+
+  async function addLeave() {
+    if (
+      !leaveForm.staff_id ||
+      !leaveForm.start_date ||
+      !leaveForm.end_date
+    ) {
+      setErr('Select a staff member and leave dates.');
+      return;
+    }
+
+    const start = new Date(leaveForm.start_date);
+    const end = new Date(leaveForm.end_date);
+    const days =
+      Math.floor((end - start) / 86400000) + 1;
+
+    setBusy(true);
+    setErr('');
+
+    const { error } = await supabase
+      .from('hr_leave_requests')
+      .insert({
+        school_id: schoolId,
+        staff_id: leaveForm.staff_id,
+        leave_type: leaveForm.leave_type,
+        start_date: leaveForm.start_date,
+        end_date: leaveForm.end_date,
+        days,
+        reason: leaveForm.reason || null,
+        status: 'pending',
+      });
+
+    if (error) setErr(error.message);
+    else {
+      setLeaveForm({
+        staff_id: '',
+        leave_type: 'annual',
+        start_date: '',
+        end_date: '',
+        reason: '',
+      });
+      await load();
+    }
+
+    setBusy(false);
+  }
+
+  async function setLeaveStatus(id, status) {
+    const { error } = await supabase
+      .from('hr_leave_requests')
+      .update({
+        status,
+        approved_at:
+          status === 'approved'
+            ? new Date().toISOString()
+            : null,
+      })
+      .eq('id', id);
+
+    if (error) setErr(error.message);
+    else await load();
+  }
+
+  async function recordAbsence() {
+    if (!absenceForm.staff_id || !absenceForm.absence_date) {
+      setErr('Select a staff member and date.');
+      return;
+    }
+
+    setBusy(true);
+    setErr('');
+
+    const { error } = await supabase
+      .from('hr_staff_absences')
+      .upsert(
+        {
+          school_id: schoolId,
+          staff_id: absenceForm.staff_id,
+          absence_date: absenceForm.absence_date,
+          status: absenceForm.status,
+          notes: absenceForm.notes || null,
+        },
+        { onConflict: 'staff_id,absence_date' }
+      );
+
+    if (error) setErr(error.message);
+    else {
+      setAbsenceForm({
+        staff_id: '',
+        absence_date: new Date().toISOString().slice(0, 10),
+        status: 'present',
+        notes: '',
+      });
+      await load();
+    }
+
+    setBusy(false);
+  }
+
+  async function removeStaff(id) {
+    if (!confirm('Remove this staff member?')) return;
+
+    const { error } = await supabase
+      .from('staff')
+      .delete()
+      .eq('id', id);
+
+    if (error) setErr(error.message);
+    else await load();
+  }
+
+  function staffName(id) {
+    return (
+      staff.find(item => item.id === id)?.full_name ||
+      'Unknown staff member'
+    );
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+  const currentlyAway = leave.filter(
+    item =>
+      item.status === 'approved' &&
+      item.start_date <= today &&
+      item.end_date >= today
+  );
+
+  return (
+    <div>
+      <div
+        style={{
+          display: 'flex',
+          gap: 8,
+          flexWrap: 'wrap',
+          marginBottom: 18,
+        }}
+      >
+        {[
+          ['directory', 'Staff directory'],
+          ['leave', 'Leave management'],
+          ['absence', 'Staff attendance'],
+          ['reports', 'HR overview'],
+        ].map(([value, label]) => (
+          <button
+            key={value}
+            type="button"
+            className={tab === value ? '' : 'ghost'}
+            onClick={() => setTab(value)}
+          >
+            {label}
+          </button>
+        ))}
       </div>
-      <div style={{ marginTop: 12 }}><button onClick={add} disabled={busy}>{busy ? 'Saving' : 'Add staff'}</button></div>
-      {err && <p className="error">{err}</p>}
+
+      {err ? <p className="error">{err}</p> : null}
+
+      {tab === 'directory' ? (
+        <div>
+          <div className="card" style={{ marginBottom: 18 }}>
+            <h3 style={{ marginTop: 0 }}>Add staff member</h3>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                gap: 10,
+              }}
+            >
+              {[
+                ['full_name', 'Full name'],
+                ['employee_number', 'Employee number'],
+                ['position', 'Position'],
+                ['department', 'Department'],
+                ['phone', 'Phone'],
+                ['email', 'Email'],
+              ].map(([key, label]) => (
+                <div key={key}>
+                  <label style={labelStyle}>{label}</label>
+                  <input
+                    style={inputStyle}
+                    value={staffForm[key]}
+                    onChange={event =>
+                      setStaffForm(current => ({
+                        ...current,
+                        [key]: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+              ))}
+
+              <div>
+                <label style={labelStyle}>Employment type</label>
+                <select
+                  style={inputStyle}
+                  value={staffForm.employment_type}
+                  onChange={event =>
+                    setStaffForm(current => ({
+                      ...current,
+                      employment_type: event.target.value,
+                    }))
+                  }
+                >
+                  <option value="permanent">Permanent</option>
+                  <option value="contract">Contract</option>
+                  <option value="temporary">Temporary</option>
+                  <option value="part_time">Part time</option>
+                  <option value="volunteer">Volunteer</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={labelStyle}>Start date</label>
+                <input
+                  type="date"
+                  style={inputStyle}
+                  value={staffForm.start_date}
+                  onChange={event =>
+                    setStaffForm(current => ({
+                      ...current,
+                      start_date: event.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={addStaff}
+              disabled={busy}
+              style={{ marginTop: 14 }}
+            >
+              Add staff member
+            </button>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Staff member</th>
+                <th>Position</th>
+                <th>Department</th>
+                <th>Employment</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {staff.map(item => (
+                <tr key={item.id}>
+                  <td>
+                    <strong>{item.full_name}</strong>
+                    <div className="muted" style={{ fontSize: 12 }}>
+                      {item.employee_number || item.email || ''}
+                    </div>
+                  </td>
+                  <td>{item.position || item.role || '-'}</td>
+                  <td>{item.department || '-'}</td>
+                  <td>{item.employment_type || '-'}</td>
+                  <td>{item.status || 'active'}</td>
+                  <td className="r">
+                    <button
+                      className="ghost"
+                      onClick={() => removeStaff(item.id)}
+                    >
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+
+      {tab === 'leave' ? (
+        <div>
+          <div className="card" style={{ marginBottom: 18 }}>
+            <h3 style={{ marginTop: 0 }}>Create leave request</h3>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                gap: 10,
+              }}
+            >
+              <div>
+                <label style={labelStyle}>Staff member</label>
+                <select
+                  style={inputStyle}
+                  value={leaveForm.staff_id}
+                  onChange={event =>
+                    setLeaveForm(current => ({
+                      ...current,
+                      staff_id: event.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Select staff member</option>
+                  {staff.map(item => (
+                    <option key={item.id} value={item.id}>
+                      {item.full_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={labelStyle}>Leave type</label>
+                <select
+                  style={inputStyle}
+                  value={leaveForm.leave_type}
+                  onChange={event =>
+                    setLeaveForm(current => ({
+                      ...current,
+                      leave_type: event.target.value,
+                    }))
+                  }
+                >
+                  {[
+                    'annual',
+                    'sick',
+                    'maternity',
+                    'paternity',
+                    'compassionate',
+                    'study',
+                    'unpaid',
+                    'other',
+                  ].map(item => (
+                    <option key={item} value={item}>
+                      {item.replace('_', ' ')}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={labelStyle}>Start date</label>
+                <input
+                  type="date"
+                  style={inputStyle}
+                  value={leaveForm.start_date}
+                  onChange={event =>
+                    setLeaveForm(current => ({
+                      ...current,
+                      start_date: event.target.value,
+                    }))
+                  }
+                />
+              </div>
+
+              <div>
+                <label style={labelStyle}>End date</label>
+                <input
+                  type="date"
+                  style={inputStyle}
+                  value={leaveForm.end_date}
+                  onChange={event =>
+                    setLeaveForm(current => ({
+                      ...current,
+                      end_date: event.target.value,
+                    }))
+                  }
+                />
+              </div>
+            </div>
+
+            <label style={{ ...labelStyle, marginTop: 10 }}>
+              Reason
+            </label>
+            <textarea
+              style={{ ...inputStyle, minHeight: 80 }}
+              value={leaveForm.reason}
+              onChange={event =>
+                setLeaveForm(current => ({
+                  ...current,
+                  reason: event.target.value,
+                }))
+              }
+            />
+
+            <button
+              onClick={addLeave}
+              disabled={busy}
+              style={{ marginTop: 12 }}
+            >
+              Submit leave request
+            </button>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Staff member</th>
+                <th>Leave</th>
+                <th>Dates</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {leave.map(item => (
+                <tr key={item.id}>
+                  <td>{staffName(item.staff_id)}</td>
+                  <td style={{ textTransform: 'capitalize' }}>
+                    {item.leave_type}
+                  </td>
+                  <td>
+                    {item.start_date} to {item.end_date}
+                  </td>
+                  <td style={{ textTransform: 'capitalize' }}>
+                    {item.status}
+                  </td>
+                  <td className="r">
+                    {item.status === 'pending' ? (
+                      <>
+                        <button
+                          onClick={() =>
+                            setLeaveStatus(item.id, 'approved')
+                          }
+                        >
+                          Approve
+                        </button>{' '}
+                        <button
+                          className="ghost"
+                          onClick={() =>
+                            setLeaveStatus(item.id, 'rejected')
+                          }
+                        >
+                          Reject
+                        </button>
+                      </>
+                    ) : null}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+
+      {tab === 'absence' ? (
+        <div>
+          <div className="card" style={{ marginBottom: 18 }}>
+            <h3 style={{ marginTop: 0 }}>
+              Record staff attendance or absence
+            </h3>
+
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+                gap: 10,
+              }}
+            >
+              <div>
+                <label style={labelStyle}>Staff member</label>
+                <select
+                  style={inputStyle}
+                  value={absenceForm.staff_id}
+                  onChange={event =>
+                    setAbsenceForm(current => ({
+                      ...current,
+                      staff_id: event.target.value,
+                    }))
+                  }
+                >
+                  <option value="">Select staff member</option>
+                  {staff.map(item => (
+                    <option key={item.id} value={item.id}>
+                      {item.full_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label style={labelStyle}>Date</label>
+                <input
+                  type="date"
+                  style={inputStyle}
+                  value={absenceForm.absence_date}
+                  onChange={event =>
+                    setAbsenceForm(current => ({
+                      ...current,
+                      absence_date: event.target.value,
+                    }))
+                  }
+                />
+              </div>
+
+              <div>
+                <label style={labelStyle}>Status</label>
+                <select
+                  style={inputStyle}
+                  value={absenceForm.status}
+                  onChange={event =>
+                    setAbsenceForm(current => ({
+                      ...current,
+                      status: event.target.value,
+                    }))
+                  }
+                >
+                  {[
+                    'present',
+                    'absent',
+                    'on_leave',
+                    'off_duty',
+                    'training',
+                    'official_business',
+                    'suspended',
+                  ].map(item => (
+                    <option key={item} value={item}>
+                      {item.replaceAll('_', ' ')}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <label style={{ ...labelStyle, marginTop: 10 }}>
+              Notes
+            </label>
+            <input
+              style={inputStyle}
+              value={absenceForm.notes}
+              onChange={event =>
+                setAbsenceForm(current => ({
+                  ...current,
+                  notes: event.target.value,
+                }))
+              }
+            />
+
+            <button
+              onClick={recordAbsence}
+              disabled={busy}
+              style={{ marginTop: 12 }}
+            >
+              Save staff status
+            </button>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Staff member</th>
+                <th>Status</th>
+                <th>Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {absences.map(item => (
+                <tr key={item.id}>
+                  <td>{item.absence_date}</td>
+                  <td>{staffName(item.staff_id)}</td>
+                  <td style={{ textTransform: 'capitalize' }}>
+                    {item.status.replaceAll('_', ' ')}
+                  </td>
+                  <td>{item.notes || '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
+
+      {tab === 'reports' ? (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+            gap: 12,
+          }}
+        >
+          {[
+            ['Total staff', staff.length],
+            [
+              'Active staff',
+              staff.filter(item => (item.status || 'active') === 'active').length,
+            ],
+            ['Currently on leave', currentlyAway.length],
+            [
+              'Pending leave',
+              leave.filter(item => item.status === 'pending').length,
+            ],
+          ].map(([label, value]) => (
+            <div key={label} className="card">
+              <div style={{ fontSize: 28, fontWeight: 800 }}>
+                {value}
+              </div>
+              <div className="muted">{label}</div>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </div>
-    <table><thead><tr><th>Name</th><th>Role</th><th>Department</th><th>Phone</th><th>Email</th><th></th></tr></thead><tbody>
-      {rows.map(r => (<tr key={r.id}><td className="strong">{r.full_name}</td><td>{r.role || ''}</td><td>{r.department || ''}</td><td>{r.phone || ''}</td><td className="muted">{r.email || ''}</td><td className="r"><button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={() => remove(r.id)}>Remove</button></td></tr>))}
-      {rows.length === 0 && <tr><td colSpan="6" className="muted">No staff yet.</td></tr>}
-    </tbody></table>
-  </div>);
+  );
 }
 
 function AdmissionsPanel({ schoolId, classes }) {
@@ -1073,27 +2335,27 @@ function TeacherDashboardPanel({ schoolId, classes, session }) {
 
 function AcademicsPanel({ schoolId, classes, subjects }) {
   const [term, setTerm] = useState(termOptions[0]);
-  const [students, setStudents] = useState([]); const [marks, setMarks] = useState([]); const [att, setAtt] = useState([]);
+  const [students, setLearners] = useState([]); const [marks, setMarks] = useState([]); const [att, setAtt] = useState([]);
   const [loading, setLoading] = useState(false); const [openClass, setOpenClass] = useState(null);
   useEffect(() => { (async () => {
     if (!schoolId) return; setLoading(true);
     const { data: st } = await supabase.from('students').select('id,full_name,class_id').eq('school_id', schoolId);
-    const list = st || []; setStudents(list);
+    const list = st || []; setLearners(list);
     const ids = list.map(s => s.id);
     const { data: mk } = await supabase.from('marks').select('student_id,subject_id,score').eq('term', term).in('student_id', ids.length ? ids : ['00000000-0000-0000-0000-000000000000']);
     setMarks(mk || []);
     const { data: at } = await supabase.from('attendance').select('student_id,status').eq('school_id', schoolId);
     setAtt(at || []); setLoading(false);
   })(); }, [schoolId, term]);
-  const marksByStudent = {}; marks.forEach(m => { (marksByStudent[m.student_id] = marksByStudent[m.student_id] || []).push(m); });
-  const attByStudent = {}; att.forEach(a => { const o = attByStudent[a.student_id] || { att: 0, tot: 0 }; o.tot++; if (a.status === 'present' || a.status === 'late') o.att++; attByStudent[a.student_id] = o; });
-  const studAvg = sid => { const ms = marksByStudent[sid] || []; return ms.length ? ms.reduce((a, m) => a + Number(m.score || 0), 0) / ms.length : null; };
-  const studAtt = sid => { const o = attByStudent[sid]; return o && o.tot ? Math.round(o.att / o.tot * 100) : null; };
+  const marksByLearner = {}; marks.forEach(m => { (marksByLearner[m.student_id] = marksByLearner[m.student_id] || []).push(m); });
+  const attByLearner = {}; att.forEach(a => { const o = attByLearner[a.student_id] || { att: 0, tot: 0 }; o.tot++; if (a.status === 'present' || a.status === 'late') o.att++; attByLearner[a.student_id] = o; });
+  const studAvg = sid => { const ms = marksByLearner[sid] || []; return ms.length ? ms.reduce((a, m) => a + Number(m.score || 0), 0) / ms.length : null; };
+  const studAtt = sid => { const o = attByLearner[sid]; return o && o.tot ? Math.round(o.att / o.tot * 100) : null; };
   const classRows = classes.map(c => {
     const inClass = students.filter(s => s.class_id === c.id);
     const avgs = inClass.map(s => studAvg(s.id)).filter(v => v != null);
     const avg = avgs.length ? Math.round(avgs.reduce((a, v) => a + v, 0) / avgs.length) : null;
-    let attNum = 0, attDen = 0; inClass.forEach(s => { const o = attByStudent[s.id]; if (o) { attNum += o.att; attDen += o.tot; } });
+    let attNum = 0, attDen = 0; inClass.forEach(s => { const o = attByLearner[s.id]; if (o) { attNum += o.att; attDen += o.tot; } });
     return { c, students: inClass.length, avg, attPct: attDen ? Math.round(attNum / attDen * 100) : null };
   });
   const detail = (() => {
@@ -1113,7 +2375,7 @@ function AcademicsPanel({ schoolId, classes, subjects }) {
     {loading ? <p className="muted">Loading</p> : (<>
       <div style={{ fontWeight: 700, marginBottom: 8 }}>All classes  {term}</div>
       <p className="muted" style={{ marginTop: 0, fontSize: 13 }}>Click a class to see subject averages and every pupil ranked.</p>
-      <table><thead><tr><th>Class</th><th className="r">Students</th><th className="r">Avg exam mark</th><th className="r">Attendance</th><th></th></tr></thead><tbody>
+      <table><thead><tr><th>Class</th><th className="r">Learners</th><th className="r">Avg exam mark</th><th className="r">Attendance</th><th></th></tr></thead><tbody>
         {classRows.map(r => (<tr key={r.c.id} onClick={() => setOpenClass(openClass === r.c.id ? null : r.c.id)} style={{ cursor: 'pointer', background: openClass === r.c.id ? '#eafaf3' : 'transparent' }}>
           <td className="strong">{r.c.name}</td><td className="r">{r.students}</td>
           <td className="r" style={{ fontWeight: 600, color: clr(r.avg) }}>{r.avg != null ? r.avg + '%' : ''}</td>
@@ -1127,7 +2389,7 @@ function AcademicsPanel({ schoolId, classes, subjects }) {
           {detail.subjRows.length === 0 ? <tr><td colSpan="3" className="muted">No marks entered for this class this term.</td></tr> : detail.subjRows.map((r, i) => (<tr key={i}><td className="strong">{r.name}</td><td className="r" style={{ fontWeight: 600, color: clr(r.avg) }}>{r.avg}%</td><td className="r">{r.n}</td></tr>))}
         </tbody></table>
         <div style={{ fontWeight: 700, margin: '18px 0 8px' }}>Pupils  ranked by average</div>
-        <table><thead><tr><th>#</th><th>Student</th><th className="r">Average</th><th className="r">Attendance</th></tr></thead><tbody>
+        <table><thead><tr><th>#</th><th>Learner</th><th className="r">Average</th><th className="r">Attendance</th></tr></thead><tbody>
           {detail.rows.map((r, i) => (<tr key={i}><td className="muted">{i + 1}</td><td className="strong">{r.name}</td><td className="r" style={{ fontWeight: 600, color: clr(r.avg) }}>{r.avg != null ? Math.round(r.avg) + '%' : ''}</td><td className="r" style={{ color: clr(r.att) }}>{r.att != null ? r.att + '%' : ''}</td></tr>))}
         </tbody></table>
       </div>)}
@@ -1185,12 +2447,12 @@ function FeeSetup({ schoolId, classId, term }) {
 }
 
 function FeeCollect({ schoolId, classId, term, className, school, settings }) {
-  const [students, setStudents] = useState([]); const [items, setItems] = useState([]); const [payments, setPayments] = useState([]);
+  const [students, setLearners] = useState([]); const [items, setItems] = useState([]); const [payments, setPayments] = useState([]);
   const [openId, setOpenId] = useState(null);
   const [pay, setPay] = useState({ amount: '', method: 'cash', reference: '', paid_on: new Date().toISOString().slice(0, 10) });
   const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
   async function load() {
-    const { data: st } = await supabase.from('students').select('id,full_name').eq('school_id', schoolId).eq('class_id', classId).order('full_name'); setStudents(st || []);
+    const { data: st } = await supabase.from('students').select('id,full_name').eq('school_id', schoolId).eq('class_id', classId).order('full_name'); setLearners(st || []);
     const { data: fi } = await supabase.from('fee_items').select('*').eq('school_id', schoolId).eq('class_id', classId).eq('term', term); setItems(fi || []);
     const ids = (st || []).map(s => s.id);
     if (ids.length) { const { data: fp } = await supabase.from('fee_payments').select('*').eq('term', term).in('student_id', ids); setPayments(fp || []); } else setPayments([]);
@@ -1221,24 +2483,24 @@ function FeeCollect({ schoolId, classId, term, className, school, settings }) {
     const html = '<html><head><title>' + (kind === 'receipt' ? 'Receipt' : 'Statement') + '</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:26px;color:#1f2328}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}.r{text-align:right}.m{color:#666;font-size:13px}</style></head><body>' + letterheadHtml(school, settings) + inner + '</body></html>';
     const w = window.open('', '_blank'); if (!w) { alert('Allow pop-ups to print.'); return; } w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 350);
   }
-  const openStudent = students.find(s => s.id === openId);
-  const myPayments = openStudent ? payments.filter(p => p.student_id === openId).sort((a, b) => a.paid_on < b.paid_on ? 1 : -1) : [];
+  const openLearner = students.find(s => s.id === openId);
+  const myPayments = openLearner ? payments.filter(p => p.student_id === openId).sort((a, b) => a.paid_on < b.paid_on ? 1 : -1) : [];
   return (<div>
     {due === 0 && <div style={{ background: '#fff8e1', border: '1px solid #f4d58a', color: '#8a6d1a', padding: '10px 14px', borderRadius: 8, fontSize: 14, marginBottom: 14 }}>No fees set for this class/term yet  use "Set fees" to add them.</div>}
     <div className="muted" style={{ marginBottom: 10, fontSize: 14 }}>Fee due per pupil: <b>{money(due)}</b></div>
-    <table><thead><tr><th>Student</th><th className="r">Due</th><th className="r">Paid</th><th className="r">Balance</th><th></th></tr></thead><tbody>
+    <table><thead><tr><th>Learner</th><th className="r">Due</th><th className="r">Paid</th><th className="r">Balance</th><th></th></tr></thead><tbody>
       {students.map(s => { const paid = paidOf(s.id); const bal = due - paid; return (<tr key={s.id} onClick={() => { setOpenId(openId === s.id ? null : s.id); setErr(''); }} style={{ cursor: 'pointer', background: openId === s.id ? '#eafaf3' : 'transparent' }}><td className="strong">{s.full_name}</td><td className="r">{money(due)}</td><td className="r" style={{ color: '#1a7f5a' }}>{money(paid)}</td><td className="r" style={{ fontWeight: 600, color: bal <= 0 ? '#1a7f5a' : '#c0392b' }}>{money(bal)}</td><td className="r muted" style={{ fontSize: 13 }}>{openId === s.id ? 'Hide' : 'Open'}</td></tr>); })}
       {students.length === 0 && <tr><td colSpan="5" className="muted">No students in this class.</td></tr>}
     </tbody></table>
-    {openStudent && (<div className="card" style={{ marginTop: 16 }}>
+    {openLearner && (<div className="card" style={{ marginTop: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-        <div style={{ fontWeight: 700, fontSize: 16 }}>{openStudent.full_name}</div>
+        <div style={{ fontWeight: 700, fontSize: 16 }}>{openLearner.full_name}</div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="ghost" onClick={() => printDoc('statement', openStudent)}>Print statement</button>
-          {myPayments.length > 0 && <button className="ghost" onClick={() => printDoc('receipt', openStudent, myPayments[0])}>Receipt (last)</button>}
+          <button className="ghost" onClick={() => printDoc('statement', openLearner)}>Print statement</button>
+          {myPayments.length > 0 && <button className="ghost" onClick={() => printDoc('receipt', openLearner, myPayments[0])}>Receipt (last)</button>}
         </div>
       </div>
-      <div className="muted" style={{ fontSize: 13, margin: '2px 0 12px' }}>Due {money(due)}  Paid {money(paidOf(openStudent.id))}  Balance {money(due - paidOf(openStudent.id))}</div>
+      <div className="muted" style={{ fontSize: 13, margin: '2px 0 12px' }}>Due {money(due)}  Paid {money(paidOf(openLearner.id))}  Balance {money(due - paidOf(openLearner.id))}</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
         <div><label style={labelStyle}>Amount ($)</label><input style={inputStyle} value={pay.amount} onChange={e => setPay(o => ({ ...o, amount: e.target.value }))} placeholder="0" /></div>
         <div><label style={labelStyle}>Method</label><select style={inputStyle} value={pay.method} onChange={e => setPay(o => ({ ...o, method: e.target.value }))}><option value="cash">Cash</option><option value="bank">Bank</option><option value="paynow">Paynow</option></select></div>
@@ -1302,11 +2564,11 @@ function BankingPanel({ schoolId }) {
 function ArrearsPanel({ schoolId, classes, school, settings }) {
   const [term, setTerm] = useState(termOptions[0]);
   const [classFilter, setClassFilter] = useState('all');
-  const [students, setStudents] = useState([]); const [items, setItems] = useState([]); const [payments, setPayments] = useState([]);
+  const [students, setLearners] = useState([]); const [items, setItems] = useState([]); const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(false);
   async function load() {
     if (!schoolId) return; setLoading(true);
-    const { data: st } = await supabase.from('students').select('id,full_name,class_id').eq('school_id', schoolId); setStudents(st || []);
+    const { data: st } = await supabase.from('students').select('id,full_name,class_id').eq('school_id', schoolId); setLearners(st || []);
     const { data: fi } = await supabase.from('fee_items').select('class_id,amount').eq('school_id', schoolId).eq('term', term); setItems(fi || []);
     const { data: fp } = await supabase.from('fee_payments').select('student_id,amount').eq('school_id', schoolId).eq('term', term); setPayments(fp || []);
     setLoading(false);
@@ -1315,15 +2577,15 @@ function ArrearsPanel({ schoolId, classes, school, settings }) {
   const money = n => '$' + Number(n || 0).toLocaleString();
   const clsName = id => { const c = classes.find(x => x.id === id); return c ? c.name : ''; };
   const dueByClass = {}; items.forEach(i => { dueByClass[i.class_id] = (dueByClass[i.class_id] || 0) + Number(i.amount || 0); });
-  const paidByStudent = {}; payments.forEach(pp => { paidByStudent[pp.student_id] = (paidByStudent[pp.student_id] || 0) + Number(pp.amount || 0); });
-  let rows = students.map(s => { const due = dueByClass[s.class_id] || 0; const paid = paidByStudent[s.id] || 0; return { id: s.id, name: s.full_name, cls: clsName(s.class_id), class_id: s.class_id, due, paid, bal: due - paid }; }).filter(r => r.bal > 0);
+  const paidByLearner = {}; payments.forEach(pp => { paidByLearner[pp.student_id] = (paidByLearner[pp.student_id] || 0) + Number(pp.amount || 0); });
+  let rows = students.map(s => { const due = dueByClass[s.class_id] || 0; const paid = paidByLearner[s.id] || 0; return { id: s.id, name: s.full_name, cls: clsName(s.class_id), class_id: s.class_id, due, paid, bal: due - paid }; }).filter(r => r.bal > 0);
   if (classFilter !== 'all') rows = rows.filter(r => r.class_id === classFilter);
   rows.sort((a, b) => b.bal - a.bal);
   const totalOwed = rows.reduce((a, r) => a + r.bal, 0);
   function printReport() {
     const scope = classFilter === 'all' ? 'All classes' : clsName(classFilter);
     const body = rows.map(r => '<tr><td>' + esc(r.name) + '</td><td>' + esc(r.cls) + '</td><td class=r>' + money(r.due) + '</td><td class=r>' + money(r.paid) + '</td><td class=r>' + money(r.bal) + '</td></tr>').join('');
-    const html = '<html><head><title>Fee arrears</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:26px;color:#1f2328}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}.r{text-align:right}.m{color:#666;font-size:13px}</style></head><body>' + letterheadHtml(school, settings) + '<h3 style="margin:0 0 4px">Fee arrears  ' + esc(term) + '</h3><div class=m>' + esc(scope) + '  ' + rows.length + ' pupil(s) owing</div><table style="margin-top:12px"><thead><tr><th>Student</th><th>Class</th><th class=r>Due</th><th class=r>Paid</th><th class=r>Balance</th></tr></thead><tbody>' + body + '<tr><td colspan=4><b>Total owed</b></td><td class=r><b>' + money(totalOwed) + '</b></td></tr></tbody></table></body></html>';
+    const html = '<html><head><title>Arrears</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:26px;color:#1f2328}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}.r{text-align:right}.m{color:#666;font-size:13px}</style></head><body>' + letterheadHtml(school, settings) + '<h3 style="margin:0 0 4px">Arrears  ' + esc(term) + '</h3><div class=m>' + esc(scope) + '  ' + rows.length + ' pupil(s) owing</div><table style="margin-top:12px"><thead><tr><th>Learner</th><th>Class</th><th class=r>Due</th><th class=r>Paid</th><th class=r>Balance</th></tr></thead><tbody>' + body + '<tr><td colspan=4><b>Total owed</b></td><td class=r><b>' + money(totalOwed) + '</b></td></tr></tbody></table></body></html>';
     const w = window.open('', '_blank'); if (!w) { alert('Allow pop-ups to print.'); return; } w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 350);
   }
   return (<div>
@@ -1334,7 +2596,7 @@ function ArrearsPanel({ schoolId, classes, school, settings }) {
     </div>
     {loading ? <p className="muted">Loading</p> : (<>
       <div className="muted" style={{ marginBottom: 10, fontSize: 14 }}>{rows.length} pupil(s) owing  Total owed: <b>{money(totalOwed)}</b></div>
-      <table><thead><tr><th>Student</th><th>Class</th><th className="r">Due</th><th className="r">Paid</th><th className="r">Balance</th></tr></thead><tbody>
+      <table><thead><tr><th>Learner</th><th>Class</th><th className="r">Due</th><th className="r">Paid</th><th className="r">Balance</th></tr></thead><tbody>
         {rows.map(r => (<tr key={r.id}><td className="strong">{r.name}</td><td>{r.cls}</td><td className="r">{money(r.due)}</td><td className="r" style={{ color: '#1a7f5a' }}>{money(r.paid)}</td><td className="r" style={{ fontWeight: 600, color: '#c0392b' }}>{money(r.bal)}</td></tr>))}
         {rows.length === 0 && <tr><td colSpan="5" className="muted">No arrears  everyone is paid up for this term (or fees not set yet).</td></tr>}
       </tbody></table>
@@ -1363,7 +2625,7 @@ function FeeArrears({ schoolId, term, classes, school, settings }) {
   const total = rows.reduce((a, r) => a + r.bal, 0);
   function printArrears() {
     const body = rows.map(r => '<tr><td>' + esc(r.name) + '</td><td>' + esc(clsName(r.class_id)) + '</td><td class=r>' + money(r.due) + '</td><td class=r>' + money(r.paid) + '</td><td class=r>' + money(r.bal) + '</td></tr>').join('');
-    const html = '<html><head><title>Fee arrears</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:24px;color:#1f2328}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}.r{text-align:right}</style></head><body>' + letterheadHtml(school, settings) + '<h3 style="margin:0 0 4px">Fee arrears  ' + esc(term) + '</h3><div style="color:#666;font-size:13px">' + rows.length + ' pupils owing  total ' + money(total) + '</div><table style="margin-top:12px"><thead><tr><th>Student</th><th>Class</th><th class=r>Due</th><th class=r>Paid</th><th class=r>Balance</th></tr></thead><tbody>' + body + '<tr><td colspan=4><b>Total owed</b></td><td class=r><b>' + money(total) + '</b></td></tr></tbody></table></body></html>';
+    const html = '<html><head><title>Arrears</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:24px;color:#1f2328}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}.r{text-align:right}</style></head><body>' + letterheadHtml(school, settings) + '<h3 style="margin:0 0 4px">Arrears  ' + esc(term) + '</h3><div style="color:#666;font-size:13px">' + rows.length + ' pupils owing  total ' + money(total) + '</div><table style="margin-top:12px"><thead><tr><th>Learner</th><th>Class</th><th class=r>Due</th><th class=r>Paid</th><th class=r>Balance</th></tr></thead><tbody>' + body + '<tr><td colspan=4><b>Total owed</b></td><td class=r><b>' + money(total) + '</b></td></tr></tbody></table></body></html>';
     const w = window.open('', '_blank'); if (!w) { alert('Allow pop-ups to print.'); return; } w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 350);
   }
   return (<div>
@@ -1371,7 +2633,7 @@ function FeeArrears({ schoolId, term, classes, school, settings }) {
       <div className="muted" style={{ fontSize: 14 }}>{rows.length} pupil(s) owing  total <b style={{ color: '#c0392b' }}>{money(total)}</b>  {term}, all classes</div>
       <button className="ghost" onClick={printArrears} disabled={rows.length === 0}>Print</button>
     </div>
-    <table><thead><tr><th>Student</th><th>Class</th><th className="r">Due</th><th className="r">Paid</th><th className="r">Balance</th></tr></thead><tbody>
+    <table><thead><tr><th>Learner</th><th>Class</th><th className="r">Due</th><th className="r">Paid</th><th className="r">Balance</th></tr></thead><tbody>
       {rows.map((r, i) => (<tr key={i}><td className="strong">{r.name}</td><td>{clsName(r.class_id)}</td><td className="r">{money(r.due)}</td><td className="r" style={{ color: '#1a7f5a' }}>{money(r.paid)}</td><td className="r" style={{ fontWeight: 600, color: '#c0392b' }}>{money(r.bal)}</td></tr>))}
       {rows.length === 0 && <tr><td colSpan="5" className="muted">No arrears  everyone is paid up for {term}.</td></tr>}
     </tbody></table>
