@@ -1,0 +1,165 @@
+/* People management phase 2 */
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 11px;
+  border: 1px solid #cfd8e5;
+  border-radius: 10px;
+  color: var(--cb-muted);
+  background: #fff;
+}
+
+.search-field input {
+  margin: 0;
+  padding-left: 0;
+  border: 0;
+  box-shadow: none;
+}
+
+.search-field input:focus {
+  box-shadow: none;
+}
+
+.learner-list {
+  display: grid;
+  margin-top: 12px;
+}
+
+.learner-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 62px;
+  padding: 10px 0;
+  border: 0;
+  border-bottom: 1px solid var(--cb-line);
+  border-radius: 0;
+  color: var(--cb-ink);
+  background: transparent;
+  text-align: left;
+}
+
+.learner-row:hover {
+  color: var(--cb-ink);
+  background: #fafbfc;
+}
+
+.learner-row:last-child {
+  border-bottom: 0;
+}
+
+.learner-row > div:nth-child(2) {
+  display: grid;
+  gap: 2px;
+}
+
+.learner-row strong {
+  color: var(--cb-ink);
+}
+
+.learner-row span {
+  color: var(--cb-muted);
+  font-size: 12px;
+}
+
+.learner-open {
+  color: var(--cb-primary) !important;
+  font-weight: 700;
+}
+
+.back-action,
+.record-actions,
+.hr-record-actions,
+.feature-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.back-action {
+  width: fit-content;
+}
+
+.record-actions {
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.danger-action {
+  color: var(--cb-danger) !important;
+}
+
+.feature-tabs {
+  padding: 4px;
+  border: 1px solid var(--cb-line);
+  border-radius: 11px;
+  background: #fff;
+  overflow-x: auto;
+}
+
+.feature-tabs button {
+  min-height: 35px;
+  flex: 0 0 auto;
+  border: 0;
+  color: #475467;
+  background: transparent;
+  box-shadow: none;
+  font-size: 12px;
+}
+
+.feature-tabs button:hover {
+  color: var(--cb-ink);
+  background: #f2f4f7;
+}
+
+.feature-tabs button.active {
+  color: var(--cb-ink);
+  background: #e9edf2;
+}
+
+.hr-record-list {
+  display: grid;
+}
+
+.hr-record {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--cb-line);
+}
+
+.hr-record:last-child {
+  border-bottom: 0;
+}
+
+.hr-record > div:first-child {
+  display: grid;
+  gap: 2px;
+}
+
+.hr-record strong {
+  color: var(--cb-ink);
+}
+
+.hr-record span {
+  color: var(--cb-muted);
+  font-size: 12px;
+}
+
+@media (max-width: 700px) {
+  .learner-row,
+  .hr-record {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .learner-open,
+  .hr-record > .status-badge,
+  .hr-record-actions {
+    grid-column: 2;
+    justify-self: start;
+  }
+}
