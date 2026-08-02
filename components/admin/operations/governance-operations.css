@@ -1,0 +1,185 @@
+/* Governance and Operations module */
+.governance-form,
+.operations-form {
+  display: grid;
+  gap: 15px;
+}
+
+.meeting-list,
+.resolution-list,
+.contractor-list {
+  display: grid;
+  gap: 12px;
+}
+
+.meeting-record,
+.contractor-record {
+  padding: 17px;
+  border: 1px solid var(--cb-line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.meeting-record > header,
+.contractor-record > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.meeting-record h3,
+.contractor-record h3,
+.event-card h3 {
+  margin: 0;
+  color: var(--cb-navy);
+  font-size: 17px;
+}
+
+.meeting-record header p,
+.contractor-record header p {
+  margin: 3px 0 0;
+  color: var(--cb-muted);
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.meeting-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--cb-muted);
+  font-size: 12px;
+}
+
+.meeting-minutes {
+  margin: 14px 0 0;
+  white-space: pre-wrap;
+  color: #475467;
+}
+
+.resolution-list {
+  margin-top: 14px;
+}
+
+.resolution-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--cb-line);
+}
+
+.resolution-row p {
+  margin: 4px 0;
+  color: #344054;
+}
+
+.resolution-row span {
+  color: var(--cb-muted);
+  font-size: 12px;
+}
+
+.event-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.event-card {
+  padding: 16px;
+  border: 1px solid var(--cb-line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.event-date,
+.event-meta,
+.event-meta span {
+  display: flex;
+  align-items: center;
+}
+
+.event-date {
+  gap: 7px;
+  margin-bottom: 13px;
+  color: var(--cb-primary);
+  font-size: 12px;
+}
+
+.event-date span {
+  color: var(--cb-muted);
+}
+
+.event-card p {
+  min-height: 40px;
+  color: var(--cb-muted);
+  font-size: 13px;
+}
+
+.event-meta {
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--cb-line);
+}
+
+.event-meta span {
+  gap: 5px;
+  color: #5f6b7c;
+  font-size: 11px;
+}
+
+.contractor-finance {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.contractor-finance span {
+  display: grid;
+  gap: 3px;
+  padding: 11px;
+  border-radius: 9px;
+  color: var(--cb-muted);
+  background: #f7f8fa;
+  font-size: 11px;
+}
+
+.contractor-finance strong {
+  color: var(--cb-navy);
+  font-size: 15px;
+}
+
+.quantity-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.low-stock-label {
+  margin-left: 7px;
+  color: var(--cb-danger);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+@media (max-width: 950px) {
+  .event-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .event-grid,
+  .contractor-finance {
+    grid-template-columns: 1fr;
+  }
+
+  .resolution-row {
+    grid-template-columns: 1fr;
+  }
+}
