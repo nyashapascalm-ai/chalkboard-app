@@ -12,7 +12,7 @@ export async function POST(req) {
     if (!id || !key) return Response.json({ error: 'Online payment is not enabled yet. Please pay the platform admin directly.' }, { status: 400 });
     const reference = 'SUB-' + String(schoolId).slice(0, 8) + '-' + Date.now();
     const base = origin || process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const p = await initiate({ id, key, authemail, reference, amount: sub.amount, returnurl: base + '/?subpay=1', resulturl: base + '/api/subscription-pay/status', additionalinfo: 'Chalkboard subscription' });
+    const p = await initiate({ id, key, authemail, reference, amount: sub.amount, returnurl: base + '/app?subpay=1', resulturl: base + '/api/subscription-pay/status', additionalinfo: 'Chalkboard subscription' });
     if ((p.status || '').toLowerCase() !== 'ok' || !p.browserurl) return Response.json({ error: p.error || 'Could not start payment.' }, { status: 400 });
     await admin.from('subscription_payments').insert({ school_id: schoolId, amount: sub.amount, method: 'paynow', status: 'pending', poll_url: p.pollurl, reference });
     return Response.json({ browserurl: p.browserurl });

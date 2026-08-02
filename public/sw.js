@@ -1,10 +1,1 @@
-const CACHE = 'chalkboard-v1';
-const ASSETS = ['/', '/manifest.json', '/icon-192.png', '/icon-512.png'];
-self.addEventListener('install', e => { self.skipWaiting(); e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS).catch(() => {}))); });
-self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))); self.clients.claim(); });
-self.addEventListener('fetch', e => {
-  const url = new URL(e.request.url);
-  if (e.request.method !== 'GET') return;
-  if (url.pathname.startsWith('/api') || url.hostname.includes('supabase')) return;
-  e.respondWith(fetch(e.request).then(res => { const copy = res.clone(); caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {}); return res; }).catch(() => caches.match(e.request)));
-});
+const CACHE="chalkboard-v2";const ASSETS=["/","/app","/download","/offline","/manifest.json","/brand/chalkboard-logo.png","/icon-192.png","/icon-512.png"];self.addEventListener("install",e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).catch(()=>{}))});self.addEventListener("activate",e=>{e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(k=>Promise.all(k.filter(x=>x!==CACHE).map(x=>caches.delete(x))))]))});self.addEventListener("fetch",e=>{const r=e.request,u=new URL(r.url);if(r.method!=="GET"||u.pathname.startsWith("/api")||u.hostname.includes("supabase"))return;if(r.mode==="navigate"){e.respondWith(fetch(r).catch(()=>caches.match("/offline")));return}e.respondWith(caches.match(r).then(c=>c||fetch(r).then(res=>{if(res.ok)caches.open(CACHE).then(x=>x.put(r,res.clone())).catch(()=>{});return res})))})
