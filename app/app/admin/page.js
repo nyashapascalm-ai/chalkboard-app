@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { supabase } from '../../../lib/supabaseClient';
+import { supabase } from '../../../lib/supabaseClient';
+import ExportToolbar from '../../../components/ExportToolbar';
 
 function installApp() {
   const p = typeof window !== 'undefined' ? window.__cbPrompt : null;
@@ -307,6 +308,7 @@ const subToday = new Date().toISOString().slice(0, 10);
     <main className="main">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 18 }}>
         <h1>{title}</h1>
+          <ExportToolbar title={title || 'Chalkboard'} scopeSelector=".main" />
         {canPick && <select value={schoolId || ''} onChange={e => setSchoolId(e.target.value)} style={{ width: 'auto', minWidth: 200 }}>{schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>}
       </div>
       {!O && (subStatus.code === 'due_soon' || subStatus.code === 'overdue') && (<div style={{ background: subStatus.code === 'overdue' ? '#fdeaea' : '#fff8e1', border: '1px solid ' + (subStatus.code === 'overdue' ? '#f3c2c2' : '#f4d58a'), color: subStatus.code === 'overdue' ? '#c0392b' : '#8a6d1a', padding: '10px 14px', borderRadius: 8, fontSize: 14, marginBottom: 16 }}>{subStatus.code === 'overdue' ? 'Subscription overdue (due ' + subStatus.due + '). Please pay to avoid losing access.' : 'Subscription due on ' + subStatus.due + '.'}</div>)}
@@ -2868,7 +2870,7 @@ function MeetingsPanel({ schoolId }) {
         <h3 style={{ marginTop: 0 }}>Add a resolution</h3>
         <select style={inputStyle} value={selectedMeeting} onChange={e=>setSelectedMeeting(e.target.value)}>
           <option value="">Select meeting</option>
-          {meetings.map(m=><option key={m.id} value={m.id}>{m.meeting_date} ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â {m.title}</option>)}
+          {meetings.map(m=><option key={m.id} value={m.id}>{m.meeting_date}  -  {m.title}</option>)}
         </select>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 10, marginTop: 10 }}>
           <input style={inputStyle} placeholder="Resolution number" value={resolution.resolution_number} onChange={e=>setResolution(x=>({...x,resolution_number:e.target.value}))}/>
@@ -2883,13 +2885,13 @@ function MeetingsPanel({ schoolId }) {
       {meetings.map(m=>(
         <div className="card" key={m.id} style={{marginBottom:14}}>
           <strong>{m.title}</strong>
-          <div className="muted">{m.meeting_date} Ãƒâ€šÃ‚Â· {m.meeting_type} Ãƒâ€šÃ‚Â· {m.venue || 'Venue not set'}</div>
+          <div className="muted">{m.meeting_date}  -  {m.meeting_type}  -  {m.venue || 'Venue not set'}</div>
           {m.minutes ? <p style={{whiteSpace:'pre-wrap'}}>{m.minutes}</p> : null}
           <div style={{marginTop:10}}>
             {resolutions.filter(r=>r.meeting_id===m.id).map(r=>(
               <div key={r.id} style={{padding:'10px 0',borderTop:'1px solid #e5e7eb'}}>
                 <strong>{r.resolution_number || 'Resolution'}</strong>: {r.resolution}
-                <div className="muted">Owner: {r.responsible_person || '-'} Ãƒâ€šÃ‚Â· Due: {r.due_date || '-'} Ãƒâ€šÃ‚Â· Status: {r.status}</div>
+                <div className="muted">Owner: {r.responsible_person || '-'}  -  Due: {r.due_date || '-'}  -  Status: {r.status}</div>
                 {r.status !== 'completed' ? <button onClick={()=>updateResolution(r.id,'completed')} style={{marginTop:6}}>Mark completed</button> : null}
               </div>
             ))}
@@ -2960,7 +2962,7 @@ function EventsPanel({ schoolId }) {
     <div style={{display:'grid',gap:12}}>
       {events.map(e=><article className="card" key={e.id}>
         <strong>{e.title}</strong>
-        <div className="muted">{e.start_date}{e.end_date ? ` to ${e.end_date}` : ''} Ãƒâ€šÃ‚Â· {e.category} Ãƒâ€šÃ‚Â· {e.venue || 'Venue not set'}</div>
+        <div className="muted">{e.start_date}{e.end_date ? ` to ${e.end_date}` : ''}  -  {e.category}  -  {e.venue || 'Venue not set'}</div>
         {e.description ? <p>{e.description}</p> : null}
       </article>)}
     </div>
@@ -3064,8 +3066,8 @@ function ContractorsPanel({ schoolId }) {
         const balance=c.contract_value!=null?Number(c.contract_value)-total:null;
         return <article className="card" key={c.id}>
           <strong>{c.contractor_name}</strong>
-          <div className="muted">{c.company_name||''} Ãƒâ€šÃ‚Â· {c.service_type} Ãƒâ€šÃ‚Â· {c.status}</div>
-          <div style={{marginTop:8}}>Contract value: {c.contract_value!=null?Number(c.contract_value).toLocaleString():'Not set'} Ãƒâ€šÃ‚Â· Paid: {total.toLocaleString()} Ãƒâ€šÃ‚Â· Balance: {balance!=null?balance.toLocaleString():'-'}</div>
+          <div className="muted">{c.company_name||''}  -  {c.service_type}  -  {c.status}</div>
+          <div style={{marginTop:8}}>Contract value: {c.contract_value!=null?Number(c.contract_value).toLocaleString():'Not set'}  -  Paid: {total.toLocaleString()}  -  Balance: {balance!=null?balance.toLocaleString():'-'}</div>
         </article>
       })}
     </div>
@@ -3315,8 +3317,8 @@ function FinanceDocumentsPanel({ schoolId, school, settings }) {
         <button onClick={createInvoice} style={{marginTop:12}}>Issue invoice</button>
       </div>
       {invoices.map(row=><article className="card" key={row.id} style={{marginBottom:12}}>
-        <strong>{row.invoice_number}</strong> Ã¢â‚¬â€ {row.issued_to}
-        <div className="muted">{row.invoice_date} Ã‚Â· {row.currency} {Number(row.total).toFixed(2)} Ã‚Â· Balance {row.currency} {Number(row.balance).toFixed(2)} Ã‚Â· {row.status}</div>
+        <strong>{row.invoice_number}</strong>  -  {row.issued_to}
+        <div className="muted">{row.invoice_date}  -  {row.currency} {Number(row.total).toFixed(2)}  -  Balance {row.currency} {Number(row.balance).toFixed(2)}  -  {row.status}</div>
         <div style={{display:'flex',gap:8,marginTop:10,flexWrap:'wrap'}}>
           <button onClick={()=>printDoc('invoice',row)}>Print / Save PDF</button>
           <button className="ghost" onClick={()=>emailDoc('invoice',row)}>Email</button>
@@ -3334,7 +3336,7 @@ function FinanceDocumentsPanel({ schoolId, school, settings }) {
         </select>
         <select style={{...inputStyle,marginTop:10}} value={receipt.invoice_id} onChange={e=>setReceipt(x=>({...x,invoice_id:e.target.value}))}>
           <option value="">Optional: link to invoice</option>
-          {invoices.filter(i=>i.status!=='paid'&&i.status!=='void').map(i=><option key={i.id} value={i.id}>{i.invoice_number} Ã¢â‚¬â€ {i.issued_to}</option>)}
+          {invoices.filter(i=>i.status!=='paid'&&i.status!=='void').map(i=><option key={i.id} value={i.id}>{i.invoice_number}  -  {i.issued_to}</option>)}
         </select>
         <div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:10,marginTop:10}}>
           {[
@@ -3354,8 +3356,8 @@ function FinanceDocumentsPanel({ schoolId, school, settings }) {
         <button onClick={createReceipt} style={{marginTop:12}}>Issue receipt</button>
       </div>
       {receipts.map(row=><article className="card" key={row.id} style={{marginBottom:12}}>
-        <strong>{row.receipt_number}</strong> Ã¢â‚¬â€ {row.received_from}
-        <div className="muted">{row.receipt_date} Ã‚Â· {row.currency} {Number(row.amount).toFixed(2)} Ã‚Â· {row.payment_method || '-'}</div>
+        <strong>{row.receipt_number}</strong>  -  {row.received_from}
+        <div className="muted">{row.receipt_date}  -  {row.currency} {Number(row.amount).toFixed(2)}  -  {row.payment_method || '-'}</div>
         <div style={{display:'flex',gap:8,marginTop:10,flexWrap:'wrap'}}>
           <button onClick={()=>printDoc('receipt',row)}>Print / Save PDF</button>
           <button className="ghost" onClick={()=>emailDoc('receipt',row)}>Email</button>
@@ -3721,7 +3723,7 @@ function BudgetPanel({ schoolId, settings }) {
       unit_rate: 0,
       periods: 3,
       assumptions:
-        'Projected learners Ã— fee per learner Ã— school terms',
+        'Projected learners  -  fee per learner  -  school terms',
     });
   }
 
@@ -3739,7 +3741,7 @@ function BudgetPanel({ schoolId, settings }) {
       unit_rate: 0,
       periods: 1,
       assumptions:
-        'Projected learners Ã— annual levy',
+        'Projected learners  -  annual levy',
     });
   }
 
@@ -3932,8 +3934,8 @@ function BudgetPanel({ schoolId, settings }) {
           >
             {budgets.map(item => (
               <option key={item.id} value={item.id}>
-                {item.financial_year} Â· Version{' '}
-                {item.version} Â· {item.title} Â·{' '}
+                {item.financial_year}  -  Version{' '}
+                {item.version}  -  {item.title}  - {' '}
                 {item.status}
               </option>
             ))}
@@ -4004,9 +4006,9 @@ function BudgetPanel({ schoolId, settings }) {
                 </strong>
                 <div className="muted">
                   FY {activeBudget.financial_year}
-                  {' Â· '}
+                  {'  -  '}
                   Version {activeBudget.version}
-                  {' Â· '}
+                  {'  -  '}
                   Status {activeBudget.status}
                 </div>
               </div>
@@ -4306,7 +4308,7 @@ function BudgetPanel({ schoolId, settings }) {
                     <td>
                       {item.category}
                       {item.subcategory
-                        ? ` Â· ${item.subcategory}`
+                        ? `  -  ${item.subcategory}`
                         : ''}
                     </td>
 
@@ -4326,11 +4328,11 @@ function BudgetPanel({ schoolId, settings }) {
                       {Number(
                         item.quantity
                       ).toFixed(2)}
-                      {' Ã— '}
+                      {'  -  '}
                       {Number(
                         item.unit_rate
                       ).toFixed(2)}
-                      {' Ã— '}
+                      {'  -  '}
                       {Number(
                         item.periods
                       ).toFixed(2)}
@@ -4393,7 +4395,7 @@ function BudgetPanel({ schoolId, settings }) {
                   <strong>
                     {activeBudget.currency}{' '}
                     {Number(amount).toFixed(2)}
-                    {' Â· '}
+                    {'  -  '}
                     {expenses > 0
                       ? (
                           (Number(amount) /

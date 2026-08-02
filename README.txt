@@ -1,53 +1,52 @@
-CHALKBOARD BUDGET + INVOICE FIX 1.0
+CHALKBOARD PLATFORM EXPORTS + ENCODING FIX 1.0
 
-FIX
----
-The shared students table does not contain email and phone columns.
-The invoice and receipt learner selector now loads only:
-- id
-- full_name
+Fixes broken separator and punctuation text, including:
+- Ãƒâ€šÃ‚Â·
+- Ã‚Â·
+- Â·
 
-Email and phone remain manual recipient fields.
+Adds a shared export toolbar to:
+- School Administrator
+- Operator
+- Ministry
 
-ANNUAL BUDGET
--------------
-Adds Finance -> Annual budget.
+Buttons:
+- Print / Save PDF
+- Export Excel
+- Export Word
 
-Features:
-- Financial year and version control
-- Draft, submitted, approved, rejected, locked and archived statuses
-- Projected learner count
-- Projected fees:
-  learners x fee per learner x school terms
-- Projected levies:
-  learners x annual levy
-- Other income categories
-- Full expenditure categories
-- Quantity x unit rate x periods calculations
-- Projected income
-- Planned expenditure
-- Surplus or deficit
-- Expense allocation percentages
-- Submission, approval and lock workflow
-- Approval history foundation
+The currently open module is exported. This applies to:
+- meetings and minutes
+- resolutions
+- events
+- budgets
+- invoices and receipts
+- petty cash
+- HR and leave
+- attendance reports
+- teachers and allocations
+- fees and arrears
+- contractors and payments
+- inventory and assets
+- Operator school lists
+- Ministry reporting
 
-DATABASE
---------
-Run:
-supabase/20260802_chalkboard_budgets.sql
+Excel downloads an Excel-compatible CSV.
+Word downloads a Word-compatible .doc.
+PDF uses the browser print dialog.
 
 INSTALL
 -------
-1. Extract into the Chalkboard project.
-2. Run the SQL.
-3. Run:
-   powershell -ExecutionPolicy Bypass -File .\INSTALL_CHALKBOARD_BUDGET_AND_INVOICE_FIX.ps1
-4. Run:
-   npm run build
+Extract into:
+C:\Users\Dell\Downloads\chalkboard-x\chalkboard
 
-BACKUP
-------
-The installer creates:
-app/app/admin/page.before-budget-module.js
+Run:
+powershell -ExecutionPolicy Bypass -File .\INSTALL_CHALKBOARD_PLATFORM_EXPORTS.ps1
 
-Do not commit the backup.
+Then:
+npm run build
+
+Backups use:
+.before-platform-export
+
+Do not commit backup files.

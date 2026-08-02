@@ -2,6 +2,7 @@
 import {Building2,CreditCard,GraduationCap,LogOut,School,ShieldCheck,Users} from "lucide-react";
 import {useEffect,useState} from "react";
 import {supabase} from "../../../lib/supabaseClient";
+import ExportToolbar from '../../../components/ExportToolbar';
 
 export default function OperatorPortal(){
  const[s,setS]=useState({loading:true,error:"",user:null,schools:[],metrics:{}});
@@ -26,5 +27,6 @@ export default function OperatorPortal(){
  </Shell>
 }
 function Metric({icon:Icon,label,value}){return <article className="cb-metric-card"><Icon size={21}/><strong>{Number(value||0).toLocaleString("en-GB")}</strong><span>{label}</span></article>}
-function Shell({title,subtitle,user,onSignOut,icon:Icon,children}){return <main className="cb-portal-page"><aside className="cb-portal-sidebar"><img src="/brand/chalkboard-logo.png" alt="Chalkboard"/><div className="cb-portal-role"><Icon size={20}/><div><strong>{title}</strong><span>{subtitle}</span></div></div><div className="cb-portal-user"><strong>{user?.name}</strong><span>{user?.email}</span></div><button onClick={onSignOut} className="cb-signout"><LogOut size={18}/>Sign out</button></aside><section className="cb-portal-main"><header><p>Chalkboard</p><h1>{title}</h1><span>{subtitle}</span></header>{children}</section></main>}
+function Shell({title,subtitle,user,onSignOut,icon:Icon,children}){return <main className="cb-portal-page"><aside className="cb-portal-sidebar"><img src="/brand/chalkboard-logo.png" alt="Chalkboard"/><div className="cb-portal-role"><Icon size={20}/><div><strong>{title}</strong><span>{subtitle}</span></div></div><div className="cb-portal-user"><strong>{user?.name}</strong><span>{user?.email}</span></div><button onClick={onSignOut} className="cb-signout"><LogOut size={18}/>Sign out</button></aside><section className="cb-portal-main"><header><p>Chalkboard</p><h1>{title}</h1><span>{subtitle}</span></header>
+        <ExportToolbar title={'Platform Operator'} scopeSelector=".cb-portal-main" />{children}</section></main>}
 function Loading({label}){return <main className="cb-portal-loading"><img src="/icon-192.png" alt=""/><p>{label}</p></main>}
