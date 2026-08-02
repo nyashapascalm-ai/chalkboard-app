@@ -4,6 +4,7 @@ import { supabase } from '../../../lib/supabaseClient';
 import ExportToolbar from '../../../components/ExportToolbar';
 import PersonnelPanel from '../../../components/PersonnelPanel';
 import GovernanceBoardPanel from '../../../components/GovernanceBoardPanel';
+import CommunicationCentre from '../../../components/CommunicationCentre';
 
 function installApp() {
   const p = typeof window !== 'undefined' ? window.__cbPrompt : null;
@@ -241,7 +242,7 @@ function Console({ session, role, canPick, initialSchool }) {
       label: 'Communication',
       icon: '',
       items: [
-        ['announcements', 'Announcements', ''],
+        ['communications', 'Communications', ''],
       ],
     },
     {
@@ -264,6 +265,7 @@ const groupOf = k => { const g = groups.find(gr => gr.items.some(it => it[0] ===
     fees: 'Fees',
     arrears: 'Arrears',
     announcements: 'Announcements',
+    communications: 'Communications',
     staff: 'Human Resources',
     personnel: 'Personnel records',
     admissions: 'Admissions',
@@ -332,6 +334,7 @@ const subToday = new Date().toISOString().slice(0, 10);
         nav === 'meetings' ? <MeetingsPanel schoolId={schoolId} /> :
         nav === 'events' ? <EventsPanel schoolId={schoolId} /> :
         nav === 'contractors' ? <ContractorsPanel schoolId={schoolId} /> :
+        nav === 'communications' ? <CommunicationCentre schoolId={schoolId} /> :
         nav === 'announcements' ? <AnnouncementsPanel schoolId={schoolId} canPost={!isTeacher} /> :
         nav === 'personnel' ? <PersonnelPanel schoolId={schoolId} /> :
         nav === 'staff' ? <StaffPanel schoolId={schoolId} /> :
