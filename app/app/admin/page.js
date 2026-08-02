@@ -2,6 +2,8 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabaseClient';
 import ExportToolbar from '../../../components/ExportToolbar';
+import PersonnelPanel from '../../../components/PersonnelPanel';
+import GovernanceBoardPanel from '../../../components/GovernanceBoardPanel';
 
 function installApp() {
   const p = typeof window !== 'undefined' ? window.__cbPrompt : null;
@@ -188,6 +190,7 @@ function Console({ session, role, canPick, initialSchool }) {
         ['students', 'Learners', ''],
         ['teachers', 'Teachers and allocations', ''],
         ['staff', 'Human Resources', ''],
+        ['personnel', 'Personnel records', ''],
         ['admissions', 'Admissions', ''],
       ],
     },
@@ -218,6 +221,7 @@ function Console({ session, role, canPick, initialSchool }) {
       label: 'Governance',
       icon: '',
       items: [
+        ['board', 'Governing board', ''],
         ['meetings', 'Meetings and resolutions', ''],
         ['events', 'Events calendar', ''],
       ],
@@ -261,6 +265,7 @@ const groupOf = k => { const g = groups.find(gr => gr.items.some(it => it[0] ===
     arrears: 'Arrears',
     announcements: 'Announcements',
     staff: 'Human Resources',
+    personnel: 'Personnel records',
     admissions: 'Admissions',
     students: 'Learners',
     classes: 'Classes and forms',
@@ -276,6 +281,7 @@ const groupOf = k => { const g = groups.find(gr => gr.items.some(it => it[0] ===
     inventory: 'Inventory',
     assets: 'Assets',
     meetings: 'Meetings and resolutions',
+    board: 'Governing board',
     events: 'Events calendar',
     contractors: 'Contractors and payments',
   }[nav];
@@ -322,10 +328,12 @@ const subToday = new Date().toISOString().slice(0, 10);
         nav === 'fees' ? <FeesPanel schoolId={schoolId} classes={allClasses} school={school} settings={settings} /> :
         nav === 'academics' ? <AcademicsPanel schoolId={schoolId} classes={allClasses} subjects={subjects} /> :
         nav === 'dashboard' ? (isTeacher ? <TeacherDashboardPanel schoolId={schoolId} classes={available} session={session} /> : <DashboardPanel schoolId={schoolId} school={school} />) :
+        nav === 'board' ? <GovernanceBoardPanel schoolId={schoolId} /> :
         nav === 'meetings' ? <MeetingsPanel schoolId={schoolId} /> :
         nav === 'events' ? <EventsPanel schoolId={schoolId} /> :
         nav === 'contractors' ? <ContractorsPanel schoolId={schoolId} /> :
         nav === 'announcements' ? <AnnouncementsPanel schoolId={schoolId} canPost={!isTeacher} /> :
+        nav === 'personnel' ? <PersonnelPanel schoolId={schoolId} /> :
         nav === 'staff' ? <StaffPanel schoolId={schoolId} /> :
         nav === 'admissions' ? <AdmissionsPanel schoolId={schoolId} classes={allClasses} /> :
         nav === 'banking' ? <BankingPanel schoolId={schoolId} /> :

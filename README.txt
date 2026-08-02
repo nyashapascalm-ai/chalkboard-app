@@ -1,52 +1,30 @@
-CHALKBOARD PLATFORM EXPORTS + ENCODING FIX 1.0
+CHALKBOARD PERSONNEL + GOVERNING BOARD 1.0
 
-Fixes broken separator and punctuation text, including:
-- Ãƒâ€šÃ‚Â·
-- Ã‚Â·
-- Â·
+Adds People -> Personnel records:
+- date of birth and calculated age
+- national ID and employee number
+- position, department and employment dates
+- professional registration number, body and expiry
+- qualifications, institution, field and graduation year
+- previous employment and references
+- trade union membership
+- restricted police clearance, conviction and suitability records
 
-Adds a shared export toolbar to:
-- School Administrator
-- Operator
-- Ministry
-
-Buttons:
-- Print / Save PDF
-- Export Excel
-- Export Word
-
-The currently open module is exported. This applies to:
-- meetings and minutes
-- resolutions
-- events
-- budgets
-- invoices and receipts
-- petty cash
-- HR and leave
-- attendance reports
-- teachers and allocations
-- fees and arrears
-- contractors and payments
-- inventory and assets
-- Operator school lists
-- Ministry reporting
-
-Excel downloads an Excel-compatible CSV.
-Word downloads a Word-compatible .doc.
-PDF uses the browser print dialog.
+Adds Governance -> Governing board:
+- annual board terms
+- start and end dates
+- board roles and representing group
+- appointment and service dates
+- contact details
+- qualifications and expertise
+- declarations of interest
+- active/completed board history
 
 INSTALL
--------
-Extract into:
-C:\Users\Dell\Downloads\chalkboard-x\chalkboard
+1. Run supabase/20260802_chalkboard_personnel_governance.sql in Supabase.
+2. Extract this package into C:\Users\Dell\Downloads\chalkboard-x\chalkboard
+3. Run:
+   powershell -ExecutionPolicy Bypass -File .\INSTALL_CHALKBOARD_PERSONNEL_GOVERNANCE.ps1
+4. Run npm run build
 
-Run:
-powershell -ExecutionPolicy Bypass -File .\INSTALL_CHALKBOARD_PLATFORM_EXPORTS.ps1
-
-Then:
-npm run build
-
-Backups use:
-.before-platform-export
-
-Do not commit backup files.
+Do not commit app/app/admin/page.before-personnel-governance.js.
