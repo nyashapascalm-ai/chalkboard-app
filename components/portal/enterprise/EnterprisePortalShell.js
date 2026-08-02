@@ -14,6 +14,7 @@ export default function EnterprisePortalShell({
   icon: RoleIcon,
   user,
   exportTitle,
+  navigation,
   children,
 }) {
   async function signOut() {
@@ -38,6 +39,8 @@ export default function EnterprisePortalShell({
             <span>{subtitle}</span>
           </div>
         </div>
+
+        {navigation}
 
         <div className="enterprise-user">
           <strong>{user?.name}</strong>

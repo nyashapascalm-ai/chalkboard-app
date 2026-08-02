@@ -1,0 +1,238 @@
+/* Operator and Ministry insight upgrade */
+.enterprise-nav {
+  display: grid;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.enterprise-nav button {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 9px;
+  color: #344054;
+  background: transparent;
+  box-shadow: none;
+  text-align: left;
+}
+
+.enterprise-nav button:hover {
+  color: var(--cb-ink);
+  background: #f2f4f7;
+}
+
+.enterprise-nav button.active {
+  color: #fff;
+  background: #1E5EF7;
+}
+
+.enterprise-form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.enterprise-form-grid button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 42px;
+}
+
+.enterprise-success {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid #b8dec8;
+  border-radius: 10px;
+  color: #12613f;
+  background: #eef9f3;
+}
+
+.enterprise-status {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  min-height: 25px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #344054;
+  background: #eef1f5;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.enterprise-status.active,
+.enterprise-status.current,
+.enterprise-status.healthy,
+.enterprise-status.available {
+  color: #12613f;
+  background: #eaf7f0;
+}
+
+.enterprise-status.overdue,
+.enterprise-status.error,
+.enterprise-status.suspended {
+  color: #9c252d;
+  background: #fff0f1;
+}
+
+.enterprise-status.warning,
+.enterprise-status.onboarding,
+.enterprise-status.pending {
+  color: #825100;
+  background: #fff4d8;
+}
+
+.enterprise-link-button {
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  color: var(--cb-primary);
+  background: transparent;
+  box-shadow: none;
+  font-weight: 800;
+  text-align: left;
+}
+
+.enterprise-link-button:hover {
+  color: var(--cb-navy);
+  background: transparent;
+}
+
+.enterprise-report-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.enterprise-search {
+  display: block;
+  max-width: 420px;
+  margin-bottom: 15px;
+}
+
+.enterprise-health-list {
+  display: grid;
+}
+
+.enterprise-health-list article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--cb-line);
+}
+
+.enterprise-health-list article:last-child {
+  border-bottom: 0;
+}
+
+.enterprise-health-list article > div {
+  display: grid;
+  gap: 3px;
+}
+
+.enterprise-health-list span {
+  color: var(--cb-muted);
+  font-size: 12px;
+}
+
+.school-insight-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 120;
+  width: min(560px, 100vw);
+  height: 100vh;
+  padding: 22px;
+  overflow-y: auto;
+  border-left: 1px solid var(--cb-line);
+  background: #f7f8fa;
+  box-shadow: -18px 0 50px rgba(6, 30, 80, 0.16);
+}
+
+.school-insight-drawer > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 17px;
+}
+
+.school-insight-drawer header p {
+  margin: 0;
+  color: var(--cb-primary);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.school-insight-drawer header h2 {
+  margin: 3px 0;
+  color: var(--cb-navy);
+}
+
+.school-insight-drawer header span {
+  color: var(--cb-muted);
+  font-size: 12px;
+}
+
+.school-insight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.school-insight-grid .enterprise-metric-card {
+  min-height: 135px;
+  box-shadow: none;
+}
+
+.school-insight-finance {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 13px;
+}
+
+.school-insight-finance span {
+  display: grid;
+  gap: 4px;
+  padding: 13px;
+  border: 1px solid var(--cb-line);
+  border-radius: 10px;
+  color: var(--cb-muted);
+  background: #fff;
+  font-size: 11px;
+}
+
+.school-insight-finance strong {
+  color: var(--cb-navy);
+  font-size: 16px;
+}
+
+@media (max-width: 1100px) {
+  .enterprise-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .enterprise-form-grid button {
+    width: fit-content;
+  }
+}
+
+@media (max-width: 640px) {
+  .enterprise-form-grid,
+  .school-insight-grid,
+  .school-insight-finance {
+    grid-template-columns: 1fr;
+  }
+}
