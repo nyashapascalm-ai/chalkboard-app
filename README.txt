@@ -1,42 +1,54 @@
-CHALKBOARD V2 ERP INTERFACE 1.0
+CHALKBOARD CALM BLUE + FIXED SHELL 1.0
 
-This is a structural visual upgrade, not a small theme adjustment.
+PURPOSE
+-------
+Implements the requested portal behaviour and visual corrections.
 
-INCLUDES
---------
-- Strong 306px enterprise sidebar
-- Bold typography and navigation hierarchy
-- Full-width content canvas
-- Navy and blue controls throughout
-- Removal of remaining green brand controls
-- Larger, authoritative forms and tables
-- Stronger cards and shadows
-- New executive School Administrator dashboard
-- 12 cross-platform KPI cards
-- Academics, HR, finance, governance, operations and communication overview
-- Upcoming school activity
-- Recent communication
-- Operator and Ministry shell improvements
-- Login improvements
-- Responsive layouts
+1. CALMER CHALKBOARD BLUE
+- Removes electric blue as the main visual colour.
+- Uses navy #061E50 with restrained blue #286FCE.
+- Keeps green only for genuine success statuses.
+- Applies calmer buttons, active states and focus rings.
+
+2. LOGIN VISIBILITY
+- Gives role cards a restrained navy background.
+- Makes role titles white.
+- Makes descriptive text light and fully opaque.
+- Removes low-contrast grey text over bright blue.
+
+3. SIDEBAR
+- Uses the official Chalkboard pictorial mark only.
+- Removes duplicated Chalkboard text from the sidebar brand.
+- Enlarges the mark.
+- Uses white and pale-blue navigation text over navy.
+- Provides stronger readable selected states.
+
+4. SCROLLING
+- Sidebar and workspace scroll independently.
+- Sidebar remains available while a module is open.
+- Clicking a sidebar item returns the workspace to the top.
+- Prevents opening a new module at the previous module's bottom position.
 
 INSTALL
 -------
-1. Extract into:
-   C:\Users\Dell\Downloads\chalkboard-x\chalkboard
+Extract into:
 
-2. Run:
-   powershell -ExecutionPolicy Bypass -File .\INSTALL_CHALKBOARD_V2_ERP_INTERFACE.ps1
+C:\Users\Dell\Downloads\chalkboard-x\chalkboard
 
-3. Clear cache:
-   Remove-Item .\.next -Recurse -Force -ErrorAction SilentlyContinue
+Run:
 
-4. Build:
-   npm run build
+powershell -ExecutionPolicy Bypass -File .\INSTALL_CHALKBOARD_CALM_FIXED_SHELL.ps1
+
+Then:
+
+Remove-Item .\.next -Recurse -Force -ErrorAction SilentlyContinue
+npm run build
 
 BACKUPS
 -------
-app/globals.before-v2.css
-app/app/admin/page.before-v2.js
+app/globals.before-calm-shell.css
+app/layout.before-calm-shell.js
+app/app/admin/page.before-calm-shell.js
+app/app/page.before-calm-shell.js
 
 Do not commit backup files.

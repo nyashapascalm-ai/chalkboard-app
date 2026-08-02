@@ -302,7 +302,7 @@ const subToday = new Date().toISOString().slice(0, 10);
   return (<div className="shell">
     {!O && (subStatus.code === 'due_soon' || subStatus.code === 'overdue') && !subModalOff && (<div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 }}><div className="card" style={{ maxWidth: 400, textAlign: 'center' }}><div style={{ fontWeight: 800, fontSize: 19, marginBottom: 6, color: subStatus.code === 'overdue' ? '#c0392b' : '#8a6d1a' }}>{subStatus.code === 'overdue' ? 'Subscription overdue' : 'Subscription due soon'}</div><p className="muted">{subStatus.code === 'overdue' ? ('Your subscription was due on ' + subStatus.due + '. Please pay to keep access.') : ('Your subscription is due on ' + subStatus.due + '.')}</p><div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 12 }}><button onClick={() => { setNav('mybilling'); setOpenGroup('setup'); setSubModalOff(true); }}>Pay now</button><button className="ghost" onClick={() => setSubModalOff(true)}>Later</button></div></div></div>)}
     <aside className="sidebar">
-      <div className="side-brand"><img src="/chalkboard-sidebar-mark.png" alt="Chalkboard" /></div>
+      <div className="side-brand">{ChalkMark(28)}<span>Chalkboard</span></div>
       <nav className="side-nav">
         <button className={'side-item' + (nav === 'dashboard' ? ' active' : '')} onClick={() => setNav('dashboard')}><span className="si"></span>Dashboard</button>
         {groups.map(g => (<div key={g.key}>

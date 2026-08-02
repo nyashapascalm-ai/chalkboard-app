@@ -1,8 +1,7 @@
 import "./globals.css";
-import PortalScrollManager from '../components/PortalScrollManager';
 
 export const metadata = {
-  title: { default: "Chalkboard â€” School Management. Simplified.", template: "%s | Chalkboard" },
+  title: { default: "Chalkboard — School Management. Simplified.", template: "%s | Chalkboard" },
   description: "Run attendance, learner records, academics, finance, reports and school operations from one connected platform.",
   applicationName: "Chalkboard",
   manifest: "/manifest.json",
@@ -19,6 +18,5 @@ export const metadata = {
 export const viewport = { themeColor: "#041a4d" };
 
 export default function RootLayout({ children }) {
-  return <html lang="en"><body>
-        <PortalScrollManager />{children}</body></html>;
+  return <html lang="en"><body>{children}</body></html>;
 }
