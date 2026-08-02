@@ -28,6 +28,7 @@ import ContractorsPanel from '../../../components/admin/operations/ContractorsPa
 import InventoryPanel from '../../../components/admin/operations/InventoryPanel';
 import AssetsPanel from '../../../components/admin/operations/AssetsPanel';
 import AnnouncementsPanel from '../../../components/admin/communications/AnnouncementsPanel';
+import ReportsPanel from '../../../components/admin/reporting/ReportsPanel';
 
 function installApp() {
   const p = typeof window !== 'undefined' ? window.__cbPrompt : null;
@@ -644,63 +645,6 @@ function letterheadHtml(school, settings) {
   if (contact) lines.push(contact);
   return '<div style="border-bottom:4px solid ' + color + ';padding-bottom:12px;margin-bottom:14px;display:flex;align-items:center">' + logo + '<div><div style="font-size:22px;font-weight:800;color:' + color + '">' + name + '</div><div style="font-size:12px;color:#555">' + lines.join('<br>') + '</div></div></div>';
 }
-
-function ReportsPanel({ schoolId, classes, school, settings }) {
-  const today = new Date().toISOString().slice(0, 10);
-  const monthAgo = new Date(Date.now() - 29 * 864e5).toISOString().slice(0, 10);
-  const [classId, setClassId] = useState('');
-  const [from, setFrom] = useState(monthAgo); const [to, setTo] = useState(today);
-  const [students, setLearners] = useState([]); const [att, setAtt] = useState([]); const [loading, setLoading] = useState(false);
-  const [openId, setOpenId] = useState(null);
-  useEffect(() => { if (!classId && classes.length) setClassId(classes[0].id); }, [classes]);
-  async function load() {
-    if (!classId) { setLearners([]); setAtt([]); return; }
-    setLoading(true);
-    const { data: st } = await supabase.from('students').select('id,full_name').eq('school_id', schoolId).eq('class_id', classId).order('full_name');
-    setLearners(st || []);
-    const ids = (st || []).map(s => s.id);
-    let a = [];
-    if (ids.length) { const r = await supabase.from('attendance').select('student_id,status,date').in('student_id', ids).gte('date', from).lte('date', to); a = r.data || []; }
-    setAtt(a); setLoading(false);
-  }
-  useEffect(() => { load(); }, [classId, from, to, schoolId]);
-  const per = {}; students.forEach(s => { per[s.id] = { present: 0, absent: 0, late: 0 }; });
-  att.forEach(r => { if (per[r.student_id] && per[r.student_id][r.status] !== undefined) per[r.student_id][r.status]++; });
-  const dates = [...new Set(att.map(r => r.date))];
-  const totals = students.reduce((a, s) => { const c = per[s.id]; a.present += c.present; a.absent += c.absent; a.late += c.late; return a; }, { present: 0, absent: 0, late: 0 });
-  const pct = c => { const t = c.present + c.absent + c.late; return t ? Math.round(c.present / t * 100) : 0; };
-  const colors = { present: '#1a7f5a', absent: '#c0392b', late: '#b8860b' };
-  const cname = (classes.find(c => c.id === classId) || {}).name || '';
-  function printReport() {
-    const rows = students.map(s => { const c = per[s.id]; return '<tr><td>' + esc(s.full_name) + '</td><td class=r>' + c.present + '</td><td class=r>' + c.absent + '</td><td class=r>' + c.late + '</td><td class=r>' + pct(c) + '%</td></tr>'; }).join('');
-    const html = '<html><head><title>Attendance report</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:24px;color:#1f2328}table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}th,td{border-bottom:1px solid #ccc;padding:8px;text-align:left}.r{text-align:right}.m{color:#666;font-size:13px}</style></head><body>' + letterheadHtml(school, settings) + '<h3 style="margin:0 0 4px">Attendance report  ' + esc(cname) + '</h3><div class=m>' + from + ' to ' + to + '  ' + dates.length + ' day(s)</div><table><thead><tr><th>Learner</th><th class=r>Present</th><th class=r>Absent</th><th class=r>Late</th><th class=r>% present</th></tr></thead><tbody>' + rows + '</tbody></table></body></html>';
-    const w = window.open('', '_blank'); if (!w) { alert('Allow pop-ups to print the report.'); return; }
-    w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 350);
-  }
-  if (classes.length === 0) return <p className="muted">No classes available yet.</p>;
-  const openLearner = students.find(x => x.id === openId);
-  return (<div>
-    <div style={{ display: 'flex', gap: 16, alignItems: 'end', marginBottom: 14, flexWrap: 'wrap' }}>
-      <div style={{ minWidth: 200 }}><label style={labelStyle}>Class</label><select style={inputStyle} value={classId} onChange={e => { setClassId(e.target.value); setOpenId(null); }}>{classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-      <div><label style={labelStyle}>From</label><input type="date" style={{ ...inputStyle, width: 'auto' }} value={from} onChange={e => setFrom(e.target.value)} /></div>
-      <div><label style={labelStyle}>To</label><input type="date" style={{ ...inputStyle, width: 'auto' }} value={to} onChange={e => setTo(e.target.value)} /></div>
-      <button className="ghost" onClick={printReport} style={{ marginBottom: 6 }}>Print</button>
-    </div>
-    <div className="muted" style={{ marginBottom: 12, fontSize: 14 }}>{dates.length} day(s) recorded  Class totals: Present {totals.present}  Absent {totals.absent}  Late {totals.late}</div>
-    {loading ? <p className="muted">Loading</p> : (
-      <table><thead><tr><th>Learner</th><th className="r">Present</th><th className="r">Absent</th><th className="r">Late</th><th className="r">% present</th></tr></thead><tbody>
-        {students.map(s => { const c = per[s.id]; const pp = pct(c); return (<tr key={s.id} onClick={() => setOpenId(openId === s.id ? null : s.id)} style={{ cursor: 'pointer', background: openId === s.id ? '#eafaf3' : 'transparent' }}><td className="strong">{s.full_name}</td><td className="r">{c.present}</td><td className="r">{c.absent}</td><td className="r">{c.late}</td><td className="r" style={{ color: pp >= 90 ? '#1a7f5a' : pp >= 75 ? '#b8860b' : '#c0392b', fontWeight: 600 }}>{pp}%</td></tr>); })}
-        {students.length === 0 && <tr><td colSpan="5" className="muted">No students in this class.</td></tr>}
-      </tbody></table>)}
-    {openLearner && (<div className="card" style={{ marginTop: 16 }}>
-      <div style={{ fontWeight: 700, marginBottom: 8 }}>{openLearner.full_name}  daily record</div>
-      {(() => { const recs = att.filter(r => r.student_id === openId).sort((a, b) => a.date < b.date ? -1 : 1); return recs.length === 0 ? <p className="muted">No marks in this range.</p> : (<table><thead><tr><th>Date</th><th>Status</th></tr></thead><tbody>{recs.map((r, i) => (<tr key={i}><td>{r.date}</td><td style={{ textTransform: 'capitalize', color: colors[r.status], fontWeight: 600 }}>{r.status}</td></tr>))}</tbody></table>); })()}
-    </div>)}
-  </div>);
-}
-
-const termOptions = (() => { const y = new Date().getFullYear(); const o = []; [y, y - 1].forEach(yy => [1, 2, 3].forEach(t => o.push('Term ' + t + ' ' + yy))); return o; })();
-function gradeFor(score, level) { if (score === '' || score == null) return ''; const n = Number(score); if (isNaN(n)) return ''; if (level === 'primary') { if (n >= 90) return '1'; if (n >= 80) return '2'; if (n >= 70) return '3'; if (n >= 60) return '4'; if (n >= 50) return '5'; if (n >= 40) return '6'; if (n >= 30) return '7'; if (n >= 20) return '8'; return '9'; } if (n >= 75) return 'A'; if (n >= 65) return 'B'; if (n >= 50) return 'C'; if (n >= 40) return 'D'; if (n >= 30) return 'E'; return 'F'; }
 
 function MarksPanel({ schoolId, classes, subjects, teacherId, level }) {
   const [classId, setClassId] = useState(''); const [subjectId, setSubjectId] = useState(''); const [term, setTerm] = useState(termOptions[0]);
