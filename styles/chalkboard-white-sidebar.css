@@ -1,0 +1,203 @@
+:root{
+  --chalk-primary:#1E5EF7;
+  --chalk-primary-hover:#174DCC;
+  --chalk-navy:#061E50;
+  --chalk-ink:#17243C;
+  --chalk-muted:#68768A;
+  --chalk-line:#E3E8F0;
+  --chalk-sidebar:#FFFFFF;
+  --chalk-sidebar-hover:#F2F6FD;
+}
+
+/* White compact sidebar */
+.sidebar,
+.cb-portal-sidebar{
+  width:248px!important;
+  min-width:248px!important;
+  flex:0 0 248px!important;
+  padding:12px 10px!important;
+  color:var(--chalk-ink)!important;
+  background:var(--chalk-sidebar)!important;
+  background-image:none!important;
+  border-right:1px solid var(--chalk-line)!important;
+  box-shadow:7px 0 22px rgba(6,30,80,.055)!important;
+  scrollbar-color:#CBD5E1 transparent!important;
+}
+
+.sidebar::-webkit-scrollbar,
+.cb-portal-sidebar::-webkit-scrollbar{
+  width:6px!important;
+}
+
+.sidebar::-webkit-scrollbar-thumb,
+.cb-portal-sidebar::-webkit-scrollbar-thumb{
+  border-radius:999px!important;
+  background:#CBD5E1!important;
+}
+
+/* Larger official mark, no duplicate wording */
+.side-brand,
+.cb-portal-brand{
+  min-height:90px!important;
+  margin:0 0 6px!important;
+  padding:6px 8px 12px!important;
+  border-bottom:1px solid var(--chalk-line)!important;
+  color:transparent!important;
+  background:#fff!important;
+  font-size:0!important;
+}
+
+.side-brand img,
+.cb-portal-brand img{
+  width:auto!important;
+  height:76px!important;
+  max-width:170px!important;
+  max-height:76px!important;
+  object-fit:contain!important;
+  filter:none!important;
+}
+
+/* Remove excess spacing */
+.side-nav{
+  gap:1px!important;
+  padding:4px 0 56px!important;
+}
+
+.side-item,
+.cb-portal-nav-item{
+  min-height:38px!important;
+  margin:0!important;
+  padding:7px 10px!important;
+  border-radius:8px!important;
+  color:var(--chalk-ink)!important;
+  background:transparent!important;
+  background-image:none!important;
+  font-size:13.5px!important;
+  font-weight:680!important;
+  line-height:1.2!important;
+  box-shadow:none!important;
+  gap:9px!important;
+}
+
+.side-item:hover,
+.cb-portal-nav-item:hover{
+  color:var(--chalk-navy)!important;
+  background:var(--chalk-sidebar-hover)!important;
+  background-image:none!important;
+  transform:none!important;
+}
+
+.side-item.active,
+.cb-portal-nav-item.active{
+  color:#fff!important;
+  background:var(--chalk-primary)!important;
+  background-image:none!important;
+  border:0!important;
+  box-shadow:0 5px 13px rgba(30,94,247,.18)!important;
+  font-weight:780!important;
+}
+
+.side-item.active:hover,
+.cb-portal-nav-item.active:hover{
+  background:var(--chalk-primary-hover)!important;
+}
+
+/* Navigation icon presentation */
+.side-item .si,
+.cb-portal-nav-item .si,
+.chalk-nav-icon{
+  width:19px!important;
+  min-width:19px!important;
+  height:19px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  color:var(--chalk-navy)!important;
+  font-size:16px!important;
+  line-height:1!important;
+}
+
+.side-item.active .si,
+.cb-portal-nav-item.active .si,
+.side-item.active .chalk-nav-icon,
+.cb-portal-nav-item.active .chalk-nav-icon{
+  color:#fff!important;
+}
+
+.chalk-nav-icon svg{
+  width:18px!important;
+  height:18px!important;
+  display:block!important;
+  stroke:currentColor!important;
+}
+
+/* Compact section headings */
+.sidebar .side-nav > div:not(.side-item),
+.sidebar .side-nav > span,
+.cb-portal-sidebar .side-nav > div:not(.cb-portal-nav-item),
+.cb-portal-sidebar .side-nav > span{
+  margin:8px 0 2px!important;
+  padding:4px 10px!important;
+  color:#8793A4!important;
+  font-size:10px!important;
+  font-weight:900!important;
+  letter-spacing:.09em!important;
+  text-transform:uppercase!important;
+}
+
+/* Dark text throughout the white sidebar */
+.sidebar .muted,
+.sidebar p,
+.sidebar a,
+.sidebar > div:last-child,
+.cb-portal-sidebar .muted,
+.cb-portal-sidebar p,
+.cb-portal-sidebar a{
+  color:var(--chalk-muted)!important;
+}
+
+.sidebar strong,
+.cb-portal-sidebar strong{
+  color:var(--chalk-navy)!important;
+}
+
+/* Compact account footer */
+.sidebar > div:last-child,
+.cb-portal-sidebar > div:last-child{
+  margin-top:8px!important;
+  padding:10px!important;
+  border-top:1px solid var(--chalk-line)!important;
+}
+
+/* Slightly reclaim workspace width */
+.main,
+.cb-portal-main{
+  padding-left:28px!important;
+}
+
+/* Mobile */
+@media(max-width:820px){
+  .sidebar,
+  .cb-portal-sidebar{
+    width:100%!important;
+    min-width:0!important;
+    padding:8px!important;
+  }
+
+  .side-brand,
+  .cb-portal-brand{
+    min-height:66px!important;
+  }
+
+  .side-brand img,
+  .cb-portal-brand img{
+    height:56px!important;
+  }
+
+  .side-item,
+  .cb-portal-nav-item{
+    min-height:36px!important;
+    padding:7px 9px!important;
+    white-space:nowrap!important;
+  }
+}

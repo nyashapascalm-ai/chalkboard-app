@@ -1,16 +1,16 @@
-CHALKBOARD SCROLL + SOLID BLUE FIX 1.0
+CHALKBOARD WHITE SIDEBAR + COMPACT ICONS 1.0
 
-FIXES
------
-- Restores vertical scrolling on the public website.
-- Restores vertical scrolling on the login page.
-- Removes html/body overflow locking.
-- Keeps the desktop sidebar sticky and independently readable.
-- Allows the portal workspace to use normal document scrolling.
-- Uses solid #1E5EF7 across the platform.
-- Removes branded gradients.
-- Overrides legacy green primary buttons.
-- Retains navy login role cards with readable white/light text.
+CHANGES
+-------
+- Removes the navy/blue sidebar background.
+- Makes the sidebar white.
+- Uses black/dark navy text.
+- Keeps the active item solid #1E5EF7.
+- Adds consistent SVG icons to navigation items.
+- Removes excessive spacing between items and sections.
+- Reduces sidebar width to 248px.
+- Keeps the official logo mark visible and larger.
+- Preserves sticky sidebar and page scrolling.
 
 INSTALL
 -------
@@ -20,15 +20,16 @@ C:\Users\Dell\Downloads\chalkboard-x\chalkboard
 
 Run:
 
-powershell -ExecutionPolicy Bypass -File .\INSTALL_CHALKBOARD_SCROLL_SOLID_BLUE_FIX.ps1
+powershell -ExecutionPolicy Bypass -File .\INSTALL_CHALKBOARD_WHITE_SIDEBAR.ps1
 
 Then:
 
 Remove-Item .\.next -Recurse -Force -ErrorAction SilentlyContinue
 npm run build
 
-BACKUP
-------
-app/globals.before-scroll-solid-blue.css
+BACKUPS
+-------
+app/globals.before-white-sidebar.css
+app/layout.before-white-sidebar.js
 
-Do not commit the backup.
+Do not commit backup files.
