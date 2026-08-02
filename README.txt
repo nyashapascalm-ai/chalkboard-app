@@ -1,40 +1,41 @@
-CHALKBOARD WEBSITE RESIZE PATCH
-===============================
+CHALKBOARD ROLE PORTALS 1.0
 
-REPLACES
---------
-app/page.module.css
+Adds:
+- /app official role-aware login
+- /app/admin existing full School Administrator console
+- /app/operator live platform metrics and school registry
+- /app/ministry read-only aggregated oversight
 
-CHANGES
--------
-- Header reduced to 68px
-- Header logo reduced to 158px
-- Navigation and sign-in button reduced
-- Hero reduced to approximately 535px
-- Hero heading reduced to a maximum of 60px
-- Hero paragraph reduced to 17px
-- Action buttons moved above the fold
-- Dashboard illustration reduced
-- Feature cards reduced
-- Section spacing tightened
-- CTA logo and spacing reduced
-- Footer logo reduced to 150px
-- Mobile layout tightened
+Also:
+- replaces the old green checkmark with the official Chalkboard icon
+- removes corrupted non-ASCII navigation characters from the legacy Admin console
+- validates account role and status
+- blocks School Administrators without a school assignment
 
-INSTALL
--------
-Extract into:
+Install:
+1. Extract into C:\Users\Dell\Downloads\chalkboard-x\chalkboard
+2. Run:
+   powershell -ExecutionPolicy Bypass -File .\INSTALL_CHALKBOARD_ROLE_PORTALS.ps1
+3. Run:
+   npm run build
 
-C:\Users\Dell\Downloads\chalkboard-x\chalkboard
+Expected routes:
+/
+/app
+/app/admin
+/app/operator
+/app/ministry
+/download
+/offline
 
-Choose Replace files in the destination.
+Test:
+School Admin: admin@chakari.co.zw
+Operator: nyashapascalm@gmail.com
+Ministry: pascal.nyasha@computefabric.co.uk
 
-BUILD
------
-npm run build
-
-DEPLOY
-------
-git add app/page.module.css
-git commit -m "Resize Chalkboard marketing website"
+Deploy:
+git add .
+git commit -m "Add Chalkboard role portals and official app branding"
 git push
+
+Do not run INSTALL_CHALKBOARD_WEBSITE.ps1 again after this patch.
