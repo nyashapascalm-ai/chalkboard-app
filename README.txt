@@ -1,15 +1,40 @@
-CHALKBOARD WEBSITE + PWA REBRAND 1.0
+CHALKBOARD WEBSITE RESIZE PATCH
+===============================
 
-Routes:
-/ public marketing website
-/app existing login and complete school-management system
-/download PWA installation page
-/offline offline fallback
+REPLACES
+--------
+app/page.module.css
 
-Install:
-1. Extract into C:\Users\Dell\Downloads\chalkboard-x\chalkboard
-2. Replace files.
-3. Run: powershell -ExecutionPolicy Bypass -File .\INSTALL_CHALKBOARD_WEBSITE.ps1
-4. Run: npm run build
-5. Test /, /app, /download, password reset and subscription payment return.
-6. Deploy with git add .; git commit -m "Add Chalkboard website and branded PWA experience"; git push
+CHANGES
+-------
+- Header reduced to 68px
+- Header logo reduced to 158px
+- Navigation and sign-in button reduced
+- Hero reduced to approximately 535px
+- Hero heading reduced to a maximum of 60px
+- Hero paragraph reduced to 17px
+- Action buttons moved above the fold
+- Dashboard illustration reduced
+- Feature cards reduced
+- Section spacing tightened
+- CTA logo and spacing reduced
+- Footer logo reduced to 150px
+- Mobile layout tightened
+
+INSTALL
+-------
+Extract into:
+
+C:\Users\Dell\Downloads\chalkboard-x\chalkboard
+
+Choose Replace files in the destination.
+
+BUILD
+-----
+npm run build
+
+DEPLOY
+------
+git add app/page.module.css
+git commit -m "Resize Chalkboard marketing website"
+git push
