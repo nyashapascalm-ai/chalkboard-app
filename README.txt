@@ -1,16 +1,51 @@
-CHALKBOARD WHITE SIDEBAR + COMPACT ICONS 1.0
+CHALKBOARD CLARITY + FINANCE FIX 1.0
 
-CHANGES
--------
-- Removes the navy/blue sidebar background.
-- Makes the sidebar white.
-- Uses black/dark navy text.
-- Keeps the active item solid #1E5EF7.
-- Adds consistent SVG icons to navigation items.
-- Removes excessive spacing between items and sections.
-- Reduces sidebar width to 248px.
-- Keeps the official logo mark visible and larger.
-- Preserves sticky sidebar and page scrolling.
+FIXES
+-----
+1. SIDEBAR
+- Plain white list style
+- No blue blocks around normal or active items
+- Active item uses a soft grey background
+- Dark text and icons
+- Tight spacing similar to the supplied ChatGPT reference
+
+2. LOGIN
+- Larger headings
+- Larger fields
+- Stronger labels
+- White role cards
+- Dark navy titles
+- Fully readable descriptions
+- Clear blue sign-in button
+
+3. FINANCE ERROR
+Removes the dashboard query:
+
+select("type,amount")
+
+and replaces it with:
+
+select("*")
+
+Finance records are then normalised from any of these possible fields:
+
+type
+entry_type
+transaction_type
+direction
+kind
+category_type
+
+Amounts are read from:
+
+amount
+value
+total
+total_amount
+
+This prevents:
+
+column finance_entries.type does not exist
 
 INSTALL
 -------
@@ -20,7 +55,7 @@ C:\Users\Dell\Downloads\chalkboard-x\chalkboard
 
 Run:
 
-powershell -ExecutionPolicy Bypass -File .\INSTALL_CHALKBOARD_WHITE_SIDEBAR.ps1
+powershell -ExecutionPolicy Bypass -File .\INSTALL_CHALKBOARD_CLARITY_FINANCE_FIX.ps1
 
 Then:
 
@@ -29,7 +64,7 @@ npm run build
 
 BACKUPS
 -------
-app/globals.before-white-sidebar.css
-app/layout.before-white-sidebar.js
+app/globals.before-clarity-fix.css
+components/AdminExecutiveDashboard.before-finance-fix.js
 
 Do not commit backup files.

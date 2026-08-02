@@ -16,6 +16,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
+import { financeTotals } from "./financeNormaliser";
 
 const empty = {
   learners: 0,
@@ -60,7 +61,7 @@ export default function AdminExecutiveDashboard({ schoolId, school }) {
       supabase.from("classes").select("id", { count: "exact", head: true }).eq("school_id", schoolId),
       supabase.from("profiles").select("id", { count: "exact", head: true }).eq("school_id", schoolId).eq("role", "teacher"),
       supabase.from("staff").select("id", { count: "exact", head: true }).eq("school_id", schoolId),
-      supabase.from("finance_entries").select("type,amount").eq("school_id", schoolId),
+      supabase.from("finance_entries").select("*").eq("school_id", schoolId),
       supabase.from("school_invoices").select("balance").eq("school_id", schoolId).neq("status", "void"),
       supabase.from("school_events").select("id,title,start_date,category").eq("school_id", schoolId).gte("start_date", new Date().toISOString().slice(0,10)).order("start_date").limit(5),
       supabase.from("school_meetings").select("id,title,meeting_date").eq("school_id", schoolId).gte("meeting_date", new Date().toISOString().slice(0,10)).order("meeting_date").limit(5),
@@ -69,13 +70,10 @@ export default function AdminExecutiveDashboard({ schoolId, school }) {
       supabase.from("hr_leave_requests").select("id", { count: "exact", head: true }).eq("school_id", schoolId).eq("status", "pending"),
     ]);
 
-    const income = (finance.data || [])
-      .filter((row) => row.type === "income")
-      .reduce((sum, row) => sum + Number(row.amount || 0), 0);
-
-    const expenses = (finance.data || [])
-      .filter((row) => row.type === "expense")
-      .reduce((sum, row) => sum + Number(row.amount || 0), 0);
+    const {
+      income,
+      expenses,
+    } = financeTotals(finance.data || []);
 
     const outstanding = (invoices.data || []).reduce(
       (sum, row) => sum + Number(row.balance || 0),

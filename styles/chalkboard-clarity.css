@@ -1,0 +1,265 @@
+:root{
+  --chalk-primary:#1E5EF7;
+  --chalk-primary-hover:#174DCC;
+  --chalk-navy:#061E50;
+  --chalk-ink:#1F2937;
+  --chalk-muted:#667085;
+  --chalk-line:#E5E7EB;
+  --chalk-soft:#F3F4F6;
+  --chalk-soft-hover:#ECEFF3;
+  --chalk-panel:#FFFFFF;
+  --chalk-page:#F7F8FA;
+}
+
+/* Plain, readable sidebar inspired by the supplied reference. */
+.sidebar,
+.cb-portal-sidebar{
+  width:248px!important;
+  min-width:248px!important;
+  flex:0 0 248px!important;
+  padding:12px 10px!important;
+  color:var(--chalk-ink)!important;
+  background:#fff!important;
+  background-image:none!important;
+  border-right:1px solid var(--chalk-line)!important;
+  box-shadow:none!important;
+}
+
+.side-brand,
+.cb-portal-brand{
+  min-height:82px!important;
+  margin:0 0 8px!important;
+  padding:6px 10px 14px!important;
+  border-bottom:1px solid var(--chalk-line)!important;
+  background:#fff!important;
+}
+
+.side-brand img,
+.cb-portal-brand img{
+  height:68px!important;
+  max-height:68px!important;
+  max-width:160px!important;
+  object-fit:contain!important;
+}
+
+.side-nav{
+  gap:1px!important;
+  padding:3px 0 54px!important;
+}
+
+.side-item,
+.cb-portal-nav-item{
+  min-height:38px!important;
+  margin:0!important;
+  padding:8px 10px!important;
+  border:0!important;
+  border-radius:9px!important;
+  color:var(--chalk-ink)!important;
+  background:transparent!important;
+  background-image:none!important;
+  box-shadow:none!important;
+  font-size:14px!important;
+  font-weight:620!important;
+  line-height:1.2!important;
+  gap:10px!important;
+}
+
+.side-item:hover,
+.cb-portal-nav-item:hover{
+  color:#111827!important;
+  background:var(--chalk-soft)!important;
+  background-image:none!important;
+  transform:none!important;
+}
+
+.side-item.active,
+.cb-portal-nav-item.active{
+  color:#111827!important;
+  background:var(--chalk-soft-hover)!important;
+  background-image:none!important;
+  border:0!important;
+  box-shadow:none!important;
+  font-weight:720!important;
+}
+
+.side-item.active:hover,
+.cb-portal-nav-item.active:hover{
+  color:#111827!important;
+  background:var(--chalk-soft-hover)!important;
+}
+
+.side-item .si,
+.cb-portal-nav-item .si,
+.chalk-nav-icon{
+  color:#111827!important;
+}
+
+.side-item.active .si,
+.cb-portal-nav-item.active .si,
+.side-item.active .chalk-nav-icon,
+.cb-portal-nav-item.active .chalk-nav-icon{
+  color:#111827!important;
+}
+
+/* Small, restrained section headings. */
+.sidebar .side-nav > div:not(.side-item),
+.sidebar .side-nav > span,
+.cb-portal-sidebar .side-nav > div:not(.cb-portal-nav-item),
+.cb-portal-sidebar .side-nav > span{
+  margin:10px 0 2px!important;
+  padding:4px 10px!important;
+  color:#6B7280!important;
+  font-size:10px!important;
+  font-weight:850!important;
+  letter-spacing:.08em!important;
+  text-transform:uppercase!important;
+}
+
+/* Login page clarity */
+.center{
+  min-height:100vh!important;
+  padding:32px 18px!important;
+  background:
+    radial-gradient(circle at 10% 0%,rgba(30,94,247,.06),transparent 24rem),
+    var(--chalk-page)!important;
+}
+
+.center > .card{
+  width:min(100%,620px)!important;
+  max-width:620px!important;
+  padding:34px!important;
+  border:1px solid var(--chalk-line)!important;
+  border-radius:24px!important;
+  background:#fff!important;
+  box-shadow:0 18px 50px rgba(6,30,80,.10)!important;
+}
+
+.center h1{
+  color:var(--chalk-navy)!important;
+  font-size:36px!important;
+  line-height:1.1!important;
+  font-weight:850!important;
+  letter-spacing:-.04em!important;
+}
+
+.center p,
+.center span,
+.center label{
+  color:#475467!important;
+  opacity:1!important;
+}
+
+.center label{
+  font-size:14px!important;
+  font-weight:750!important;
+}
+
+.center input{
+  min-height:54px!important;
+  font-size:16px!important;
+}
+
+.role-card,
+.login-role,
+.role-option,
+.portal-role,
+.auth-role,
+.center button[style],
+.center [role="button"]{
+  min-height:86px!important;
+  padding:16px 18px!important;
+  border:1px solid #D7DFEA!important;
+  border-radius:16px!important;
+  background:#fff!important;
+  background-image:none!important;
+  color:var(--chalk-ink)!important;
+  box-shadow:0 5px 15px rgba(6,30,80,.055)!important;
+}
+
+.role-card:hover,
+.login-role:hover,
+.role-option:hover,
+.portal-role:hover,
+.auth-role:hover{
+  border-color:#B8C8E0!important;
+  background:#F8FAFC!important;
+}
+
+.role-card strong,
+.role-card h2,
+.role-card h3,
+.login-role strong,
+.login-role h2,
+.login-role h3,
+.role-option strong,
+.role-option h2,
+.role-option h3,
+.portal-role strong,
+.auth-role strong{
+  color:var(--chalk-navy)!important;
+}
+
+.role-card p,
+.role-card span,
+.login-role p,
+.login-role span,
+.role-option p,
+.role-option span,
+.portal-role p,
+.portal-role span,
+.auth-role p,
+.auth-role span{
+  color:#5F6B7A!important;
+  opacity:1!important;
+}
+
+/* Keep primary sign-in action blue, but role cards white. */
+.center form button[type="submit"],
+.center .signin,
+.center button[data-primary="true"]{
+  min-height:52px!important;
+  color:#fff!important;
+  background:var(--chalk-primary)!important;
+  background-image:none!important;
+  border:0!important;
+}
+
+.center form button[type="submit"]:hover,
+.center .signin:hover,
+.center button[data-primary="true"]:hover{
+  background:var(--chalk-primary-hover)!important;
+}
+
+/* Global layout clarity */
+.main,
+.cb-portal-main{
+  background:var(--chalk-page)!important;
+}
+
+.card,
+.cb-portal-card,
+.cb-stat-card{
+  border:1px solid var(--chalk-line)!important;
+  background:#fff!important;
+  box-shadow:0 7px 20px rgba(6,30,80,.06)!important;
+}
+
+@media(max-width:820px){
+  .sidebar,
+  .cb-portal-sidebar{
+    width:100%!important;
+    min-width:0!important;
+  }
+
+  .center{
+    padding:18px 12px!important;
+  }
+
+  .center > .card{
+    padding:24px 18px!important;
+  }
+
+  .center h1{
+    font-size:30px!important;
+  }
+}

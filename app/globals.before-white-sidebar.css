@@ -2,8 +2,6 @@
 @import "../styles/chalkboard-v2.css";
 @import "../styles/chalkboard-erp-theme.css";
 @import "../styles/chalkboard-scroll-solid-blue.css";
-@import "../styles/chalkboard-white-sidebar.css";
-@import "../styles/chalkboard-clarity.css";
 :root{
   --bg:#f3f5f7; --card:#ffffff; --ink:#1f2328; --muted:#5b6570; --line:#dde1e6;
   --accent:#2f7a52; --accent2:#1e4a38; --danger:#c0392b;
