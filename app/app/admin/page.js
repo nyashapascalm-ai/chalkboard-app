@@ -15,6 +15,9 @@ import TeachersPanel from '../../../components/admin/people/TeachersPanel';
 import AdmissionsPanel from '../../../components/admin/people/AdmissionsPanel';
 import LearnersPanel from '../../../components/admin/people/LearnersPanel';
 import HumanResourcesPanel from '../../../components/admin/people/HumanResourcesPanel';
+import FinancePanel from '../../../components/admin/finance/FinancePanel';
+import BankingPanel from '../../../components/admin/finance/BankingPanel';
+import PettyCashPanel from '../../../components/admin/finance/PettyCashPanel';
 
 function installApp() {
   const p = typeof window !== 'undefined' ? window.__cbPrompt : null;
@@ -822,41 +825,6 @@ function ReportCardsPanel({ schoolId, classes, subjects, school, settings, level
   </div>);
 }
 
-function FinancePanel({ schoolId }) {
-  const [rows, setRows] = useState([]);
-  const [f, setF] = useState({ date: new Date().toISOString().slice(0, 10), kind: 'income', category: '', description: '', amount: '' });
-  const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
-  async function load() { const { data } = await supabase.from('finance_entries').select('*').eq('school_id', schoolId).order('date', { ascending: false }); setRows(data || []); }
-  useEffect(() => { load(); }, [schoolId]);
-  function set(k, v) { setF(o => ({ ...o, [k]: v })); }
-  async function add() { if (!f.amount) { setErr('Enter an amount.'); return; } setBusy(true); setErr('');
-    const { error } = await supabase.from('finance_entries').insert({ school_id: schoolId, date: f.date, kind: f.kind, category: f.category || null, description: f.description || null, amount: Number(f.amount) });
-    if (error) setErr(error.message); else { setF(o => ({ ...o, category: '', description: '', amount: '' })); await load(); } setBusy(false); }
-  async function remove(id) { await supabase.from('finance_entries').delete().eq('id', id); await load(); }
-  const money = n => '$' + Number(n || 0).toLocaleString();
-  const income = rows.filter(r => r.kind === 'income').reduce((a, r) => a + Number(r.amount || 0), 0);
-  const expense = rows.filter(r => r.kind === 'expense').reduce((a, r) => a + Number(r.amount || 0), 0);
-  return (<div>
-    <StatRow items={[{ value: money(income), label: 'Income', color: '#1a7f5a' }, { value: money(expense), label: 'Expenses', color: '#c0392b' }, { value: money(income - expense), label: 'Balance' }]} />
-    <div className="card" style={{ marginBottom: 18 }}>
-      <div style={{ fontWeight: 700, marginBottom: 10 }}>Record an entry</div>
-      <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(5, 1fr)' }}>
-        <div><label style={labelStyle}>Date</label><input type="date" style={inputStyle} value={f.date} onChange={e => set('date', e.target.value)} /></div>
-        <div><label style={labelStyle}>Type</label><select style={inputStyle} value={f.kind} onChange={e => set('kind', e.target.value)}><option value="income">Income</option><option value="expense">Expense</option></select></div>
-        <div><label style={labelStyle}>Category</label><input style={inputStyle} value={f.category} onChange={e => set('category', e.target.value)} placeholder="e.g. Fees" /></div>
-        <div><label style={labelStyle}>Description</label><input style={inputStyle} value={f.description} onChange={e => set('description', e.target.value)} /></div>
-        <div><label style={labelStyle}>Amount ($)</label><input style={inputStyle} value={f.amount} onChange={e => set('amount', e.target.value)} placeholder="0" /></div>
-      </div>
-      <div style={{ marginTop: 12 }}><button onClick={add} disabled={busy}>{busy ? 'Saving' : 'Add entry'}</button></div>
-      {err && <p className="error">{err}</p>}
-    </div>
-    <table><thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Description</th><th className="r">Amount</th><th></th></tr></thead><tbody>
-      {rows.map(r => (<tr key={r.id}><td>{r.date}</td><td style={{ color: r.kind === 'income' ? '#1a7f5a' : '#c0392b', fontWeight: 600, textTransform: 'capitalize' }}>{r.kind}</td><td>{r.category || ''}</td><td className="muted">{r.description || ''}</td><td className="r">{money(r.amount)}</td><td className="r"><button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={() => remove(r.id)}>Remove</button></td></tr>))}
-      {rows.length === 0 && <tr><td colSpan="6" className="muted">No entries yet.</td></tr>}
-    </tbody></table>
-  </div>);
-}
-
 function InventoryPanel({ schoolId, school, settings }) {
   const [rows, setRows] = useState([]);
   const [f, setF] = useState({ name: '', category: '', quantity: '', unit: '', reorder_level: '' });
@@ -1248,51 +1216,6 @@ function FeeCollect({ schoolId, classId, term, className, school, settings }) {
         {myPayments.map(p => (<tr key={p.id}><td>{p.paid_on}</td><td style={{ textTransform: 'capitalize' }}>{p.method}</td><td className="muted">{p.reference || ''}</td><td className="r">{money(p.amount)}</td><td className="r"><button className="ghost" style={{ padding: '3px 9px', fontSize: 12 }} onClick={() => delPay(p.id)}>Delete</button></td></tr>))}
       </tbody></table>)}
     </div>)}
-  </div>);
-}
-
-function BankingPanel({ schoolId }) {
-  const [txns, setTxns] = useState([]); const [feePays, setFeePays] = useState([]);
-  const [f, setF] = useState({ type: 'banked', amount: '', date: new Date().toISOString().slice(0, 10), note: '' });
-  const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
-  async function load() {
-    const { data: t } = await supabase.from('bank_transactions').select('*').eq('school_id', schoolId).order('date', { ascending: false }); setTxns(t || []);
-    const { data: fp } = await supabase.from('fee_payments').select('method,amount').eq('school_id', schoolId); setFeePays(fp || []);
-  }
-  useEffect(() => { load(); }, [schoolId]);
-  function set(k, v) { setF(o => ({ ...o, [k]: v })); }
-  async function add() { if (!f.amount) { setErr('Enter an amount.'); return; } setBusy(true); setErr('');
-    const { error } = await supabase.from('bank_transactions').insert({ school_id: schoolId, type: f.type, amount: Number(f.amount), date: f.date, note: f.note || null });
-    if (error) setErr(error.message); else { setF({ type: 'banked', amount: '', date: new Date().toISOString().slice(0, 10), note: '' }); await load(); } setBusy(false); }
-  async function remove(id) { await supabase.from('bank_transactions').delete().eq('id', id); await load(); }
-  const money = n => '$' + Number(n || 0).toLocaleString();
-  const sum = (arr, fn) => arr.filter(fn).reduce((a, x) => a + Number(x.amount || 0), 0);
-  const cashFees = sum(feePays, p => p.method === 'cash');
-  const bankFees = sum(feePays, p => p.method === 'bank' || p.method === 'paynow');
-  const banked = sum(txns, t => t.type === 'banked');
-  const withdrawn = sum(txns, t => t.type === 'withdrawn');
-  const transferred = sum(txns, t => t.type === 'transferred');
-  const cashInHand = cashFees - banked + withdrawn;
-  const atBank = bankFees + banked - withdrawn - transferred;
-  const label = t => ({ banked: 'Banked', withdrawn: 'Withdrawn', transferred: 'Transferred' }[t] || t);
-  return (<div>
-    <StatRow items={[{ value: money(cashInHand), label: 'Cash in hand' }, { value: money(atBank), label: 'At bank' }]} />
-    <p className="muted" style={{ marginTop: 0, fontSize: 13 }}>Balances come from fee collections (cash vs bank/Paynow) and the movements below. General income/expenses aren't split by cash vs bank yet.</p>
-    <div className="card" style={{ marginBottom: 18 }}>
-      <div style={{ fontWeight: 700, marginBottom: 10 }}>Record a bank movement</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
-        <div><label style={labelStyle}>Type</label><select style={inputStyle} value={f.type} onChange={e => set('type', e.target.value)}><option value="banked">Banked (cash in)</option><option value="withdrawn">Withdrawn (cash out)</option><option value="transferred">Transferred</option></select></div>
-        <div><label style={labelStyle}>Amount ($)</label><input style={inputStyle} value={f.amount} onChange={e => set('amount', e.target.value)} placeholder="0" /></div>
-        <div><label style={labelStyle}>Date</label><input type="date" style={inputStyle} value={f.date} onChange={e => set('date', e.target.value)} /></div>
-        <div><label style={labelStyle}>Note</label><input style={inputStyle} value={f.note} onChange={e => set('note', e.target.value)} placeholder="optional" /></div>
-      </div>
-      <div style={{ marginTop: 12 }}><button onClick={add} disabled={busy}>{busy ? 'Saving' : 'Record'}</button></div>
-      {err && <p className="error">{err}</p>}
-    </div>
-    <table><thead><tr><th>Date</th><th>Type</th><th>Note</th><th className="r">Amount</th><th></th></tr></thead><tbody>
-      {txns.map(t => (<tr key={t.id}><td>{t.date}</td><td className="strong">{label(t.type)}</td><td className="muted">{t.note || ''}</td><td className="r">{money(t.amount)}</td><td className="r"><button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={() => remove(t.id)}>Remove</button></td></tr>))}
-      {txns.length === 0 && <tr><td colSpan="5" className="muted">No bank movements yet.</td></tr>}
-    </tbody></table>
   </div>);
 }
 
@@ -2073,86 +1996,6 @@ function FinanceDocumentsPanel({ schoolId, school, settings }) {
         </div>
       </article>)}
     </div>:null}
-  </div>
-}
-
-function PettyCashPanel({ schoolId }) {
-  const [rows,setRows]=useState([]);
-  const [form,setForm]=useState({
-    transaction_date:new Date().toISOString().slice(0,10),
-    transaction_type:'expense',
-    category:'',
-    description:'',
-    amount:'',
-    currency:'USD',
-    reference:'',
-    payee:'',
-    requested_by:'',
-    approved_by:'',
-    receipt_reference:'',
-    notes:'',
-  });
-  const [err,setErr]=useState('');
-
-  async function load(){
-    const {data,error}=await supabase.from('petty_cash_transactions').select('*').eq('school_id',schoolId).order('transaction_date',{ascending:false}).order('created_at',{ascending:false});
-    setRows(data||[]);
-    if(error)setErr(error.message);
-  }
-  useEffect(()=>{load()},[schoolId]);
-
-  async function save(){
-    if(!form.description.trim()||!form.amount){setErr('Enter a description and amount.');return}
-    const {error}=await supabase.from('petty_cash_transactions').insert({
-      school_id:schoolId,
-      ...form,
-      amount:Number(form.amount),
-      category:form.category||null,
-      reference:form.reference||null,
-      payee:form.payee||null,
-      requested_by:form.requested_by||null,
-      approved_by:form.approved_by||null,
-      receipt_reference:form.receipt_reference||null,
-      notes:form.notes||null,
-    });
-    if(error)setErr(error.message);else{
-      setForm({...form,description:'',amount:'',category:'',reference:'',payee:'',requested_by:'',approved_by:'',receipt_reference:'',notes:''});
-      await load();
-    }
-  }
-
-  const cashIn=rows.filter(r=>['opening_balance','cash_in','reimbursement','adjustment'].includes(r.transaction_type)).reduce((s,r)=>s+Number(r.amount||0),0);
-  const cashOut=rows.filter(r=>r.transaction_type==='expense').reduce((s,r)=>s+Number(r.amount||0),0);
-  const balance=cashIn-cashOut;
-
-  return <div>
-    {err?<p className="error">{err}</p>:null}
-    <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:12,marginBottom:18}}>
-      {[['Cash in',cashIn],['Cash out',cashOut],['Balance',balance]].map(([l,v])=><div className="card" key={l}><div style={{fontSize:28,fontWeight:800}}>{Number(v).toFixed(2)}</div><div className="muted">{l}</div></div>)}
-    </div>
-    <div className="card" style={{marginBottom:18}}>
-      <h3 style={{marginTop:0}}>Record petty cash transaction</h3>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:10}}>
-        <input type="date" style={inputStyle} value={form.transaction_date} onChange={e=>setForm(x=>({...x,transaction_date:e.target.value}))}/>
-        <select style={inputStyle} value={form.transaction_type} onChange={e=>setForm(x=>({...x,transaction_type:e.target.value}))}>
-          {['opening_balance','cash_in','expense','reimbursement','adjustment'].map(x=><option key={x} value={x}>{x.replaceAll('_',' ')}</option>)}
-        </select>
-        {[
-          ['category','Category'],
-          ['description','Description'],
-          ['amount','Amount'],
-          ['reference','Reference'],
-          ['payee','Payee'],
-          ['requested_by','Requested by'],
-          ['approved_by','Approved by'],
-          ['receipt_reference','Receipt number'],
-        ].map(([k,l])=><input key={k} type={k==='amount'?'number':'text'} style={inputStyle} placeholder={l} value={form[k]} onChange={e=>setForm(x=>({...x,[k]:e.target.value}))}/>)}
-      </div>
-      <textarea style={{...inputStyle,minHeight:70,marginTop:10}} placeholder="Notes" value={form.notes} onChange={e=>setForm(x=>({...x,notes:e.target.value}))}/>
-      <button onClick={save} style={{marginTop:10}}>Save transaction</button>
-    </div>
-    <table><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Payee</th><th className="r">Amount</th></tr></thead>
-    <tbody>{rows.map(r=><tr key={r.id}><td>{r.transaction_date}</td><td>{r.transaction_type.replaceAll('_',' ')}</td><td>{r.description}</td><td>{r.payee||'-'}</td><td className="r">{r.currency} {Number(r.amount).toFixed(2)}</td></tr>)}</tbody></table>
   </div>
 }
 
