@@ -1,0 +1,107 @@
+/* Communications module phase 1 */
+.communications-metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.communications-form {
+  display: grid;
+  gap: 15px;
+}
+
+.channel-fieldset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 13px;
+  border: 1px solid var(--cb-line);
+  border-radius: 11px;
+}
+
+.channel-fieldset legend {
+  padding: 0 6px;
+  color: #475467;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.channel-fieldset label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 7px 10px;
+  border: 1px solid #d7dfe9;
+  border-radius: 9px;
+  color: #475467;
+  background: #fff;
+}
+
+.channel-fieldset input {
+  width: auto;
+  min-height: 0;
+  margin: 0;
+}
+
+.announcement-list {
+  display: grid;
+  gap: 11px;
+}
+
+.announcement-record {
+  padding: 17px;
+  border: 1px solid var(--cb-line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.announcement-record header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.announcement-record h3 {
+  margin: 0;
+  color: var(--cb-navy);
+  font-size: 17px;
+}
+
+.announcement-record header p {
+  margin: 3px 0 0;
+  color: var(--cb-muted);
+  font-size: 12px;
+  text-transform: capitalize;
+}
+
+.announcement-body {
+  margin: 13px 0 0;
+  color: #344054;
+  white-space: pre-wrap;
+}
+
+.announcement-record footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--cb-line);
+}
+
+.announcement-record footer span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--cb-muted);
+  font-size: 11px;
+}
+
+@media (max-width: 760px) {
+  .communications-metric-grid {
+    grid-template-columns: 1fr;
+  }
+}
