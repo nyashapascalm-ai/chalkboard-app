@@ -5,7 +5,7 @@ import ExportToolbar from '../../../components/ExportToolbar';
 import PersonnelPanel from '../../../components/PersonnelPanel';
 import GovernanceBoardPanel from '../../../components/GovernanceBoardPanel';
 import CommunicationCentre from '../../../components/CommunicationCentre';
-import AdminExecutiveDashboard from '../../../components/AdminExecutiveDashboard';
+import AdminDashboard from '../../../components/admin/dashboard/AdminDashboard';
 import AdminSidebar from '../../../components/portal/AdminSidebar';
 import PageHeader from '../../../components/ui/PageHeader';
 
@@ -1498,7 +1498,7 @@ function AssetsPanel({ schoolId, school, settings }) {
 
 function DashboardPanel({ schoolId, school }) {
   return (
-    <AdminExecutiveDashboard
+    <AdminDashboard
       schoolId={schoolId}
       school={school}
     />
