@@ -1,0 +1,239 @@
+/* People management phase 1 */
+.people-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.people-summary-card {
+  display: grid;
+  min-height: 126px;
+  align-content: center;
+  gap: 4px;
+  padding: 17px;
+  border: 1px solid var(--cb-line);
+  border-radius: 13px;
+  color: var(--cb-primary);
+  background: #fff;
+  box-shadow: var(--cb-shadow);
+}
+
+.people-summary-card strong {
+  margin-top: 7px;
+  color: var(--cb-navy);
+  font-size: 27px;
+  line-height: 1;
+}
+
+.people-summary-card span {
+  color: var(--cb-muted);
+  font-size: 12px;
+}
+
+.people-form {
+  display: grid;
+  gap: 16px;
+}
+
+.assignment-fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.assignment-fieldset legend {
+  margin-bottom: 8px;
+  color: #475467;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.assignment-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.assignment-chip {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border: 1px solid #cfd8e5;
+  border-radius: 999px;
+  color: #475467;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.assignment-chip:hover {
+  border-color: #aabbd3;
+  color: var(--cb-navy);
+  background: #f6f8fb;
+}
+
+.assignment-chip.selected {
+  border-color: #b7caf7;
+  color: #1849a9;
+  background: #edf3ff;
+}
+
+.credential-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.credential-panel > div {
+  display: grid;
+  gap: 4px;
+  padding: 13px;
+  border-radius: 10px;
+  background: #f7f8fa;
+}
+
+.credential-panel span {
+  color: var(--cb-muted);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.credential-code {
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.teacher-list {
+  display: grid;
+  gap: 11px;
+}
+
+.teacher-record {
+  padding: 17px;
+  border: 1px solid var(--cb-line);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.teacher-record > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid var(--cb-line);
+}
+
+.teacher-record h3 {
+  margin: 0;
+  color: var(--cb-navy);
+  font-size: 17px;
+}
+
+.teacher-record p {
+  margin: 3px 0 0;
+  color: var(--cb-muted);
+  font-size: 12px;
+}
+
+.teacher-allocation-section {
+  display: grid;
+  gap: 8px;
+  margin-top: 13px;
+}
+
+.teacher-allocation-section > strong {
+  color: #475467;
+  font-size: 12px;
+}
+
+.admissions-list {
+  display: grid;
+}
+
+.admission-record {
+  display: grid;
+  grid-template-columns:
+    minmax(150px, 1fr)
+    minmax(160px, 1fr)
+    auto
+    145px
+    auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--cb-line);
+}
+
+.admission-record:first-child {
+  padding-top: 0;
+}
+
+.admission-record:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.admission-main,
+.admission-contact {
+  display: grid;
+  gap: 2px;
+}
+
+.admission-main strong,
+.admission-contact strong {
+  color: var(--cb-ink);
+}
+
+.admission-main span,
+.admission-contact span {
+  color: var(--cb-muted);
+  font-size: 12px;
+}
+
+.compact-select {
+  min-height: 35px;
+  margin: 0;
+  padding: 6px 9px;
+  font-size: 12px;
+}
+
+.admission-actions {
+  display: flex;
+  gap: 6px;
+}
+
+@media (max-width: 1050px) {
+  .people-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admission-record {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      auto;
+  }
+
+  .admission-record .compact-select,
+  .admission-actions {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 700px) {
+  .people-summary-grid,
+  .credential-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .admission-record {
+    grid-template-columns: 1fr;
+  }
+
+  .admission-actions {
+    justify-content: flex-start;
+  }
+}
