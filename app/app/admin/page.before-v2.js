@@ -5,7 +5,6 @@ import ExportToolbar from '../../../components/ExportToolbar';
 import PersonnelPanel from '../../../components/PersonnelPanel';
 import GovernanceBoardPanel from '../../../components/GovernanceBoardPanel';
 import CommunicationCentre from '../../../components/CommunicationCentre';
-import AdminExecutiveDashboard from '../../../components/AdminExecutiveDashboard';
 
 function installApp() {
   const p = typeof window !== 'undefined' ? window.__cbPrompt : null;
@@ -1469,13 +1468,41 @@ function AssetsPanel({ schoolId, school, settings }) {
 }
 
 function DashboardPanel({ schoolId, school }) {
-  return (
-    <AdminExecutiveDashboard
-      schoolId={schoolId}
-      school={school}
-    />
-  );
+  const [d, setD] = useState(null);
+  useEffect(() => { (async () => {
+    if (!schoolId) return;
+    const today = new Date().toISOString().slice(0, 10);
+    const [stu, cls, tea, att, fin, inv, ast, ann] = await Promise.all([
+      supabase.from('students').select('id').eq('school_id', schoolId),
+      supabase.from('classes').select('id').eq('school_id', schoolId),
+      supabase.from('profiles').select('id').eq('role', 'teacher').eq('school_id', schoolId),
+      supabase.from('attendance').select('status').eq('school_id', schoolId).eq('date', today),
+      supabase.from('finance_entries').select('kind,amount').eq('school_id', schoolId),
+      supabase.from('inventory').select('quantity,reorder_level').eq('school_id', schoolId),
+      supabase.from('assets').select('value').eq('school_id', schoolId),
+      supabase.from('announcements').select('*').eq('school_id', schoolId).order('created_at', { ascending: false }).limit(3),
+    ]);
+    const attRows = att.data || []; const attTotal = attRows.length; const attPresent = attRows.filter(r => r.status === 'present' || r.status === 'late').length;
+    const finRows = fin.data || []; const income = finRows.filter(r => r.kind === 'income').reduce((a, r) => a + Number(r.amount || 0), 0); const expense = finRows.filter(r => r.kind === 'expense').reduce((a, r) => a + Number(r.amount || 0), 0);
+    const low = (inv.data || []).filter(r => r.reorder_level != null && Number(r.quantity) <= Number(r.reorder_level)).length;
+    const astTotal = (ast.data || []).reduce((a, r) => a + Number(r.value || 0), 0);
+    setD({ students: (stu.data || []).length, classes: (cls.data || []).length, teachers: (tea.data || []).length, attPresent, attTotal, income, expense, low, astTotal, ann: ann.data || [] });
+  })(); }, [schoolId]);
+  const money = n => '$' + Number(n || 0).toLocaleString();
+  if (!d) return <p className="muted">Loading</p>;
+  const attPct = d.attTotal ? Math.round(d.attPresent / d.attTotal * 100) : null;
+  return (<div>
+    <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 12 }}>{school ? school.name : 'Overview'}</div>
+    <StatRow items={[{ value: d.students, label: 'Learners' }, { value: d.classes, label: 'Classes' }, { value: d.teachers, label: 'Teachers' }, { value: attPct != null ? attPct + '%' : '', label: 'Attendance today' }]} />
+    <StatRow items={[{ value: money(d.income), label: 'Income', color: '#1a7f5a' }, { value: money(d.expense), label: 'Expenses', color: '#c0392b' }, { value: money(d.income - d.expense), label: 'Balance' }, { value: money(d.astTotal), label: 'Asset value' }]} />
+    {d.low > 0 && <div style={{ background: '#fff8e1', border: '1px solid #f4d58a', color: '#8a6d1a', padding: '10px 14px', borderRadius: 8, fontSize: 14, marginBottom: 16 }}>{d.low} inventory item(s) low on stock  check the Inventory tab.</div>}
+    <div className="card">
+      <div style={{ fontWeight: 700, marginBottom: 10 }}>Latest announcements</div>
+      {d.ann.length === 0 ? <p className="muted">No announcements yet.</p> : d.ann.map(a => (<div key={a.id} style={{ padding: '8px 0', borderBottom: '1px solid #eee' }}><div style={{ fontWeight: 600 }}>{a.title}</div><div className="muted" style={{ fontSize: 13, whiteSpace: 'pre-wrap' }}>{a.body}</div></div>))}
+    </div>
+  </div>);
 }
+
 function AnnouncementsPanel({ schoolId, canPost }) {
   const [rows, setRows] = useState([]);
   const [f, setF] = useState({ title: '', body: '' });

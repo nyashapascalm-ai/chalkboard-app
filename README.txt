@@ -1,30 +1,42 @@
-CHALKBOARD PERSONNEL + GOVERNING BOARD 1.0
+CHALKBOARD V2 ERP INTERFACE 1.0
 
-Adds People -> Personnel records:
-- date of birth and calculated age
-- national ID and employee number
-- position, department and employment dates
-- professional registration number, body and expiry
-- qualifications, institution, field and graduation year
-- previous employment and references
-- trade union membership
-- restricted police clearance, conviction and suitability records
+This is a structural visual upgrade, not a small theme adjustment.
 
-Adds Governance -> Governing board:
-- annual board terms
-- start and end dates
-- board roles and representing group
-- appointment and service dates
-- contact details
-- qualifications and expertise
-- declarations of interest
-- active/completed board history
+INCLUDES
+--------
+- Strong 306px enterprise sidebar
+- Bold typography and navigation hierarchy
+- Full-width content canvas
+- Navy and blue controls throughout
+- Removal of remaining green brand controls
+- Larger, authoritative forms and tables
+- Stronger cards and shadows
+- New executive School Administrator dashboard
+- 12 cross-platform KPI cards
+- Academics, HR, finance, governance, operations and communication overview
+- Upcoming school activity
+- Recent communication
+- Operator and Ministry shell improvements
+- Login improvements
+- Responsive layouts
 
 INSTALL
-1. Run supabase/20260802_chalkboard_personnel_governance.sql in Supabase.
-2. Extract this package into C:\Users\Dell\Downloads\chalkboard-x\chalkboard
-3. Run:
-   powershell -ExecutionPolicy Bypass -File .\INSTALL_CHALKBOARD_PERSONNEL_GOVERNANCE.ps1
-4. Run npm run build
+-------
+1. Extract into:
+   C:\Users\Dell\Downloads\chalkboard-x\chalkboard
 
-Do not commit app/app/admin/page.before-personnel-governance.js.
+2. Run:
+   powershell -ExecutionPolicy Bypass -File .\INSTALL_CHALKBOARD_V2_ERP_INTERFACE.ps1
+
+3. Clear cache:
+   Remove-Item .\.next -Recurse -Force -ErrorAction SilentlyContinue
+
+4. Build:
+   npm run build
+
+BACKUPS
+-------
+app/globals.before-v2.css
+app/app/admin/page.before-v2.js
+
+Do not commit backup files.
