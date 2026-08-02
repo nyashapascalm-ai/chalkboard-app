@@ -1,41 +1,53 @@
-CHALKBOARD ROLE PORTALS 1.0
+CHALKBOARD BUDGET + INVOICE FIX 1.0
 
-Adds:
-- /app official role-aware login
-- /app/admin existing full School Administrator console
-- /app/operator live platform metrics and school registry
-- /app/ministry read-only aggregated oversight
+FIX
+---
+The shared students table does not contain email and phone columns.
+The invoice and receipt learner selector now loads only:
+- id
+- full_name
 
-Also:
-- replaces the old green checkmark with the official Chalkboard icon
-- removes corrupted non-ASCII navigation characters from the legacy Admin console
-- validates account role and status
-- blocks School Administrators without a school assignment
+Email and phone remain manual recipient fields.
 
-Install:
-1. Extract into C:\Users\Dell\Downloads\chalkboard-x\chalkboard
-2. Run:
-   powershell -ExecutionPolicy Bypass -File .\INSTALL_CHALKBOARD_ROLE_PORTALS.ps1
+ANNUAL BUDGET
+-------------
+Adds Finance -> Annual budget.
+
+Features:
+- Financial year and version control
+- Draft, submitted, approved, rejected, locked and archived statuses
+- Projected learner count
+- Projected fees:
+  learners x fee per learner x school terms
+- Projected levies:
+  learners x annual levy
+- Other income categories
+- Full expenditure categories
+- Quantity x unit rate x periods calculations
+- Projected income
+- Planned expenditure
+- Surplus or deficit
+- Expense allocation percentages
+- Submission, approval and lock workflow
+- Approval history foundation
+
+DATABASE
+--------
+Run:
+supabase/20260802_chalkboard_budgets.sql
+
+INSTALL
+-------
+1. Extract into the Chalkboard project.
+2. Run the SQL.
 3. Run:
+   powershell -ExecutionPolicy Bypass -File .\INSTALL_CHALKBOARD_BUDGET_AND_INVOICE_FIX.ps1
+4. Run:
    npm run build
 
-Expected routes:
-/
-/app
-/app/admin
-/app/operator
-/app/ministry
-/download
-/offline
+BACKUP
+------
+The installer creates:
+app/app/admin/page.before-budget-module.js
 
-Test:
-School Admin: admin@chakari.co.zw
-Operator: nyashapascalm@gmail.com
-Ministry: pascal.nyasha@computefabric.co.uk
-
-Deploy:
-git add .
-git commit -m "Add Chalkboard role portals and official app branding"
-git push
-
-Do not run INSTALL_CHALKBOARD_WEBSITE.ps1 again after this patch.
+Do not commit the backup.

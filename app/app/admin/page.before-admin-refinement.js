@@ -169,117 +169,20 @@ function Console({ session, role, canPick, initialSchool }) {
   const O = role === 'operator';
   const SA = role === 'school_admin';
   const groups = [
-    {
-      key: 'setup',
-      label: 'School setup',
-      icon: '',
-      items: [
-        ['school', 'School profile', ''],
-        ['classes', 'Classes and forms', ''],
-        ['subjects', 'Subjects', ''],
-      ],
-    },
-    {
-      key: 'people',
-      label: 'People',
-      icon: '',
-      items: [
-        ['students', 'Learners', ''],
-        ['teachers', 'Teachers and allocations', ''],
-        ['staff', 'Human Resources', ''],
-        ['admissions', 'Admissions', ''],
-      ],
-    },
-    {
-      key: 'reporting',
-      label: 'Reporting',
-      icon: '',
-      items: [
-        ['reports', 'Attendance reports', ''],
-      ],
-    },
-    {
-      key: 'money',
-      label: 'Finance',
-      icon: '',
-      items: [
-        ['fees', 'Fees', ''],
-        ['documents', 'Invoices and receipts', ''],
-        ['arrears', 'Arrears', ''],
-        ['finance', 'Income and expenses', ''],
-        ['budget', 'Annual budget', ''],
-        ['pettycash', 'Petty cash', ''],
-        ['banking', 'Banking', ''],
-      ],
-    },
-    {
-      key: 'governance',
-      label: 'Governance',
-      icon: '',
-      items: [
-        ['meetings', 'Meetings and resolutions', ''],
-        ['events', 'Events calendar', ''],
-      ],
-    },
-    {
-      key: 'operations',
-      label: 'Operations',
-      icon: '',
-      items: [
-        ['contractors', 'Contractors and payments', ''],
-        ['inventory', 'Inventory', ''],
-        ['assets', 'Assets', ''],
-      ],
-    },
-    {
-      key: 'communication',
-      label: 'Communication',
-      icon: '',
-      items: [
-        ['announcements', 'Announcements', ''],
-      ],
-    },
-    {
-      key: 'account',
-      label: 'Account',
-      icon: '',
-      items: [
-        ['mybilling', 'Subscription', ''],
-      ],
-    },
-  ].filter(g => g.items.length > 0);
-
-const groupOf = k => { const g = groups.find(gr => gr.items.some(it => it[0] === k)); return g ? g.key : null; };
+  { key: 'academics', label: 'Academics', icon: '', items: [['attendance', 'Attendance', ''], ['marks', 'Marks', ''], ['reportcards', 'Report cards', ''], ['reports', 'Attendance report', '']].concat(A ? [['academics', 'Class overview', '']] : []) },
+  { key: 'people', label: 'People', icon: '', items: [['students', 'Students', '']].concat(A ? [['teachers', 'Teachers', ''], ['staff', 'Staff', ''], ['admissions', 'Admissions', '']] : []) },
+  { key: 'money', label: 'Money', icon: '', items: A ? [['fees', 'Fees', ''], ['arrears', 'Arrears', ''], ['finance', 'Finance', ''], ['banking', 'Banking', '']] : [] },
+  { key: 'operations', label: 'Operations', icon: '', items: A ? [['timetable', 'Timetable', ''], ['inventory', 'Inventory', ''], ['assets', 'Assets', '']] : [] },
+  { key: 'comms', label: 'Communication', icon: '', items: [['announcements', 'Announcements', '']] },
+  { key: 'setup', label: 'Setup', icon: '', items: A ? [['classes', 'Classes', ''], ['subjects', 'Subjects', ''], ['school', 'School', '']].concat(SA ? [['mybilling', 'Subscription', '']] : []) : [] },
+].filter(g => g.items.length > 0);
+  const groupOf = k => { const g = groups.find(gr => gr.items.some(it => it[0] === k)); return g ? g.key : null; };
   const [openGroup, setOpenGroup] = useState(groupOf(nav));
   const goto = k => { setNav(k); const g = groupOf(k); if (g) setOpenGroup(g); };
   const grpHdr = { display: 'flex', alignItems: 'center', gap: 11, padding: '9px 12px', borderRadius: 8, fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#8a94a0', cursor: 'pointer', border: 0, background: 'transparent', textAlign: 'left', width: '100%', fontFamily: 'inherit' };
-  const title = {
-    dashboard: 'Dashboard',
-    mybilling: 'Subscription',
-    fees: 'Fees',
-    arrears: 'Arrears',
-    announcements: 'Announcements',
-    staff: 'Human Resources',
-    admissions: 'Admissions',
-    students: 'Learners',
-    classes: 'Classes and forms',
-    teachers: 'Teachers and allocations',
-    reports: 'Attendance reports',
-    subjects: 'Subjects',
-    school: 'School profile',
-    finance: 'Income and expenses',
-    banking: 'Banking',
-    documents: 'Invoices and receipts',
-    pettycash: 'Petty cash',
-    budget: 'Annual budget',
-    inventory: 'Inventory',
-    assets: 'Assets',
-    meetings: 'Meetings and resolutions',
-    events: 'Events calendar',
-    contractors: 'Contractors and payments',
-  }[nav];
+  const title = { dashboard: 'Dashboard', billing: 'Subscriptions', mybilling: 'Subscription', academics: 'Academics', fees: 'Fees', arrears: 'Fee arrears', announcements: 'Announcements', staff: 'Staff', admissions: 'Admissions', timetable: 'Timetable', attendance: 'Attendance', students: 'Students', classes: 'Classes', teachers: 'Teachers', reports: 'Attendance report', marks: 'Enter marks', reportcards: 'Report cards', subjects: 'Subjects', school: 'School letterhead', finance: 'Income & expenses', banking: 'Banking', inventory: 'Inventory', assets: 'Asset register' }[nav];
 
-const subToday = new Date().toISOString().slice(0, 10);
+  const subToday = new Date().toISOString().slice(0, 10);
   const subStatus = (() => {
     if (!sub || !sub.next_due) return { code: 'none' };
     const soon = new Date(sub.next_due); soon.setDate(soon.getDate() - 7);
@@ -314,18 +217,13 @@ const subToday = new Date().toISOString().slice(0, 10);
         nav === 'billing' ? <BillingPanel /> :
         nav === 'mybilling' ? <SchoolBillingPanel schoolId={schoolId} /> :
         nav === 'arrears' ? <ArrearsPanel schoolId={schoolId} classes={allClasses} school={school} settings={settings} /> :
-        nav === 'documents' ? <FinanceDocumentsPanel schoolId={schoolId} school={school} settings={settings} /> :
-        nav === 'budget' ? <BudgetPanel schoolId={schoolId} settings={settings} /> :
-        nav === 'pettycash' ? <PettyCashPanel schoolId={schoolId} /> :
         nav === 'fees' ? <FeesPanel schoolId={schoolId} classes={allClasses} school={school} settings={settings} /> :
         nav === 'academics' ? <AcademicsPanel schoolId={schoolId} classes={allClasses} subjects={subjects} /> :
         nav === 'dashboard' ? (isTeacher ? <TeacherDashboardPanel schoolId={schoolId} classes={available} session={session} /> : <DashboardPanel schoolId={schoolId} school={school} />) :
-        nav === 'meetings' ? <MeetingsPanel schoolId={schoolId} /> :
-        nav === 'events' ? <EventsPanel schoolId={schoolId} /> :
-        nav === 'contractors' ? <ContractorsPanel schoolId={schoolId} /> :
         nav === 'announcements' ? <AnnouncementsPanel schoolId={schoolId} canPost={!isTeacher} /> :
         nav === 'staff' ? <StaffPanel schoolId={schoolId} /> :
         nav === 'admissions' ? <AdmissionsPanel schoolId={schoolId} classes={allClasses} /> :
+        nav === 'timetable' ? <TimetablePanel schoolId={schoolId} classes={allClasses} subjects={subjects} school={school} settings={settings} /> :
         nav === 'banking' ? <BankingPanel schoolId={schoolId} /> :
         nav === 'finance' ? <FinancePanel schoolId={schoolId} /> :
         nav === 'inventory' ? <InventoryPanel schoolId={schoolId} school={school} settings={settings} /> :
@@ -335,10 +233,10 @@ const subToday = new Date().toISOString().slice(0, 10);
         nav === 'marks' ? <MarksPanel schoolId={schoolId} classes={available} subjects={subjects} teacherId={session.user.id} level={(settings && settings.level) || 'secondary'} /> :
         nav === 'reportcards' ? <ReportCardsPanel schoolId={schoolId} classes={available} subjects={subjects} school={school} settings={settings} level={(settings && settings.level) || 'secondary'} /> :
         nav === 'classes' ? <ClassesPanel schoolId={schoolId} classes={allClasses} onChange={loadClasses} /> :
-        nav === 'teachers' ? <TeachersPanel schoolId={schoolId} classes={allClasses} subjects={subjects} /> :
+        nav === 'teachers' ? <TeachersPanel schoolId={schoolId} classes={allClasses} /> :
         nav === 'reports' ? <ReportsPanel schoolId={schoolId} classes={available} school={school} settings={settings} /> :
-        nav === 'students' ? <LearnersPanel schoolId={schoolId} classes={available} isTeacher={isTeacher} /> :
-        <AttendancePanel schoolId={schoolId} classes={available} />}
+        nav === 'students' ? <StudentsPanel schoolId={schoolId} classes={available} isTeacher={isTeacher} /> :
+        <AttendancePanel schoolId={schoolId} classes={available} isTeacher={isTeacher} />}
     </main>
   </div>);
 }
@@ -368,401 +266,75 @@ function ClassesPanel({ schoolId, classes, onChange }) {
 
 function chip(on) { return { padding: '6px 12px', borderRadius: 20, border: '1px solid ' + (on ? '#2f7a52' : '#dde1e6'), background: on ? '#2f7a52' : '#fff', color: on ? '#fff' : '#5b6570', cursor: 'pointer', fontWeight: 600, fontSize: 13 }; }
 
-function TeachersPanel({ schoolId, classes, subjects }) {
-  const [teachers, setTeachers] = useState([]);
-  const [classAssignments, setClassAssignments] = useState([]);
-  const [subjectAssignments, setSubjectAssignments] = useState([]);
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [pickedClasses, setPickedClasses] = useState([]);
-  const [pickedSubjects, setPickedSubjects] = useState([]);
-  const [result, setResult] = useState(null);
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState('');
-
+function TeachersPanel({ schoolId, classes }) {
+  const [list, setList] = useState([]);
+  const [links, setLinks] = useState([]);
+  const [name, setName] = useState(''); const [email, setEmail] = useState(''); const [picked, setPicked] = useState([]);
+  const [result, setResult] = useState(null); const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
+  const [editId, setEditId] = useState(null); const [editPicked, setEditPicked] = useState([]);
   async function load() {
-    const [teachersResult, classResult, subjectResult] = await Promise.all([
-      supabase
-        .from('profiles')
-        .select('id,full_name,email,status')
-        .eq('role', 'teacher')
-        .eq('school_id', schoolId)
-        .order('full_name'),
-      supabase
-        .from('teacher_class_assignments')
-        .select('id,teacher_id,class_id')
-        .eq('school_id', schoolId),
-      supabase
-        .from('teacher_subject_assignments')
-        .select('id,teacher_id,subject_id')
-        .eq('school_id', schoolId),
-    ]);
-
-    setTeachers(teachersResult.data || []);
-    setClassAssignments(classResult.data || []);
-    setSubjectAssignments(subjectResult.data || []);
-
-    const loadError =
-      teachersResult.error ||
-      classResult.error ||
-      subjectResult.error;
-
-    if (loadError) setErr(loadError.message);
+    const { data: t } = await supabase.from('profiles').select('id,full_name').eq('role', 'teacher').eq('school_id', schoolId);
+    setList(t || []);
+    const { data: l } = await supabase.from('teacher_classes').select('teacher_id,class_id').eq('school_id', schoolId);
+    setLinks(l || []);
   }
-
-  useEffect(() => {
-    load();
-  }, [schoolId]);
-
-  function toggle(list, setter, id) {
-    setter(
-      list.includes(id)
-        ? list.filter(item => item !== id)
-        : [...list, id]
-    );
-  }
-
-  async function createTeacher() {
-    if (!email.trim()) {
-      setErr('Enter a teacher email address.');
-      return;
-    }
-
-    setBusy(true);
-    setErr('');
-    setResult(null);
-
+  useEffect(() => { load(); }, [schoolId]);
+  const clsName = id => { const c = classes.find(x => x.id === id); return c ? c.name : '?'; };
+  const teacherClassIds = tid => links.filter(l => l.teacher_id === tid).map(l => l.class_id);
+  function toggleNew(id) { setPicked(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]); }
+  function toggleEdit(id) { setEditPicked(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id]); }
+  async function create() {
+    if (!email.trim()) { setErr('Enter an email.'); return; }
+    setBusy(true); setErr(''); setResult(null);
     try {
-      const response = await fetch('/api/teacher', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          schoolId,
-          email: email.trim(),
-          fullName: name.trim(),
-          classIds: [],
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Could not create teacher.');
-      }
-
-      const teacherId =
-        data.id ||
-        data.userId ||
-        data.teacherId;
-
-      if (!teacherId) {
-        const { data: createdProfile } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('school_id', schoolId)
-          .eq('role', 'teacher')
-          .eq('email', email.trim())
-          .maybeSingle();
-
-        if (!createdProfile?.id) {
-          throw new Error(
-            'Teacher account was created, but its profile could not be found for allocation.'
-          );
-        }
-
-        await saveAllocations(createdProfile.id);
-      } else {
-        await saveAllocations(teacherId);
-      }
-
-      setResult(data);
-      setName('');
-      setEmail('');
-      setPickedClasses([]);
-      setPickedSubjects([]);
-      await load();
-    } catch (error) {
-      setErr(error.message || String(error));
-    }
-
+      const res = await fetch('/api/teacher', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ schoolId, email: email.trim(), fullName: name.trim(), classIds: picked }) });
+      const data = await res.json();
+      if (!res.ok) setErr(data.error || 'Could not create teacher.'); else { setResult(data); setName(''); setEmail(''); setPicked([]); await load(); }
+    } catch (e) { setErr(String(e.message || e)); }
     setBusy(false);
   }
-
-  async function saveAllocations(teacherId) {
-    if (pickedClasses.length) {
-      const { error } = await supabase
-        .from('teacher_class_assignments')
-        .upsert(
-          pickedClasses.map(classId => ({
-            school_id: schoolId,
-            teacher_id: teacherId,
-            class_id: classId,
-          })),
-          { onConflict: 'teacher_id,class_id' }
-        );
-
-      if (error) throw error;
-    }
-
-    if (pickedSubjects.length) {
-      const { error } = await supabase
-        .from('teacher_subject_assignments')
-        .upsert(
-          pickedSubjects.map(subjectId => ({
-            school_id: schoolId,
-            teacher_id: teacherId,
-            subject_id: subjectId,
-          })),
-          { onConflict: 'teacher_id,subject_id' }
-        );
-
-      if (error) throw error;
-    }
+  function startEdit(t) { setEditId(t.id); setEditPicked(teacherClassIds(t.id)); }
+  async function saveEdit() {
+    const current = teacherClassIds(editId);
+    const toAdd = editPicked.filter(id => !current.includes(id));
+    const toRemove = current.filter(id => !editPicked.includes(id));
+    for (const cid of toRemove) { await supabase.from('teacher_classes').delete().eq('teacher_id', editId).eq('class_id', cid); }
+    if (toAdd.length) { await supabase.from('teacher_classes').insert(toAdd.map(cid => ({ school_id: schoolId, teacher_id: editId, class_id: cid }))); }
+    setEditId(null); await load();
   }
-
-  async function toggleExisting(type, teacherId, targetId) {
-    const table =
-      type === 'class'
-        ? 'teacher_class_assignments'
-        : 'teacher_subject_assignments';
-
-    const targetColumn =
-      type === 'class'
-        ? 'class_id'
-        : 'subject_id';
-
-    const rows =
-      type === 'class'
-        ? classAssignments
-        : subjectAssignments;
-
-    const existing = rows.find(
-      row =>
-        row.teacher_id === teacherId &&
-        row[targetColumn] === targetId
-    );
-
-    if (existing) {
-      const { error } = await supabase
-        .from(table)
-        .delete()
-        .eq('id', existing.id);
-
-      if (error) {
-        setErr(error.message);
-        return;
-      }
-    } else {
-      const { error } = await supabase
-        .from(table)
-        .insert({
-          school_id: schoolId,
-          teacher_id: teacherId,
-          [targetColumn]: targetId,
-        });
-
-      if (error) {
-        setErr(error.message);
-        return;
-      }
-    }
-
-    await load();
-  }
-
-  function assigned(rows, teacherId, column, id) {
-    return rows.some(
-      row =>
-        row.teacher_id === teacherId &&
-        row[column] === id
-    );
-  }
-
-  return (
-    <div>
-      <p className="muted" style={{ marginTop: 0 }}>
-        Create teacher accounts and allocate their classes and
-        subjects. Dari reads these shared assignments automatically.
-      </p>
-
-      {result ? (
-        <div className="card" style={{ marginBottom: 18, borderColor: '#1a7f5a' }}>
-          <div style={{ fontWeight: 700, color: '#1a7f5a' }}>
-            Teacher login created
-          </div>
-          <p className="muted" style={{ marginBottom: 6 }}>
-            Send these credentials securely to the teacher.
-          </p>
-          <div><b>Email:</b> {result.email}</div>
-          {result.password ? (
-            <div style={{ marginTop: 4 }}>
-              <b>Temporary password:</b>{' '}
-              <span style={{ fontFamily: 'monospace' }}>
-                {result.password}
-              </span>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-
-      <div className="card" style={{ marginBottom: 18 }}>
-        <div style={{ fontWeight: 700, marginBottom: 12 }}>
-          Add a teacher
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-          <div>
-            <label style={labelStyle}>Full name</label>
-            <input
-              style={inputStyle}
-              value={name}
-              onChange={event => setName(event.target.value)}
-            />
-          </div>
-          <div>
-            <label style={labelStyle}>Email</label>
-            <input
-              style={inputStyle}
-              value={email}
-              onChange={event => setEmail(event.target.value)}
-            />
-          </div>
-        </div>
-
-        <label style={{ ...labelStyle, marginTop: 14 }}>
-          Classes
-        </label>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {classes.map(item => (
-            <button
-              key={item.id}
-              type="button"
-              style={chip(pickedClasses.includes(item.id))}
-              onClick={() =>
-                toggle(
-                  pickedClasses,
-                  setPickedClasses,
-                  item.id
-                )
-              }
-            >
-              {item.name}
-            </button>
-          ))}
-        </div>
-
-        <label style={{ ...labelStyle, marginTop: 14 }}>
-          Subjects
-        </label>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {subjects.map(item => (
-            <button
-              key={item.id}
-              type="button"
-              style={chip(pickedSubjects.includes(item.id))}
-              onClick={() =>
-                toggle(
-                  pickedSubjects,
-                  setPickedSubjects,
-                  item.id
-                )
-              }
-            >
-              {item.name}
-            </button>
-          ))}
-        </div>
-
-        <button
-          onClick={createTeacher}
-          disabled={busy}
-          style={{ marginTop: 16 }}
-        >
-          {busy ? 'Creating...' : 'Create teacher and allocations'}
-        </button>
-
-        {err ? <p className="error">{err}</p> : null}
+  return (<div>
+    <p className="muted" style={{ marginTop: 0 }}>Create a login for each teacher and tick the classes they teach. You can change a teacher's classes anytime.</p>
+    {result && (<div className="card" style={{ marginBottom: 18, borderColor: '#1a7f5a' }}>
+      <div style={{ fontWeight: 700, color: '#1a7f5a' }}>Teacher login created</div>
+      <p className="muted" style={{ marginTop: 4, marginBottom: 10 }}>Send these to the teacher. The password is shown once.</p>
+      <div><b>Email:</b> {result.email}</div>
+      <div style={{ marginTop: 4 }}><b>Password:</b> <span style={{ fontFamily: 'monospace', background: '#f3f5f7', padding: '2px 8px', borderRadius: 6 }}>{result.password}</span></div>
+    </div>)}
+    <div className="card" style={{ marginBottom: 18 }}>
+      <div style={{ fontWeight: 700, marginBottom: 10 }}>Add a teacher</div>
+      <div style={{ display: 'grid', gap: 10, gridTemplateColumns: '1fr 1fr' }}>
+        <div><label style={labelStyle}>Full name</label><input style={inputStyle} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Mr. Ncube" /></div>
+        <div><label style={labelStyle}>Email</label><input style={inputStyle} value={email} onChange={e => setEmail(e.target.value)} placeholder="teacher@school.co.zw" /></div>
       </div>
-
-      <div style={{ display: 'grid', gap: 14 }}>
-        {teachers.map(teacher => (
-          <article className="card" key={teacher.id}>
-            <div style={{ fontWeight: 700, fontSize: 17 }}>
-              {teacher.full_name || teacher.email || 'Teacher'}
-            </div>
-            <div className="muted" style={{ fontSize: 12, marginTop: 3 }}>
-              {teacher.email || 'No email stored'}
-            </div>
-
-            <div style={{ marginTop: 14 }}>
-              <label style={labelStyle}>Assigned classes</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                {classes.map(item => {
-                  const on = assigned(
-                    classAssignments,
-                    teacher.id,
-                    'class_id',
-                    item.id
-                  );
-
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      style={chip(on)}
-                      onClick={() =>
-                        toggleExisting(
-                          'class',
-                          teacher.id,
-                          item.id
-                        )
-                      }
-                    >
-                      {item.name}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div style={{ marginTop: 14 }}>
-              <label style={labelStyle}>Assigned subjects</label>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
-                {subjects.map(item => {
-                  const on = assigned(
-                    subjectAssignments,
-                    teacher.id,
-                    'subject_id',
-                    item.id
-                  );
-
-                  return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      style={chip(on)}
-                      onClick={() =>
-                        toggleExisting(
-                          'subject',
-                          teacher.id,
-                          item.id
-                        )
-                      }
-                    >
-                      {item.name}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </article>
-        ))}
-      </div>
+      <label style={{ ...labelStyle, marginTop: 12 }}>Classes they teach</label>
+      {classes.length === 0 ? <p className="muted">Add classes first in the Classes tab.</p> : (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          {classes.map(c => { const on = picked.includes(c.id); return (<button key={c.id} type="button" onClick={() => toggleNew(c.id)} style={chip(on)}>{c.name}</button>); })}
+        </div>)}
+      <div style={{ marginTop: 14 }}><button onClick={create} disabled={busy}>{busy ? 'Creating' : 'Create teacher login'}</button></div>
+      {err && <p className="error">{err}</p>}
     </div>
-  );
+    <table><thead><tr><th>Teacher</th><th>Classes</th><th></th></tr></thead><tbody>
+      {list.map(t => (<tr key={t.id}><td className="strong">{t.full_name || '(no name)'}</td>
+        <td>{editId === t.id ? (<div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>{classes.map(c => { const on = editPicked.includes(c.id); return (<button key={c.id} type="button" onClick={() => toggleEdit(c.id)} style={chip(on)}>{c.name}</button>); })}</div>) : (teacherClassIds(t.id).map(clsName).join(', ') || <span className="muted">none</span>)}</td>
+        <td className="r">{editId === t.id ? (<><button onClick={saveEdit} style={{ padding: '4px 10px', fontSize: 13 }}>Save</button> <button className="ghost" onClick={() => setEditId(null)} style={{ padding: '4px 10px', fontSize: 13, marginLeft: 6 }}>Cancel</button></>) : <button className="ghost" onClick={() => startEdit(t)} style={{ padding: '4px 10px', fontSize: 13 }}>Edit classes</button>}</td>
+      </tr>))}
+      {list.length === 0 && <tr><td colSpan="3" className="muted">No teachers yet.</td></tr>}
+    </tbody></table>
+  </div>);
 }
 
-function LearnersPanel({ schoolId, classes, isTeacher }) {
+function StudentsPanel({ schoolId, classes, isTeacher }) {
   const [classId, setClassId] = useState('');
   const [rows, setRows] = useState([]);
   const [name, setName] = useState(''); const [bulk, setBulk] = useState(''); const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
@@ -785,7 +357,7 @@ function LearnersPanel({ schoolId, classes, isTeacher }) {
     setBusy(false);
   }
   if (classes.length === 0) return <p className="muted">{isTeacher ? 'You have no classes yet.' : 'No classes yet  add them in the Classes tab first.'}</p>;
-  if (editing) return <LearnerRecord student={editing} classes={classes} clsName={clsName} onBack={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />;
+  if (editing) return <StudentRecord student={editing} classes={classes} clsName={clsName} onBack={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }} />;
   return (<div>
     <div style={{ marginBottom: 14, maxWidth: 300 }}>
       <label style={labelStyle}>Class</label>
@@ -813,7 +385,7 @@ function LearnersPanel({ schoolId, classes, isTeacher }) {
   </div>);
 }
 
-function LearnerRecord({ student, classes, clsName, onBack, onSaved }) {
+function StudentRecord({ student, classes, clsName, onBack, onSaved }) {
   const [f, setF] = useState({ full_name: student.full_name || '', class_id: student.class_id || '', gender: student.gender || '', dob: student.dob || '', guardian_name: student.guardian_name || '', guardian_phone: student.guardian_phone || '', address: student.address || '', notes: student.notes || '' });
   const [busy, setBusy] = useState(false); const [err, setErr] = useState(''); const [saved, setSaved] = useState(false);
   function set(k, v) { setF(o => ({ ...o, [k]: v })); }
@@ -849,231 +421,53 @@ function LearnerRecord({ student, classes, clsName, onBack, onSaved }) {
   </div>);
 }
 
-function AttendancePanel({ schoolId, classes }) {
+function AttendancePanel({ schoolId, classes, isTeacher }) {
+  const today = new Date().toISOString().slice(0, 10);
   const [classId, setClassId] = useState('');
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [students, setLearners] = useState([]);
-  const [records, setRecords] = useState([]);
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState('');
-
-  useEffect(() => {
-    if (!classId && classes.length) {
-      setClassId(classes[0].id);
-    }
-  }, [classes, classId]);
-
-  useEffect(() => {
-    async function load() {
-      if (!schoolId || !classId || !date) {
-        setLearners([]);
-        setRecords([]);
-        return;
-      }
-
-      setBusy(true);
-      setErr('');
-
-      const [studentsResult, attendanceResult] = await Promise.all([
-        supabase
-          .from('students')
-          .select('id, full_name, class_id, klass')
-          .eq('school_id', schoolId)
-          .eq('class_id', classId)
-          .order('full_name'),
-
-        supabase
-          .from('attendance')
-          .select('*')
-          .eq('school_id', schoolId)
-          .eq('class_id', classId)
-          .eq('date', date),
-      ]);
-
-      if (studentsResult.error || attendanceResult.error) {
-        setErr(
-          studentsResult.error?.message ||
-          attendanceResult.error?.message ||
-          'Unable to load attendance.'
-        );
-        setLearners([]);
-        setRecords([]);
-      } else {
-        setLearners(studentsResult.data || []);
-        setRecords(attendanceResult.data || []);
-      }
-
-      setBusy(false);
-    }
-
-    load();
-  }, [schoolId, classId, date]);
-
-  const recordByLearner = new Map(
-    records.map(record => [record.student_id, record])
-  );
-
-  const statusFor = studentId => {
-    const record = recordByLearner.get(studentId);
-    return record?.status || 'not marked';
-  };
-
-  const counts = records.reduce(
-    (summary, record) => {
-      const status = String(record.status || '').toLowerCase();
-
-      if (status === 'present') summary.present += 1;
-      else if (status === 'absent') summary.absent += 1;
-      else if (status === 'late') summary.late += 1;
-
-      return summary;
-    },
-    { present: 0, absent: 0, late: 0 }
-  );
-
-  const notMarked = Math.max(students.length - records.length, 0);
-
-  if (classes.length === 0) {
-    return (
-      <div className="card" style={{ maxWidth: 680 }}>
-        <h3 style={{ marginTop: 0 }}>No classes configured</h3>
-        <p className="muted">
-          Add classes under School setup before reviewing attendance.
-        </p>
-      </div>
-    );
+  const [date, setDate] = useState(today);
+  const [students, setStudents] = useState([]);
+  const [marks, setMarks] = useState({});
+  const [saved, setSaved] = useState(false); const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
+  useEffect(() => { if (!classId && classes.length) setClassId(classes[0].id); }, [classes]);
+  async function load() {
+    if (!classId) { setStudents([]); setMarks({}); return; }
+    const { data: st } = await supabase.from('students').select('*').eq('school_id', schoolId).eq('class_id', classId).order('full_name');
+    setStudents(st || []);
+    const ids = (st || []).map(s => s.id);
+    let at = [];
+    if (ids.length) { const r = await supabase.from('attendance').select('student_id,status').eq('date', date).in('student_id', ids); at = r.data || []; }
+    const m = {}; (st || []).forEach(s => { m[s.id] = 'present'; }); at.forEach(a => { m[a.student_id] = a.status; });
+    setMarks(m);
   }
-
-  return (
-    <div>
-      <div
-        style={{
-          display: 'flex',
-          gap: 14,
-          alignItems: 'flex-end',
-          marginBottom: 18,
-          flexWrap: 'wrap',
-        }}
-      >
-        <div style={{ minWidth: 220 }}>
-          <label style={labelStyle}>Class</label>
-          <select
-            style={inputStyle}
-            value={classId}
-            onChange={event => setClassId(event.target.value)}
-          >
-            {classes.map(item => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label style={labelStyle}>Date</label>
-          <input
-            type="date"
-            style={{ ...inputStyle, width: 'auto' }}
-            value={date}
-            onChange={event => setDate(event.target.value)}
-          />
-        </div>
-      </div>
-
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, minmax(130px, 1fr))',
-          gap: 12,
-          marginBottom: 20,
-        }}
-      >
-        {[
-          ['Present', counts.present, '#1a7f5a'],
-          ['Absent', counts.absent, '#c0392b'],
-          ['Late', counts.late, '#a66b00'],
-          ['Not marked', notMarked, '#687386'],
-        ].map(([label, value, color]) => (
-          <div
-            key={label}
-            className="card"
-            style={{ padding: 16 }}
-          >
-            <div
-              style={{
-                color,
-                fontSize: 27,
-                fontWeight: 800,
-              }}
-            >
-              {value}
-            </div>
-            <div className="muted" style={{ fontSize: 13 }}>
-              {label}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div
-        style={{
-          padding: '12px 14px',
-          borderRadius: 10,
-          background: '#eef5ff',
-          color: '#244d78',
-          fontSize: 13,
-          marginBottom: 18,
-        }}
-      >
-        Attendance is read-only in Chalkboard. Teachers record daily
-        attendance in Dari, and the submitted records appear here
-        automatically.
-      </div>
-
-      {err ? <p className="error">{err}</p> : null}
-
-      {busy ? (
-        <p className="muted">Loading attendance...</p>
-      ) : students.length === 0 ? (
-        <p className="muted">
-          No learners are assigned to this class.
-        </p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Learner</th>
-              <th>Status</th>
-              <th>Recorded</th>
-            </tr>
-          </thead>
-          <tbody>
-            {students.map(student => {
-              const record = recordByLearner.get(student.id);
-              const status = statusFor(student.id);
-
-              return (
-                <tr key={student.id}>
-                  <td className="strong">{student.full_name}</td>
-                  <td style={{ textTransform: 'capitalize' }}>
-                    {status}
-                  </td>
-                  <td className="muted">
-                    {record
-                      ? record.created_at
-                        ? new Date(record.created_at).toLocaleString('en-GB')
-                        : 'Submitted'
-                      : 'No record'}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      )}
+  useEffect(() => { load(); }, [classId, date, schoolId]);
+  function setMark(id, status) { setMarks(m => ({ ...m, [id]: status })); }
+  async function save() {
+    setBusy(true); setErr(''); setSaved(false);
+    const rows = students.map(s => ({ school_id: schoolId, student_id: s.id, date, status: marks[s.id] || 'present' }));
+    const { error } = await supabase.from('attendance').upsert(rows, { onConflict: 'student_id,date' });
+    if (error) setErr(error.message); else { setSaved(true); setTimeout(() => setSaved(false), 2000); }
+    setBusy(false);
+  }
+  const counts = students.reduce((a, s) => { const st = marks[s.id] || 'present'; a[st] = (a[st] || 0) + 1; return a; }, {});
+  const colors = { present: '#1a7f5a', absent: '#c0392b', late: '#b8860b' };
+  if (classes.length === 0) return <p className="muted">{isTeacher ? 'You have no classes yet  add them in My classes first.' : 'No classes yet  add them in the Classes tab first.'}</p>;
+  return (<div>
+    <div style={{ display: 'flex', gap: 16, alignItems: 'end', marginBottom: 16, flexWrap: 'wrap' }}>
+      <div style={{ minWidth: 220 }}><label style={labelStyle}>Class</label><select style={inputStyle} value={classId} onChange={e => setClassId(e.target.value)}>{classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
+      <div><label style={labelStyle}>Date</label><input type="date" style={{ ...inputStyle, width: 'auto' }} value={date} onChange={e => setDate(e.target.value)} /></div>
+      <div className="muted" style={{ fontSize: 14, paddingBottom: 8 }}>Present {counts.present || 0}  Absent {counts.absent || 0}  Late {counts.late || 0}</div>
     </div>
-  );
+    {students.length === 0 ? <p className="muted">No students in this class yet. Add students in the Students tab.</p> : (<>
+      <table><thead><tr><th>Student</th><th className="r">Mark</th></tr></thead><tbody>
+        {students.map(s => (<tr key={s.id}><td className="strong">{s.full_name}</td><td className="r">
+          <div style={{ display: 'inline-flex', gap: 6 }}>
+            {['present', 'absent', 'late'].map(st => { const on = (marks[s.id] || 'present') === st; return (<button key={st} onClick={() => setMark(s.id, st)} style={{ padding: '5px 12px', fontSize: 13, borderRadius: 6, border: '1px solid ' + (on ? colors[st] : '#dde1e6'), background: on ? colors[st] : '#fff', color: on ? '#fff' : '#5b6570', cursor: 'pointer', fontWeight: 600, textTransform: 'capitalize' }}>{st}</button>); })}
+          </div>
+        </td></tr>))}
+      </tbody></table>
+      <div style={{ marginTop: 18 }}><button onClick={save} disabled={busy}>{busy ? 'Saving' : (saved ? 'Saved ' : 'Save attendance')}</button>{err && <p className="error">{err}</p>}</div>
+    </>)}
+  </div>);
 }
 
 function esc(v) { return String(v == null ? '' : v).replace(/[<>&]/g, function (c) { return { '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]; }); }
@@ -1094,14 +488,14 @@ function ReportsPanel({ schoolId, classes, school, settings }) {
   const monthAgo = new Date(Date.now() - 29 * 864e5).toISOString().slice(0, 10);
   const [classId, setClassId] = useState('');
   const [from, setFrom] = useState(monthAgo); const [to, setTo] = useState(today);
-  const [students, setLearners] = useState([]); const [att, setAtt] = useState([]); const [loading, setLoading] = useState(false);
+  const [students, setStudents] = useState([]); const [att, setAtt] = useState([]); const [loading, setLoading] = useState(false);
   const [openId, setOpenId] = useState(null);
   useEffect(() => { if (!classId && classes.length) setClassId(classes[0].id); }, [classes]);
   async function load() {
-    if (!classId) { setLearners([]); setAtt([]); return; }
+    if (!classId) { setStudents([]); setAtt([]); return; }
     setLoading(true);
     const { data: st } = await supabase.from('students').select('id,full_name').eq('school_id', schoolId).eq('class_id', classId).order('full_name');
-    setLearners(st || []);
+    setStudents(st || []);
     const ids = (st || []).map(s => s.id);
     let a = [];
     if (ids.length) { const r = await supabase.from('attendance').select('student_id,status,date').in('student_id', ids).gte('date', from).lte('date', to); a = r.data || []; }
@@ -1117,12 +511,12 @@ function ReportsPanel({ schoolId, classes, school, settings }) {
   const cname = (classes.find(c => c.id === classId) || {}).name || '';
   function printReport() {
     const rows = students.map(s => { const c = per[s.id]; return '<tr><td>' + esc(s.full_name) + '</td><td class=r>' + c.present + '</td><td class=r>' + c.absent + '</td><td class=r>' + c.late + '</td><td class=r>' + pct(c) + '%</td></tr>'; }).join('');
-    const html = '<html><head><title>Attendance report</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:24px;color:#1f2328}table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}th,td{border-bottom:1px solid #ccc;padding:8px;text-align:left}.r{text-align:right}.m{color:#666;font-size:13px}</style></head><body>' + letterheadHtml(school, settings) + '<h3 style="margin:0 0 4px">Attendance report  ' + esc(cname) + '</h3><div class=m>' + from + ' to ' + to + '  ' + dates.length + ' day(s)</div><table><thead><tr><th>Learner</th><th class=r>Present</th><th class=r>Absent</th><th class=r>Late</th><th class=r>% present</th></tr></thead><tbody>' + rows + '</tbody></table></body></html>';
+    const html = '<html><head><title>Attendance report</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:24px;color:#1f2328}table{width:100%;border-collapse:collapse;margin-top:12px;font-size:14px}th,td{border-bottom:1px solid #ccc;padding:8px;text-align:left}.r{text-align:right}.m{color:#666;font-size:13px}</style></head><body>' + letterheadHtml(school, settings) + '<h3 style="margin:0 0 4px">Attendance report  ' + esc(cname) + '</h3><div class=m>' + from + ' to ' + to + '  ' + dates.length + ' day(s)</div><table><thead><tr><th>Student</th><th class=r>Present</th><th class=r>Absent</th><th class=r>Late</th><th class=r>% present</th></tr></thead><tbody>' + rows + '</tbody></table></body></html>';
     const w = window.open('', '_blank'); if (!w) { alert('Allow pop-ups to print the report.'); return; }
     w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 350);
   }
   if (classes.length === 0) return <p className="muted">No classes available yet.</p>;
-  const openLearner = students.find(x => x.id === openId);
+  const openStudent = students.find(x => x.id === openId);
   return (<div>
     <div style={{ display: 'flex', gap: 16, alignItems: 'end', marginBottom: 14, flexWrap: 'wrap' }}>
       <div style={{ minWidth: 200 }}><label style={labelStyle}>Class</label><select style={inputStyle} value={classId} onChange={e => { setClassId(e.target.value); setOpenId(null); }}>{classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
@@ -1132,12 +526,12 @@ function ReportsPanel({ schoolId, classes, school, settings }) {
     </div>
     <div className="muted" style={{ marginBottom: 12, fontSize: 14 }}>{dates.length} day(s) recorded  Class totals: Present {totals.present}  Absent {totals.absent}  Late {totals.late}</div>
     {loading ? <p className="muted">Loading</p> : (
-      <table><thead><tr><th>Learner</th><th className="r">Present</th><th className="r">Absent</th><th className="r">Late</th><th className="r">% present</th></tr></thead><tbody>
+      <table><thead><tr><th>Student</th><th className="r">Present</th><th className="r">Absent</th><th className="r">Late</th><th className="r">% present</th></tr></thead><tbody>
         {students.map(s => { const c = per[s.id]; const pp = pct(c); return (<tr key={s.id} onClick={() => setOpenId(openId === s.id ? null : s.id)} style={{ cursor: 'pointer', background: openId === s.id ? '#eafaf3' : 'transparent' }}><td className="strong">{s.full_name}</td><td className="r">{c.present}</td><td className="r">{c.absent}</td><td className="r">{c.late}</td><td className="r" style={{ color: pp >= 90 ? '#1a7f5a' : pp >= 75 ? '#b8860b' : '#c0392b', fontWeight: 600 }}>{pp}%</td></tr>); })}
         {students.length === 0 && <tr><td colSpan="5" className="muted">No students in this class.</td></tr>}
       </tbody></table>)}
-    {openLearner && (<div className="card" style={{ marginTop: 16 }}>
-      <div style={{ fontWeight: 700, marginBottom: 8 }}>{openLearner.full_name}  daily record</div>
+    {openStudent && (<div className="card" style={{ marginTop: 16 }}>
+      <div style={{ fontWeight: 700, marginBottom: 8 }}>{openStudent.full_name}  daily record</div>
       {(() => { const recs = att.filter(r => r.student_id === openId).sort((a, b) => a.date < b.date ? -1 : 1); return recs.length === 0 ? <p className="muted">No marks in this range.</p> : (<table><thead><tr><th>Date</th><th>Status</th></tr></thead><tbody>{recs.map((r, i) => (<tr key={i}><td>{r.date}</td><td style={{ textTransform: 'capitalize', color: colors[r.status], fontWeight: 600 }}>{r.status}</td></tr>))}</tbody></table>); })()}
     </div>)}
   </div>);
@@ -1168,14 +562,14 @@ function SubjectsPanel({ schoolId, subjects, onChange }) {
 
 function MarksPanel({ schoolId, classes, subjects, teacherId, level }) {
   const [classId, setClassId] = useState(''); const [subjectId, setSubjectId] = useState(''); const [term, setTerm] = useState(termOptions[0]);
-  const [students, setLearners] = useState([]); const [rowData, setRowData] = useState({});
+  const [students, setStudents] = useState([]); const [rowData, setRowData] = useState({});
   const [busy, setBusy] = useState(false); const [saved, setSaved] = useState(false); const [err, setErr] = useState('');
   useEffect(() => { if (!classId && classes.length) setClassId(classes[0].id); }, [classes]);
   useEffect(() => { if (!subjectId && subjects.length) setSubjectId(subjects[0].id); }, [subjects]);
   async function load() {
-    if (!classId) { setLearners([]); return; }
+    if (!classId) { setStudents([]); return; }
     const { data: st } = await supabase.from('students').select('id,full_name').eq('school_id', schoolId).eq('class_id', classId).order('full_name');
-    setLearners(st || []);
+    setStudents(st || []);
     const ids = (st || []).map(s => s.id); let existing = [];
     if (ids.length && subjectId) { const r = await supabase.from('marks').select('student_id,score,comment').eq('subject_id', subjectId).eq('term', term).in('student_id', ids); existing = r.data || []; }
     const d = {}; (st || []).forEach(s => { d[s.id] = { score: '', comment: '' }; }); existing.forEach(m => { d[m.student_id] = { score: m.score == null ? '' : m.score, comment: m.comment || '' }; }); setRowData(d);
@@ -1200,7 +594,7 @@ function MarksPanel({ schoolId, classes, subjects, teacherId, level }) {
       <div style={{ minWidth: 150 }}><label style={labelStyle}>Term</label><select style={inputStyle} value={term} onChange={e => setTerm(e.target.value)}>{termOptions.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
     </div>
     {students.length === 0 ? <p className="muted">No students in this class.</p> : (<>
-      <table><thead><tr><th>Learner</th><th style={{ width: 90 }}>Mark</th><th style={{ width: 60 }}>{level === 'primary' ? 'Units' : 'Grade'}</th><th>Comment</th></tr></thead><tbody>
+      <table><thead><tr><th>Student</th><th style={{ width: 90 }}>Mark</th><th style={{ width: 60 }}>{level === 'primary' ? 'Units' : 'Grade'}</th><th>Comment</th></tr></thead><tbody>
         {students.map(s => { const row = rowData[s.id] || { score: '', comment: '' }; const g = gradeFor(row.score, level); return (<tr key={s.id}><td className="strong">{s.full_name}</td>
           <td><input style={{ ...inputStyle, width: 70, margin: 0 }} value={row.score} onChange={e => setField(s.id, 'score', e.target.value)} placeholder="0-100" /></td>
           <td style={{ fontWeight: 700, color: g === 'A' ? '#1a7f5a' : g === 'E' ? '#c0392b' : '#1f2328' }}>{g || ''}</td>
@@ -1213,32 +607,32 @@ function MarksPanel({ schoolId, classes, subjects, teacherId, level }) {
 }
 
 function ReportCardsPanel({ schoolId, classes, subjects, school, settings, level }) {
-  const [classId, setClassId] = useState(''); const [studentId, setLearnerId] = useState(''); const [term, setTerm] = useState(termOptions[0]);
+  const [classId, setClassId] = useState(''); const [studentId, setStudentId] = useState(''); const [term, setTerm] = useState(termOptions[0]);
   const [rtype, setRtype] = useState('full');
-  const [students, setLearners] = useState([]); const [allMarks, setAllMarks] = useState([]); const [studentMarksAll, setLearnerMarksAll] = useState([]);
+  const [students, setStudents] = useState([]); const [allMarks, setAllMarks] = useState([]); const [studentMarksAll, setStudentMarksAll] = useState([]);
   const [att, setAtt] = useState({ attended: 0, total: 0 });
   const [meta, setMeta] = useState({ general_comment: '', head_comment: '', next_term: '', handwriting: '', homework: '', conduct: '' });
   const [savedMeta, setSavedMeta] = useState(false); const [busy, setBusy] = useState(false);
   useEffect(() => { if (!classId && classes.length) setClassId(classes[0].id); }, [classes]);
-  async function loadLearners() { if (!classId) { setLearners([]); return; } const { data } = await supabase.from('students').select('id,full_name').eq('school_id', schoolId).eq('class_id', classId).order('full_name'); setLearners(data || []); setLearnerId((data && data.length) ? data[0].id : ''); }
-  useEffect(() => { loadLearners(); }, [classId]);
+  async function loadStudents() { if (!classId) { setStudents([]); return; } const { data } = await supabase.from('students').select('id,full_name').eq('school_id', schoolId).eq('class_id', classId).order('full_name'); setStudents(data || []); setStudentId((data && data.length) ? data[0].id : ''); }
+  useEffect(() => { loadStudents(); }, [classId]);
   async function loadMarks() { const ids = students.map(s => s.id); if (!ids.length) { setAllMarks([]); return; } const { data } = await supabase.from('marks').select('student_id,subject_id,score,grade,comment').eq('term', term).in('student_id', ids); setAllMarks(data || []); }
   useEffect(() => { loadMarks(); }, [students, term]);
-  async function loadLearnerAll() { if (!studentId) { setLearnerMarksAll([]); return; } const { data } = await supabase.from('marks').select('subject_id,score,term').eq('student_id', studentId); setLearnerMarksAll(data || []); }
-  useEffect(() => { loadLearnerAll(); }, [studentId]);
+  async function loadStudentAll() { if (!studentId) { setStudentMarksAll([]); return; } const { data } = await supabase.from('marks').select('subject_id,score,term').eq('student_id', studentId); setStudentMarksAll(data || []); }
+  useEffect(() => { loadStudentAll(); }, [studentId]);
   async function loadAttendance() { if (!studentId) { setAtt({ attended: 0, total: 0 }); return; } const { data } = await supabase.from('attendance').select('status').eq('student_id', studentId); const total = (data || []).length; const attended = (data || []).filter(r => r.status === 'present' || r.status === 'late').length; setAtt({ attended, total }); }
   useEffect(() => { loadAttendance(); }, [studentId]);
   async function loadMeta() { if (!studentId) { setMeta({ general_comment: '', head_comment: '', next_term: '', handwriting: '', homework: '', conduct: '' }); return; } const { data } = await supabase.from('report_meta').select('*').eq('student_id', studentId).eq('term', term).maybeSingle(); setMeta({ general_comment: (data && data.general_comment) || '', head_comment: (data && data.head_comment) || '', next_term: (data && data.next_term) || '', handwriting: (data && data.handwriting) || '', homework: (data && data.homework) || '', conduct: (data && data.conduct) || '' }); }
   useEffect(() => { loadMeta(); }, [studentId, term]);
   async function saveMeta() { setBusy(true); setSavedMeta(false); await supabase.from('report_meta').upsert({ school_id: schoolId, student_id: studentId, term, general_comment: meta.general_comment || null, head_comment: meta.head_comment || null, next_term: meta.next_term || null, handwriting: meta.handwriting || null, homework: meta.homework || null, conduct: meta.conduct || null }, { onConflict: 'student_id,term' }); setSavedMeta(true); setTimeout(() => setSavedMeta(false), 2000); setBusy(false); }
   const subjName = id => { const s = subjects.find(x => x.id === id); return s ? s.name : '?'; };
-  const byLearner = {}; allMarks.forEach(m => { (byLearner[m.student_id] = byLearner[m.student_id] || []).push(m); });
-  const avgOf = sid => { const ms = byLearner[sid] || []; if (!ms.length) return null; return ms.reduce((a, m) => a + Number(m.score || 0), 0) / ms.length; };
+  const byStudent = {}; allMarks.forEach(m => { (byStudent[m.student_id] = byStudent[m.student_id] || []).push(m); });
+  const avgOf = sid => { const ms = byStudent[sid] || []; if (!ms.length) return null; return ms.reduce((a, m) => a + Number(m.score || 0), 0) / ms.length; };
   const ranked = students.map(s => ({ id: s.id, avg: avgOf(s.id) })).filter(x => x.avg != null).sort((a, b) => b.avg - a.avg);
   const outOf = ranked.length;
   const position = (() => { const i = ranked.findIndex(x => x.id === studentId); return i >= 0 ? i + 1 : null; })();
   const student = students.find(s => s.id === studentId);
-  const rows = (byLearner[studentId] || []).map(m => ({ name: subjName(m.subject_id), score: m.score, grade: gradeFor(m.score, level), comment: m.comment }));
+  const rows = (byStudent[studentId] || []).map(m => ({ name: subjName(m.subject_id), score: m.score, grade: gradeFor(m.score, level), comment: m.comment }));
   const avg = position != null ? Math.round(avgOf(studentId)) : (rows.length ? Math.round(rows.reduce((a, r) => a + Number(r.score || 0), 0) / rows.length) : 0);
   const cname = (classes.find(c => c.id === classId) || {}).name || '';
   const yr = (term.match(/\d{4}/) || [''])[0];
@@ -1266,7 +660,7 @@ function ReportCardsPanel({ schoolId, classes, subjects, school, settings, level
   return (<div>
     <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 14, alignItems: 'end' }}>
       <div style={{ minWidth: 160 }}><label style={labelStyle}>Class</label><select style={inputStyle} value={classId} onChange={e => setClassId(e.target.value)}>{classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
-      <div style={{ minWidth: 190 }}><label style={labelStyle}>Learner</label><select style={inputStyle} value={studentId} onChange={e => setLearnerId(e.target.value)}>{students.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}</select></div>
+      <div style={{ minWidth: 190 }}><label style={labelStyle}>Student</label><select style={inputStyle} value={studentId} onChange={e => setStudentId(e.target.value)}>{students.map(s => <option key={s.id} value={s.id}>{s.full_name}</option>)}</select></div>
       <div style={{ minWidth: 150 }}><label style={labelStyle}>Term</label><select style={inputStyle} value={term} onChange={e => setTerm(e.target.value)}>{termOptions.map(t => <option key={t} value={t}>{t}</option>)}</select></div>
       <div style={{ minWidth: 160 }}><label style={labelStyle}>Report type</label><select style={inputStyle} value={rtype} onChange={e => setRtype(e.target.value)}><option value="full">Full term report</option><option value="mid">Mid-term report</option></select></div>
     </div>
@@ -1480,7 +874,7 @@ function DashboardPanel({ schoolId, school }) {
   const attPct = d.attTotal ? Math.round(d.attPresent / d.attTotal * 100) : null;
   return (<div>
     <div style={{ fontWeight: 700, fontSize: 20, marginBottom: 12 }}>{school ? school.name : 'Overview'}</div>
-    <StatRow items={[{ value: d.students, label: 'Learners' }, { value: d.classes, label: 'Classes' }, { value: d.teachers, label: 'Teachers' }, { value: attPct != null ? attPct + '%' : '', label: 'Attendance today' }]} />
+    <StatRow items={[{ value: d.students, label: 'Students' }, { value: d.classes, label: 'Classes' }, { value: d.teachers, label: 'Teachers' }, { value: attPct != null ? attPct + '%' : '', label: 'Attendance today' }]} />
     <StatRow items={[{ value: money(d.income), label: 'Income', color: '#1a7f5a' }, { value: money(d.expense), label: 'Expenses', color: '#c0392b' }, { value: money(d.income - d.expense), label: 'Balance' }, { value: money(d.astTotal), label: 'Asset value' }]} />
     {d.low > 0 && <div style={{ background: '#fff8e1', border: '1px solid #f4d58a', color: '#8a6d1a', padding: '10px 14px', borderRadius: 8, fontSize: 14, marginBottom: 16 }}>{d.low} inventory item(s) low on stock  check the Inventory tab.</div>}
     <div className="card">
@@ -1513,717 +907,36 @@ function AnnouncementsPanel({ schoolId, canPost }) {
 }
 
 function StaffPanel({ schoolId }) {
-  const [tab, setTab] = useState('directory');
-  const [staff, setStaff] = useState([]);
-  const [leave, setLeave] = useState([]);
-  const [absences, setAbsences] = useState([]);
-  const [err, setErr] = useState('');
-  const [busy, setBusy] = useState(false);
-
-  const [staffForm, setStaffForm] = useState({
-    full_name: '',
-    employee_number: '',
-    position: '',
-    department: '',
-    employment_type: 'permanent',
-    phone: '',
-    email: '',
-    start_date: '',
-  });
-
-  const [leaveForm, setLeaveForm] = useState({
-    staff_id: '',
-    leave_type: 'annual',
-    start_date: '',
-    end_date: '',
-    reason: '',
-  });
-
-  const [absenceForm, setAbsenceForm] = useState({
-    staff_id: '',
-    absence_date: new Date().toISOString().slice(0, 10),
-    status: 'present',
-    notes: '',
-  });
-
-  async function load() {
-    const [staffResult, leaveResult, absenceResult] = await Promise.all([
-      supabase
-        .from('staff')
-        .select('*')
-        .eq('school_id', schoolId)
-        .order('full_name'),
-      supabase
-        .from('hr_leave_requests')
-        .select('*')
-        .eq('school_id', schoolId)
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('hr_staff_absences')
-        .select('*')
-        .eq('school_id', schoolId)
-        .order('absence_date', { ascending: false })
-        .limit(100),
-    ]);
-
-    setStaff(staffResult.data || []);
-    setLeave(leaveResult.data || []);
-    setAbsences(absenceResult.data || []);
-
-    const loadError =
-      staffResult.error ||
-      leaveResult.error ||
-      absenceResult.error;
-
-    if (loadError) setErr(loadError.message);
-  }
-
-  useEffect(() => {
-    load();
-  }, [schoolId]);
-
-  async function addStaff() {
-    if (!staffForm.full_name.trim()) {
-      setErr('Enter the staff member name.');
-      return;
-    }
-
-    setBusy(true);
-    setErr('');
-
-    const { error } = await supabase
-      .from('staff')
-      .insert({
-        school_id: schoolId,
-        full_name: staffForm.full_name.trim(),
-        employee_number: staffForm.employee_number || null,
-        position: staffForm.position || null,
-        role: staffForm.position || null,
-        department: staffForm.department || null,
-        employment_type: staffForm.employment_type || null,
-        phone: staffForm.phone || null,
-        email: staffForm.email || null,
-        start_date: staffForm.start_date || null,
-        employed_on: staffForm.start_date || null,
-        status: 'active',
-      });
-
-    if (error) setErr(error.message);
-    else {
-      setStaffForm({
-        full_name: '',
-        employee_number: '',
-        position: '',
-        department: '',
-        employment_type: 'permanent',
-        phone: '',
-        email: '',
-        start_date: '',
-      });
-      await load();
-    }
-
-    setBusy(false);
-  }
-
-  async function addLeave() {
-    if (
-      !leaveForm.staff_id ||
-      !leaveForm.start_date ||
-      !leaveForm.end_date
-    ) {
-      setErr('Select a staff member and leave dates.');
-      return;
-    }
-
-    const start = new Date(leaveForm.start_date);
-    const end = new Date(leaveForm.end_date);
-    const days =
-      Math.floor((end - start) / 86400000) + 1;
-
-    setBusy(true);
-    setErr('');
-
-    const { error } = await supabase
-      .from('hr_leave_requests')
-      .insert({
-        school_id: schoolId,
-        staff_id: leaveForm.staff_id,
-        leave_type: leaveForm.leave_type,
-        start_date: leaveForm.start_date,
-        end_date: leaveForm.end_date,
-        days,
-        reason: leaveForm.reason || null,
-        status: 'pending',
-      });
-
-    if (error) setErr(error.message);
-    else {
-      setLeaveForm({
-        staff_id: '',
-        leave_type: 'annual',
-        start_date: '',
-        end_date: '',
-        reason: '',
-      });
-      await load();
-    }
-
-    setBusy(false);
-  }
-
-  async function setLeaveStatus(id, status) {
-    const { error } = await supabase
-      .from('hr_leave_requests')
-      .update({
-        status,
-        approved_at:
-          status === 'approved'
-            ? new Date().toISOString()
-            : null,
-      })
-      .eq('id', id);
-
-    if (error) setErr(error.message);
-    else await load();
-  }
-
-  async function recordAbsence() {
-    if (!absenceForm.staff_id || !absenceForm.absence_date) {
-      setErr('Select a staff member and date.');
-      return;
-    }
-
-    setBusy(true);
-    setErr('');
-
-    const { error } = await supabase
-      .from('hr_staff_absences')
-      .upsert(
-        {
-          school_id: schoolId,
-          staff_id: absenceForm.staff_id,
-          absence_date: absenceForm.absence_date,
-          status: absenceForm.status,
-          notes: absenceForm.notes || null,
-        },
-        { onConflict: 'staff_id,absence_date' }
-      );
-
-    if (error) setErr(error.message);
-    else {
-      setAbsenceForm({
-        staff_id: '',
-        absence_date: new Date().toISOString().slice(0, 10),
-        status: 'present',
-        notes: '',
-      });
-      await load();
-    }
-
-    setBusy(false);
-  }
-
-  async function removeStaff(id) {
-    if (!confirm('Remove this staff member?')) return;
-
-    const { error } = await supabase
-      .from('staff')
-      .delete()
-      .eq('id', id);
-
-    if (error) setErr(error.message);
-    else await load();
-  }
-
-  function staffName(id) {
-    return (
-      staff.find(item => item.id === id)?.full_name ||
-      'Unknown staff member'
-    );
-  }
-
-  const today = new Date().toISOString().slice(0, 10);
-  const currentlyAway = leave.filter(
-    item =>
-      item.status === 'approved' &&
-      item.start_date <= today &&
-      item.end_date >= today
-  );
-
-  return (
-    <div>
-      <div
-        style={{
-          display: 'flex',
-          gap: 8,
-          flexWrap: 'wrap',
-          marginBottom: 18,
-        }}
-      >
-        {[
-          ['directory', 'Staff directory'],
-          ['leave', 'Leave management'],
-          ['absence', 'Staff attendance'],
-          ['reports', 'HR overview'],
-        ].map(([value, label]) => (
-          <button
-            key={value}
-            type="button"
-            className={tab === value ? '' : 'ghost'}
-            onClick={() => setTab(value)}
-          >
-            {label}
-          </button>
-        ))}
+  const [rows, setRows] = useState([]);
+  const [f, setF] = useState({ full_name: '', role: '', phone: '', email: '', department: '', employed_on: '' });
+  const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
+  async function load() { const { data } = await supabase.from('staff').select('*').eq('school_id', schoolId).order('full_name'); setRows(data || []); }
+  useEffect(() => { load(); }, [schoolId]);
+  function set(k, v) { setF(o => ({ ...o, [k]: v })); }
+  async function add() { if (!f.full_name.trim()) { setErr('Enter a name.'); return; } setBusy(true); setErr('');
+    const { error } = await supabase.from('staff').insert({ school_id: schoolId, full_name: f.full_name.trim(), role: f.role || null, phone: f.phone || null, email: f.email || null, department: f.department || null, employed_on: f.employed_on || null });
+    if (error) setErr(error.message); else { setF({ full_name: '', role: '', phone: '', email: '', department: '', employed_on: '' }); await load(); } setBusy(false); }
+  async function remove(id) { await supabase.from('staff').delete().eq('id', id); await load(); }
+  return (<div>
+    <p className="muted" style={{ marginTop: 0 }}>A directory of all staff (separate from the login accounts you create in Teachers).</p>
+    <div className="card" style={{ marginBottom: 18 }}>
+      <div style={{ fontWeight: 700, marginBottom: 10 }}>Add a staff member</div>
+      <div style={{ display: 'grid', gap: 10, gridTemplateColumns: 'repeat(3, 1fr)' }}>
+        <div><label style={labelStyle}>Full name</label><input style={inputStyle} value={f.full_name} onChange={e => set('full_name', e.target.value)} placeholder="e.g. Mrs. Chikafu" /></div>
+        <div><label style={labelStyle}>Role</label><input style={inputStyle} value={f.role} onChange={e => set('role', e.target.value)} placeholder="e.g. Bursar" /></div>
+        <div><label style={labelStyle}>Department</label><input style={inputStyle} value={f.department} onChange={e => set('department', e.target.value)} placeholder="e.g. Admin" /></div>
+        <div><label style={labelStyle}>Phone</label><input style={inputStyle} value={f.phone} onChange={e => set('phone', e.target.value)} /></div>
+        <div><label style={labelStyle}>Email</label><input style={inputStyle} value={f.email} onChange={e => set('email', e.target.value)} /></div>
+        <div><label style={labelStyle}>Employed on</label><input type="date" style={inputStyle} value={f.employed_on} onChange={e => set('employed_on', e.target.value)} /></div>
       </div>
-
-      {err ? <p className="error">{err}</p> : null}
-
-      {tab === 'directory' ? (
-        <div>
-          <div className="card" style={{ marginBottom: 18 }}>
-            <h3 style={{ marginTop: 0 }}>Add staff member</h3>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                gap: 10,
-              }}
-            >
-              {[
-                ['full_name', 'Full name'],
-                ['employee_number', 'Employee number'],
-                ['position', 'Position'],
-                ['department', 'Department'],
-                ['phone', 'Phone'],
-                ['email', 'Email'],
-              ].map(([key, label]) => (
-                <div key={key}>
-                  <label style={labelStyle}>{label}</label>
-                  <input
-                    style={inputStyle}
-                    value={staffForm[key]}
-                    onChange={event =>
-                      setStaffForm(current => ({
-                        ...current,
-                        [key]: event.target.value,
-                      }))
-                    }
-                  />
-                </div>
-              ))}
-
-              <div>
-                <label style={labelStyle}>Employment type</label>
-                <select
-                  style={inputStyle}
-                  value={staffForm.employment_type}
-                  onChange={event =>
-                    setStaffForm(current => ({
-                      ...current,
-                      employment_type: event.target.value,
-                    }))
-                  }
-                >
-                  <option value="permanent">Permanent</option>
-                  <option value="contract">Contract</option>
-                  <option value="temporary">Temporary</option>
-                  <option value="part_time">Part time</option>
-                  <option value="volunteer">Volunteer</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={labelStyle}>Start date</label>
-                <input
-                  type="date"
-                  style={inputStyle}
-                  value={staffForm.start_date}
-                  onChange={event =>
-                    setStaffForm(current => ({
-                      ...current,
-                      start_date: event.target.value,
-                    }))
-                  }
-                />
-              </div>
-            </div>
-
-            <button
-              onClick={addStaff}
-              disabled={busy}
-              style={{ marginTop: 14 }}
-            >
-              Add staff member
-            </button>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Staff member</th>
-                <th>Position</th>
-                <th>Department</th>
-                <th>Employment</th>
-                <th>Status</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {staff.map(item => (
-                <tr key={item.id}>
-                  <td>
-                    <strong>{item.full_name}</strong>
-                    <div className="muted" style={{ fontSize: 12 }}>
-                      {item.employee_number || item.email || ''}
-                    </div>
-                  </td>
-                  <td>{item.position || item.role || '-'}</td>
-                  <td>{item.department || '-'}</td>
-                  <td>{item.employment_type || '-'}</td>
-                  <td>{item.status || 'active'}</td>
-                  <td className="r">
-                    <button
-                      className="ghost"
-                      onClick={() => removeStaff(item.id)}
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
-
-      {tab === 'leave' ? (
-        <div>
-          <div className="card" style={{ marginBottom: 18 }}>
-            <h3 style={{ marginTop: 0 }}>Create leave request</h3>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                gap: 10,
-              }}
-            >
-              <div>
-                <label style={labelStyle}>Staff member</label>
-                <select
-                  style={inputStyle}
-                  value={leaveForm.staff_id}
-                  onChange={event =>
-                    setLeaveForm(current => ({
-                      ...current,
-                      staff_id: event.target.value,
-                    }))
-                  }
-                >
-                  <option value="">Select staff member</option>
-                  {staff.map(item => (
-                    <option key={item.id} value={item.id}>
-                      {item.full_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label style={labelStyle}>Leave type</label>
-                <select
-                  style={inputStyle}
-                  value={leaveForm.leave_type}
-                  onChange={event =>
-                    setLeaveForm(current => ({
-                      ...current,
-                      leave_type: event.target.value,
-                    }))
-                  }
-                >
-                  {[
-                    'annual',
-                    'sick',
-                    'maternity',
-                    'paternity',
-                    'compassionate',
-                    'study',
-                    'unpaid',
-                    'other',
-                  ].map(item => (
-                    <option key={item} value={item}>
-                      {item.replace('_', ' ')}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label style={labelStyle}>Start date</label>
-                <input
-                  type="date"
-                  style={inputStyle}
-                  value={leaveForm.start_date}
-                  onChange={event =>
-                    setLeaveForm(current => ({
-                      ...current,
-                      start_date: event.target.value,
-                    }))
-                  }
-                />
-              </div>
-
-              <div>
-                <label style={labelStyle}>End date</label>
-                <input
-                  type="date"
-                  style={inputStyle}
-                  value={leaveForm.end_date}
-                  onChange={event =>
-                    setLeaveForm(current => ({
-                      ...current,
-                      end_date: event.target.value,
-                    }))
-                  }
-                />
-              </div>
-            </div>
-
-            <label style={{ ...labelStyle, marginTop: 10 }}>
-              Reason
-            </label>
-            <textarea
-              style={{ ...inputStyle, minHeight: 80 }}
-              value={leaveForm.reason}
-              onChange={event =>
-                setLeaveForm(current => ({
-                  ...current,
-                  reason: event.target.value,
-                }))
-              }
-            />
-
-            <button
-              onClick={addLeave}
-              disabled={busy}
-              style={{ marginTop: 12 }}
-            >
-              Submit leave request
-            </button>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Staff member</th>
-                <th>Leave</th>
-                <th>Dates</th>
-                <th>Status</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {leave.map(item => (
-                <tr key={item.id}>
-                  <td>{staffName(item.staff_id)}</td>
-                  <td style={{ textTransform: 'capitalize' }}>
-                    {item.leave_type}
-                  </td>
-                  <td>
-                    {item.start_date} to {item.end_date}
-                  </td>
-                  <td style={{ textTransform: 'capitalize' }}>
-                    {item.status}
-                  </td>
-                  <td className="r">
-                    {item.status === 'pending' ? (
-                      <>
-                        <button
-                          onClick={() =>
-                            setLeaveStatus(item.id, 'approved')
-                          }
-                        >
-                          Approve
-                        </button>{' '}
-                        <button
-                          className="ghost"
-                          onClick={() =>
-                            setLeaveStatus(item.id, 'rejected')
-                          }
-                        >
-                          Reject
-                        </button>
-                      </>
-                    ) : null}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
-
-      {tab === 'absence' ? (
-        <div>
-          <div className="card" style={{ marginBottom: 18 }}>
-            <h3 style={{ marginTop: 0 }}>
-              Record staff attendance or absence
-            </h3>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-                gap: 10,
-              }}
-            >
-              <div>
-                <label style={labelStyle}>Staff member</label>
-                <select
-                  style={inputStyle}
-                  value={absenceForm.staff_id}
-                  onChange={event =>
-                    setAbsenceForm(current => ({
-                      ...current,
-                      staff_id: event.target.value,
-                    }))
-                  }
-                >
-                  <option value="">Select staff member</option>
-                  {staff.map(item => (
-                    <option key={item.id} value={item.id}>
-                      {item.full_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label style={labelStyle}>Date</label>
-                <input
-                  type="date"
-                  style={inputStyle}
-                  value={absenceForm.absence_date}
-                  onChange={event =>
-                    setAbsenceForm(current => ({
-                      ...current,
-                      absence_date: event.target.value,
-                    }))
-                  }
-                />
-              </div>
-
-              <div>
-                <label style={labelStyle}>Status</label>
-                <select
-                  style={inputStyle}
-                  value={absenceForm.status}
-                  onChange={event =>
-                    setAbsenceForm(current => ({
-                      ...current,
-                      status: event.target.value,
-                    }))
-                  }
-                >
-                  {[
-                    'present',
-                    'absent',
-                    'on_leave',
-                    'off_duty',
-                    'training',
-                    'official_business',
-                    'suspended',
-                  ].map(item => (
-                    <option key={item} value={item}>
-                      {item.replaceAll('_', ' ')}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <label style={{ ...labelStyle, marginTop: 10 }}>
-              Notes
-            </label>
-            <input
-              style={inputStyle}
-              value={absenceForm.notes}
-              onChange={event =>
-                setAbsenceForm(current => ({
-                  ...current,
-                  notes: event.target.value,
-                }))
-              }
-            />
-
-            <button
-              onClick={recordAbsence}
-              disabled={busy}
-              style={{ marginTop: 12 }}
-            >
-              Save staff status
-            </button>
-          </div>
-
-          <table>
-            <thead>
-              <tr>
-                <th>Date</th>
-                <th>Staff member</th>
-                <th>Status</th>
-                <th>Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {absences.map(item => (
-                <tr key={item.id}>
-                  <td>{item.absence_date}</td>
-                  <td>{staffName(item.staff_id)}</td>
-                  <td style={{ textTransform: 'capitalize' }}>
-                    {item.status.replaceAll('_', ' ')}
-                  </td>
-                  <td>{item.notes || '-'}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      ) : null}
-
-      {tab === 'reports' ? (
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-            gap: 12,
-          }}
-        >
-          {[
-            ['Total staff', staff.length],
-            [
-              'Active staff',
-              staff.filter(item => (item.status || 'active') === 'active').length,
-            ],
-            ['Currently on leave', currentlyAway.length],
-            [
-              'Pending leave',
-              leave.filter(item => item.status === 'pending').length,
-            ],
-          ].map(([label, value]) => (
-            <div key={label} className="card">
-              <div style={{ fontSize: 28, fontWeight: 800 }}>
-                {value}
-              </div>
-              <div className="muted">{label}</div>
-            </div>
-          ))}
-        </div>
-      ) : null}
+      <div style={{ marginTop: 12 }}><button onClick={add} disabled={busy}>{busy ? 'Saving' : 'Add staff'}</button></div>
+      {err && <p className="error">{err}</p>}
     </div>
-  );
+    <table><thead><tr><th>Name</th><th>Role</th><th>Department</th><th>Phone</th><th>Email</th><th></th></tr></thead><tbody>
+      {rows.map(r => (<tr key={r.id}><td className="strong">{r.full_name}</td><td>{r.role || ''}</td><td>{r.department || ''}</td><td>{r.phone || ''}</td><td className="muted">{r.email || ''}</td><td className="r"><button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={() => remove(r.id)}>Remove</button></td></tr>))}
+      {rows.length === 0 && <tr><td colSpan="6" className="muted">No staff yet.</td></tr>}
+    </tbody></table>
+  </div>);
 }
 
 function AdmissionsPanel({ schoolId, classes }) {
@@ -2360,27 +1073,27 @@ function TeacherDashboardPanel({ schoolId, classes, session }) {
 
 function AcademicsPanel({ schoolId, classes, subjects }) {
   const [term, setTerm] = useState(termOptions[0]);
-  const [students, setLearners] = useState([]); const [marks, setMarks] = useState([]); const [att, setAtt] = useState([]);
+  const [students, setStudents] = useState([]); const [marks, setMarks] = useState([]); const [att, setAtt] = useState([]);
   const [loading, setLoading] = useState(false); const [openClass, setOpenClass] = useState(null);
   useEffect(() => { (async () => {
     if (!schoolId) return; setLoading(true);
     const { data: st } = await supabase.from('students').select('id,full_name,class_id').eq('school_id', schoolId);
-    const list = st || []; setLearners(list);
+    const list = st || []; setStudents(list);
     const ids = list.map(s => s.id);
     const { data: mk } = await supabase.from('marks').select('student_id,subject_id,score').eq('term', term).in('student_id', ids.length ? ids : ['00000000-0000-0000-0000-000000000000']);
     setMarks(mk || []);
     const { data: at } = await supabase.from('attendance').select('student_id,status').eq('school_id', schoolId);
     setAtt(at || []); setLoading(false);
   })(); }, [schoolId, term]);
-  const marksByLearner = {}; marks.forEach(m => { (marksByLearner[m.student_id] = marksByLearner[m.student_id] || []).push(m); });
-  const attByLearner = {}; att.forEach(a => { const o = attByLearner[a.student_id] || { att: 0, tot: 0 }; o.tot++; if (a.status === 'present' || a.status === 'late') o.att++; attByLearner[a.student_id] = o; });
-  const studAvg = sid => { const ms = marksByLearner[sid] || []; return ms.length ? ms.reduce((a, m) => a + Number(m.score || 0), 0) / ms.length : null; };
-  const studAtt = sid => { const o = attByLearner[sid]; return o && o.tot ? Math.round(o.att / o.tot * 100) : null; };
+  const marksByStudent = {}; marks.forEach(m => { (marksByStudent[m.student_id] = marksByStudent[m.student_id] || []).push(m); });
+  const attByStudent = {}; att.forEach(a => { const o = attByStudent[a.student_id] || { att: 0, tot: 0 }; o.tot++; if (a.status === 'present' || a.status === 'late') o.att++; attByStudent[a.student_id] = o; });
+  const studAvg = sid => { const ms = marksByStudent[sid] || []; return ms.length ? ms.reduce((a, m) => a + Number(m.score || 0), 0) / ms.length : null; };
+  const studAtt = sid => { const o = attByStudent[sid]; return o && o.tot ? Math.round(o.att / o.tot * 100) : null; };
   const classRows = classes.map(c => {
     const inClass = students.filter(s => s.class_id === c.id);
     const avgs = inClass.map(s => studAvg(s.id)).filter(v => v != null);
     const avg = avgs.length ? Math.round(avgs.reduce((a, v) => a + v, 0) / avgs.length) : null;
-    let attNum = 0, attDen = 0; inClass.forEach(s => { const o = attByLearner[s.id]; if (o) { attNum += o.att; attDen += o.tot; } });
+    let attNum = 0, attDen = 0; inClass.forEach(s => { const o = attByStudent[s.id]; if (o) { attNum += o.att; attDen += o.tot; } });
     return { c, students: inClass.length, avg, attPct: attDen ? Math.round(attNum / attDen * 100) : null };
   });
   const detail = (() => {
@@ -2400,7 +1113,7 @@ function AcademicsPanel({ schoolId, classes, subjects }) {
     {loading ? <p className="muted">Loading</p> : (<>
       <div style={{ fontWeight: 700, marginBottom: 8 }}>All classes  {term}</div>
       <p className="muted" style={{ marginTop: 0, fontSize: 13 }}>Click a class to see subject averages and every pupil ranked.</p>
-      <table><thead><tr><th>Class</th><th className="r">Learners</th><th className="r">Avg exam mark</th><th className="r">Attendance</th><th></th></tr></thead><tbody>
+      <table><thead><tr><th>Class</th><th className="r">Students</th><th className="r">Avg exam mark</th><th className="r">Attendance</th><th></th></tr></thead><tbody>
         {classRows.map(r => (<tr key={r.c.id} onClick={() => setOpenClass(openClass === r.c.id ? null : r.c.id)} style={{ cursor: 'pointer', background: openClass === r.c.id ? '#eafaf3' : 'transparent' }}>
           <td className="strong">{r.c.name}</td><td className="r">{r.students}</td>
           <td className="r" style={{ fontWeight: 600, color: clr(r.avg) }}>{r.avg != null ? r.avg + '%' : ''}</td>
@@ -2414,7 +1127,7 @@ function AcademicsPanel({ schoolId, classes, subjects }) {
           {detail.subjRows.length === 0 ? <tr><td colSpan="3" className="muted">No marks entered for this class this term.</td></tr> : detail.subjRows.map((r, i) => (<tr key={i}><td className="strong">{r.name}</td><td className="r" style={{ fontWeight: 600, color: clr(r.avg) }}>{r.avg}%</td><td className="r">{r.n}</td></tr>))}
         </tbody></table>
         <div style={{ fontWeight: 700, margin: '18px 0 8px' }}>Pupils  ranked by average</div>
-        <table><thead><tr><th>#</th><th>Learner</th><th className="r">Average</th><th className="r">Attendance</th></tr></thead><tbody>
+        <table><thead><tr><th>#</th><th>Student</th><th className="r">Average</th><th className="r">Attendance</th></tr></thead><tbody>
           {detail.rows.map((r, i) => (<tr key={i}><td className="muted">{i + 1}</td><td className="strong">{r.name}</td><td className="r" style={{ fontWeight: 600, color: clr(r.avg) }}>{r.avg != null ? Math.round(r.avg) + '%' : ''}</td><td className="r" style={{ color: clr(r.att) }}>{r.att != null ? r.att + '%' : ''}</td></tr>))}
         </tbody></table>
       </div>)}
@@ -2472,12 +1185,12 @@ function FeeSetup({ schoolId, classId, term }) {
 }
 
 function FeeCollect({ schoolId, classId, term, className, school, settings }) {
-  const [students, setLearners] = useState([]); const [items, setItems] = useState([]); const [payments, setPayments] = useState([]);
+  const [students, setStudents] = useState([]); const [items, setItems] = useState([]); const [payments, setPayments] = useState([]);
   const [openId, setOpenId] = useState(null);
   const [pay, setPay] = useState({ amount: '', method: 'cash', reference: '', paid_on: new Date().toISOString().slice(0, 10) });
   const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
   async function load() {
-    const { data: st } = await supabase.from('students').select('id,full_name').eq('school_id', schoolId).eq('class_id', classId).order('full_name'); setLearners(st || []);
+    const { data: st } = await supabase.from('students').select('id,full_name').eq('school_id', schoolId).eq('class_id', classId).order('full_name'); setStudents(st || []);
     const { data: fi } = await supabase.from('fee_items').select('*').eq('school_id', schoolId).eq('class_id', classId).eq('term', term); setItems(fi || []);
     const ids = (st || []).map(s => s.id);
     if (ids.length) { const { data: fp } = await supabase.from('fee_payments').select('*').eq('term', term).in('student_id', ids); setPayments(fp || []); } else setPayments([]);
@@ -2508,24 +1221,24 @@ function FeeCollect({ schoolId, classId, term, className, school, settings }) {
     const html = '<html><head><title>' + (kind === 'receipt' ? 'Receipt' : 'Statement') + '</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:26px;color:#1f2328}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}.r{text-align:right}.m{color:#666;font-size:13px}</style></head><body>' + letterheadHtml(school, settings) + inner + '</body></html>';
     const w = window.open('', '_blank'); if (!w) { alert('Allow pop-ups to print.'); return; } w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 350);
   }
-  const openLearner = students.find(s => s.id === openId);
-  const myPayments = openLearner ? payments.filter(p => p.student_id === openId).sort((a, b) => a.paid_on < b.paid_on ? 1 : -1) : [];
+  const openStudent = students.find(s => s.id === openId);
+  const myPayments = openStudent ? payments.filter(p => p.student_id === openId).sort((a, b) => a.paid_on < b.paid_on ? 1 : -1) : [];
   return (<div>
     {due === 0 && <div style={{ background: '#fff8e1', border: '1px solid #f4d58a', color: '#8a6d1a', padding: '10px 14px', borderRadius: 8, fontSize: 14, marginBottom: 14 }}>No fees set for this class/term yet  use "Set fees" to add them.</div>}
     <div className="muted" style={{ marginBottom: 10, fontSize: 14 }}>Fee due per pupil: <b>{money(due)}</b></div>
-    <table><thead><tr><th>Learner</th><th className="r">Due</th><th className="r">Paid</th><th className="r">Balance</th><th></th></tr></thead><tbody>
+    <table><thead><tr><th>Student</th><th className="r">Due</th><th className="r">Paid</th><th className="r">Balance</th><th></th></tr></thead><tbody>
       {students.map(s => { const paid = paidOf(s.id); const bal = due - paid; return (<tr key={s.id} onClick={() => { setOpenId(openId === s.id ? null : s.id); setErr(''); }} style={{ cursor: 'pointer', background: openId === s.id ? '#eafaf3' : 'transparent' }}><td className="strong">{s.full_name}</td><td className="r">{money(due)}</td><td className="r" style={{ color: '#1a7f5a' }}>{money(paid)}</td><td className="r" style={{ fontWeight: 600, color: bal <= 0 ? '#1a7f5a' : '#c0392b' }}>{money(bal)}</td><td className="r muted" style={{ fontSize: 13 }}>{openId === s.id ? 'Hide' : 'Open'}</td></tr>); })}
       {students.length === 0 && <tr><td colSpan="5" className="muted">No students in this class.</td></tr>}
     </tbody></table>
-    {openLearner && (<div className="card" style={{ marginTop: 16 }}>
+    {openStudent && (<div className="card" style={{ marginTop: 16 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-        <div style={{ fontWeight: 700, fontSize: 16 }}>{openLearner.full_name}</div>
+        <div style={{ fontWeight: 700, fontSize: 16 }}>{openStudent.full_name}</div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="ghost" onClick={() => printDoc('statement', openLearner)}>Print statement</button>
-          {myPayments.length > 0 && <button className="ghost" onClick={() => printDoc('receipt', openLearner, myPayments[0])}>Receipt (last)</button>}
+          <button className="ghost" onClick={() => printDoc('statement', openStudent)}>Print statement</button>
+          {myPayments.length > 0 && <button className="ghost" onClick={() => printDoc('receipt', openStudent, myPayments[0])}>Receipt (last)</button>}
         </div>
       </div>
-      <div className="muted" style={{ fontSize: 13, margin: '2px 0 12px' }}>Due {money(due)}  Paid {money(paidOf(openLearner.id))}  Balance {money(due - paidOf(openLearner.id))}</div>
+      <div className="muted" style={{ fontSize: 13, margin: '2px 0 12px' }}>Due {money(due)}  Paid {money(paidOf(openStudent.id))}  Balance {money(due - paidOf(openStudent.id))}</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
         <div><label style={labelStyle}>Amount ($)</label><input style={inputStyle} value={pay.amount} onChange={e => setPay(o => ({ ...o, amount: e.target.value }))} placeholder="0" /></div>
         <div><label style={labelStyle}>Method</label><select style={inputStyle} value={pay.method} onChange={e => setPay(o => ({ ...o, method: e.target.value }))}><option value="cash">Cash</option><option value="bank">Bank</option><option value="paynow">Paynow</option></select></div>
@@ -2589,11 +1302,11 @@ function BankingPanel({ schoolId }) {
 function ArrearsPanel({ schoolId, classes, school, settings }) {
   const [term, setTerm] = useState(termOptions[0]);
   const [classFilter, setClassFilter] = useState('all');
-  const [students, setLearners] = useState([]); const [items, setItems] = useState([]); const [payments, setPayments] = useState([]);
+  const [students, setStudents] = useState([]); const [items, setItems] = useState([]); const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(false);
   async function load() {
     if (!schoolId) return; setLoading(true);
-    const { data: st } = await supabase.from('students').select('id,full_name,class_id').eq('school_id', schoolId); setLearners(st || []);
+    const { data: st } = await supabase.from('students').select('id,full_name,class_id').eq('school_id', schoolId); setStudents(st || []);
     const { data: fi } = await supabase.from('fee_items').select('class_id,amount').eq('school_id', schoolId).eq('term', term); setItems(fi || []);
     const { data: fp } = await supabase.from('fee_payments').select('student_id,amount').eq('school_id', schoolId).eq('term', term); setPayments(fp || []);
     setLoading(false);
@@ -2602,15 +1315,15 @@ function ArrearsPanel({ schoolId, classes, school, settings }) {
   const money = n => '$' + Number(n || 0).toLocaleString();
   const clsName = id => { const c = classes.find(x => x.id === id); return c ? c.name : ''; };
   const dueByClass = {}; items.forEach(i => { dueByClass[i.class_id] = (dueByClass[i.class_id] || 0) + Number(i.amount || 0); });
-  const paidByLearner = {}; payments.forEach(pp => { paidByLearner[pp.student_id] = (paidByLearner[pp.student_id] || 0) + Number(pp.amount || 0); });
-  let rows = students.map(s => { const due = dueByClass[s.class_id] || 0; const paid = paidByLearner[s.id] || 0; return { id: s.id, name: s.full_name, cls: clsName(s.class_id), class_id: s.class_id, due, paid, bal: due - paid }; }).filter(r => r.bal > 0);
+  const paidByStudent = {}; payments.forEach(pp => { paidByStudent[pp.student_id] = (paidByStudent[pp.student_id] || 0) + Number(pp.amount || 0); });
+  let rows = students.map(s => { const due = dueByClass[s.class_id] || 0; const paid = paidByStudent[s.id] || 0; return { id: s.id, name: s.full_name, cls: clsName(s.class_id), class_id: s.class_id, due, paid, bal: due - paid }; }).filter(r => r.bal > 0);
   if (classFilter !== 'all') rows = rows.filter(r => r.class_id === classFilter);
   rows.sort((a, b) => b.bal - a.bal);
   const totalOwed = rows.reduce((a, r) => a + r.bal, 0);
   function printReport() {
     const scope = classFilter === 'all' ? 'All classes' : clsName(classFilter);
     const body = rows.map(r => '<tr><td>' + esc(r.name) + '</td><td>' + esc(r.cls) + '</td><td class=r>' + money(r.due) + '</td><td class=r>' + money(r.paid) + '</td><td class=r>' + money(r.bal) + '</td></tr>').join('');
-    const html = '<html><head><title>Arrears</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:26px;color:#1f2328}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}.r{text-align:right}.m{color:#666;font-size:13px}</style></head><body>' + letterheadHtml(school, settings) + '<h3 style="margin:0 0 4px">Arrears  ' + esc(term) + '</h3><div class=m>' + esc(scope) + '  ' + rows.length + ' pupil(s) owing</div><table style="margin-top:12px"><thead><tr><th>Learner</th><th>Class</th><th class=r>Due</th><th class=r>Paid</th><th class=r>Balance</th></tr></thead><tbody>' + body + '<tr><td colspan=4><b>Total owed</b></td><td class=r><b>' + money(totalOwed) + '</b></td></tr></tbody></table></body></html>';
+    const html = '<html><head><title>Fee arrears</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:26px;color:#1f2328}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}.r{text-align:right}.m{color:#666;font-size:13px}</style></head><body>' + letterheadHtml(school, settings) + '<h3 style="margin:0 0 4px">Fee arrears  ' + esc(term) + '</h3><div class=m>' + esc(scope) + '  ' + rows.length + ' pupil(s) owing</div><table style="margin-top:12px"><thead><tr><th>Student</th><th>Class</th><th class=r>Due</th><th class=r>Paid</th><th class=r>Balance</th></tr></thead><tbody>' + body + '<tr><td colspan=4><b>Total owed</b></td><td class=r><b>' + money(totalOwed) + '</b></td></tr></tbody></table></body></html>';
     const w = window.open('', '_blank'); if (!w) { alert('Allow pop-ups to print.'); return; } w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 350);
   }
   return (<div>
@@ -2621,7 +1334,7 @@ function ArrearsPanel({ schoolId, classes, school, settings }) {
     </div>
     {loading ? <p className="muted">Loading</p> : (<>
       <div className="muted" style={{ marginBottom: 10, fontSize: 14 }}>{rows.length} pupil(s) owing  Total owed: <b>{money(totalOwed)}</b></div>
-      <table><thead><tr><th>Learner</th><th>Class</th><th className="r">Due</th><th className="r">Paid</th><th className="r">Balance</th></tr></thead><tbody>
+      <table><thead><tr><th>Student</th><th>Class</th><th className="r">Due</th><th className="r">Paid</th><th className="r">Balance</th></tr></thead><tbody>
         {rows.map(r => (<tr key={r.id}><td className="strong">{r.name}</td><td>{r.cls}</td><td className="r">{money(r.due)}</td><td className="r" style={{ color: '#1a7f5a' }}>{money(r.paid)}</td><td className="r" style={{ fontWeight: 600, color: '#c0392b' }}>{money(r.bal)}</td></tr>))}
         {rows.length === 0 && <tr><td colSpan="5" className="muted">No arrears  everyone is paid up for this term (or fees not set yet).</td></tr>}
       </tbody></table>
@@ -2650,7 +1363,7 @@ function FeeArrears({ schoolId, term, classes, school, settings }) {
   const total = rows.reduce((a, r) => a + r.bal, 0);
   function printArrears() {
     const body = rows.map(r => '<tr><td>' + esc(r.name) + '</td><td>' + esc(clsName(r.class_id)) + '</td><td class=r>' + money(r.due) + '</td><td class=r>' + money(r.paid) + '</td><td class=r>' + money(r.bal) + '</td></tr>').join('');
-    const html = '<html><head><title>Arrears</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:24px;color:#1f2328}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}.r{text-align:right}</style></head><body>' + letterheadHtml(school, settings) + '<h3 style="margin:0 0 4px">Arrears  ' + esc(term) + '</h3><div style="color:#666;font-size:13px">' + rows.length + ' pupils owing  total ' + money(total) + '</div><table style="margin-top:12px"><thead><tr><th>Learner</th><th>Class</th><th class=r>Due</th><th class=r>Paid</th><th class=r>Balance</th></tr></thead><tbody>' + body + '<tr><td colspan=4><b>Total owed</b></td><td class=r><b>' + money(total) + '</b></td></tr></tbody></table></body></html>';
+    const html = '<html><head><title>Fee arrears</title><style>body{font-family:Segoe UI,Arial,sans-serif;padding:24px;color:#1f2328}table{width:100%;border-collapse:collapse;font-size:13px}th,td{border:1px solid #999;padding:6px 8px;text-align:left}.r{text-align:right}</style></head><body>' + letterheadHtml(school, settings) + '<h3 style="margin:0 0 4px">Fee arrears  ' + esc(term) + '</h3><div style="color:#666;font-size:13px">' + rows.length + ' pupils owing  total ' + money(total) + '</div><table style="margin-top:12px"><thead><tr><th>Student</th><th>Class</th><th class=r>Due</th><th class=r>Paid</th><th class=r>Balance</th></tr></thead><tbody>' + body + '<tr><td colspan=4><b>Total owed</b></td><td class=r><b>' + money(total) + '</b></td></tr></tbody></table></body></html>';
     const w = window.open('', '_blank'); if (!w) { alert('Allow pop-ups to print.'); return; } w.document.write(html); w.document.close(); w.focus(); setTimeout(() => w.print(), 350);
   }
   return (<div>
@@ -2658,7 +1371,7 @@ function FeeArrears({ schoolId, term, classes, school, settings }) {
       <div className="muted" style={{ fontSize: 14 }}>{rows.length} pupil(s) owing  total <b style={{ color: '#c0392b' }}>{money(total)}</b>  {term}, all classes</div>
       <button className="ghost" onClick={printArrears} disabled={rows.length === 0}>Print</button>
     </div>
-    <table><thead><tr><th>Learner</th><th>Class</th><th className="r">Due</th><th className="r">Paid</th><th className="r">Balance</th></tr></thead><tbody>
+    <table><thead><tr><th>Student</th><th>Class</th><th className="r">Due</th><th className="r">Paid</th><th className="r">Balance</th></tr></thead><tbody>
       {rows.map((r, i) => (<tr key={i}><td className="strong">{r.name}</td><td>{clsName(r.class_id)}</td><td className="r">{money(r.due)}</td><td className="r" style={{ color: '#1a7f5a' }}>{money(r.paid)}</td><td className="r" style={{ fontWeight: 600, color: '#c0392b' }}>{money(r.bal)}</td></tr>))}
       {rows.length === 0 && <tr><td colSpan="5" className="muted">No arrears  everyone is paid up for {term}.</td></tr>}
     </tbody></table>
@@ -2718,1703 +1431,6 @@ function BillingPanel() {
       {rows.length === 0 && <tr><td colSpan="5" className="muted">No schools yet.</td></tr>}
     </tbody></table>
   </div>);
-}
-
-function MeetingsPanel({ schoolId }) {
-  const [meetings, setMeetings] = useState([]);
-  const [resolutions, setResolutions] = useState([]);
-  const [selectedMeeting, setSelectedMeeting] = useState('');
-  const [form, setForm] = useState({
-    title: '',
-    meeting_type: 'management',
-    meeting_date: new Date().toISOString().slice(0, 10),
-    start_time: '',
-    venue: '',
-    chairperson: '',
-    secretary: '',
-    attendees: '',
-    agenda: '',
-    minutes: '',
-  });
-  const [resolution, setResolution] = useState({
-    resolution_number: '',
-    resolution: '',
-    responsible_person: '',
-    due_date: '',
-  });
-  const [err, setErr] = useState('');
-
-  async function load() {
-    const [meetingResult, resolutionResult] = await Promise.all([
-      supabase.from('school_meetings').select('*').eq('school_id', schoolId).order('meeting_date', { ascending: false }),
-      supabase.from('meeting_resolutions').select('*').eq('school_id', schoolId).order('created_at', { ascending: false }),
-    ]);
-    setMeetings(meetingResult.data || []);
-    setResolutions(resolutionResult.data || []);
-    if (meetingResult.error || resolutionResult.error) {
-      setErr(meetingResult.error?.message || resolutionResult.error?.message);
-    }
-  }
-
-  useEffect(() => { load(); }, [schoolId]);
-
-  async function addMeeting() {
-    if (!form.title.trim() || !form.meeting_date) {
-      setErr('Enter a meeting title and date.');
-      return;
-    }
-    const { error } = await supabase.from('school_meetings').insert({
-      school_id: schoolId,
-      ...form,
-      start_time: form.start_time || null,
-      venue: form.venue || null,
-      chairperson: form.chairperson || null,
-      secretary: form.secretary || null,
-      attendees: form.attendees || null,
-      agenda: form.agenda || null,
-      minutes: form.minutes || null,
-    });
-    if (error) setErr(error.message);
-    else {
-      setForm({
-        title: '',
-        meeting_type: 'management',
-        meeting_date: new Date().toISOString().slice(0, 10),
-        start_time: '',
-        venue: '',
-        chairperson: '',
-        secretary: '',
-        attendees: '',
-        agenda: '',
-        minutes: '',
-      });
-      await load();
-    }
-  }
-
-  async function addResolution() {
-    if (!selectedMeeting || !resolution.resolution.trim()) {
-      setErr('Select a meeting and enter the resolution.');
-      return;
-    }
-    const { error } = await supabase.from('meeting_resolutions').insert({
-      school_id: schoolId,
-      meeting_id: selectedMeeting,
-      ...resolution,
-      due_date: resolution.due_date || null,
-    });
-    if (error) setErr(error.message);
-    else {
-      setResolution({
-        resolution_number: '',
-        resolution: '',
-        responsible_person: '',
-        due_date: '',
-      });
-      await load();
-    }
-  }
-
-  async function updateResolution(id, status) {
-    const { error } = await supabase
-      .from('meeting_resolutions')
-      .update({
-        status,
-        completed_at: status === 'completed' ? new Date().toISOString() : null,
-      })
-      .eq('id', id);
-    if (error) setErr(error.message);
-    else await load();
-  }
-
-  return (
-    <div>
-      {err ? <p className="error">{err}</p> : null}
-      <div className="card" style={{ marginBottom: 18 }}>
-        <h3 style={{ marginTop: 0 }}>Record a meeting</h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 10 }}>
-          {[
-            ['title','Meeting title'],
-            ['venue','Venue'],
-            ['chairperson','Chairperson'],
-            ['secretary','Secretary'],
-          ].map(([key,label]) => (
-            <div key={key}>
-              <label style={labelStyle}>{label}</label>
-              <input style={inputStyle} value={form[key]} onChange={e=>setForm(x=>({...x,[key]:e.target.value}))}/>
-            </div>
-          ))}
-          <div>
-            <label style={labelStyle}>Meeting type</label>
-            <select style={inputStyle} value={form.meeting_type} onChange={e=>setForm(x=>({...x,meeting_type:e.target.value}))}>
-              {['management','staff','board','parents','finance','disciplinary','other'].map(x=><option key={x} value={x}>{x}</option>)}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle}>Date</label>
-            <input type="date" style={inputStyle} value={form.meeting_date} onChange={e=>setForm(x=>({...x,meeting_date:e.target.value}))}/>
-          </div>
-        </div>
-        <label style={{...labelStyle,marginTop:10}}>Attendees</label>
-        <textarea style={{...inputStyle,minHeight:60}} value={form.attendees} onChange={e=>setForm(x=>({...x,attendees:e.target.value}))}/>
-        <label style={{...labelStyle,marginTop:10}}>Agenda</label>
-        <textarea style={{...inputStyle,minHeight:80}} value={form.agenda} onChange={e=>setForm(x=>({...x,agenda:e.target.value}))}/>
-        <label style={{...labelStyle,marginTop:10}}>Minutes</label>
-        <textarea style={{...inputStyle,minHeight:120}} value={form.minutes} onChange={e=>setForm(x=>({...x,minutes:e.target.value}))}/>
-        <button onClick={addMeeting} style={{marginTop:12}}>Save meeting</button>
-      </div>
-
-      <div className="card" style={{ marginBottom: 18 }}>
-        <h3 style={{ marginTop: 0 }}>Add a resolution</h3>
-        <select style={inputStyle} value={selectedMeeting} onChange={e=>setSelectedMeeting(e.target.value)}>
-          <option value="">Select meeting</option>
-          {meetings.map(m=><option key={m.id} value={m.id}>{m.meeting_date} ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â {m.title}</option>)}
-        </select>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 10, marginTop: 10 }}>
-          <input style={inputStyle} placeholder="Resolution number" value={resolution.resolution_number} onChange={e=>setResolution(x=>({...x,resolution_number:e.target.value}))}/>
-          <input style={inputStyle} placeholder="Responsible person" value={resolution.responsible_person} onChange={e=>setResolution(x=>({...x,responsible_person:e.target.value}))}/>
-        </div>
-        <textarea style={{...inputStyle,minHeight:80,marginTop:10}} placeholder="Resolution" value={resolution.resolution} onChange={e=>setResolution(x=>({...x,resolution:e.target.value}))}/>
-        <input type="date" style={{...inputStyle,width:'auto',marginTop:10}} value={resolution.due_date} onChange={e=>setResolution(x=>({...x,due_date:e.target.value}))}/>
-        <br/>
-        <button onClick={addResolution} style={{marginTop:10}}>Save resolution</button>
-      </div>
-
-      {meetings.map(m=>(
-        <div className="card" key={m.id} style={{marginBottom:14}}>
-          <strong>{m.title}</strong>
-          <div className="muted">{m.meeting_date} Ãƒâ€šÃ‚Â· {m.meeting_type} Ãƒâ€šÃ‚Â· {m.venue || 'Venue not set'}</div>
-          {m.minutes ? <p style={{whiteSpace:'pre-wrap'}}>{m.minutes}</p> : null}
-          <div style={{marginTop:10}}>
-            {resolutions.filter(r=>r.meeting_id===m.id).map(r=>(
-              <div key={r.id} style={{padding:'10px 0',borderTop:'1px solid #e5e7eb'}}>
-                <strong>{r.resolution_number || 'Resolution'}</strong>: {r.resolution}
-                <div className="muted">Owner: {r.responsible_person || '-'} Ãƒâ€šÃ‚Â· Due: {r.due_date || '-'} Ãƒâ€šÃ‚Â· Status: {r.status}</div>
-                {r.status !== 'completed' ? <button onClick={()=>updateResolution(r.id,'completed')} style={{marginTop:6}}>Mark completed</button> : null}
-              </div>
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function EventsPanel({ schoolId }) {
-  const [events, setEvents] = useState([]);
-  const [form, setForm] = useState({
-    title: '',
-    category: 'school',
-    start_date: new Date().toISOString().slice(0,10),
-    end_date: '',
-    venue: '',
-    audience: '',
-    organiser: '',
-    description: '',
-  });
-  const [err, setErr] = useState('');
-
-  async function load() {
-    const { data, error } = await supabase.from('school_events').select('*').eq('school_id',schoolId).order('start_date');
-    setEvents(data || []);
-    if (error) setErr(error.message);
-  }
-  useEffect(()=>{load()},[schoolId]);
-
-  async function addEvent() {
-    if (!form.title.trim() || !form.start_date) { setErr('Enter an event title and date.'); return; }
-    const { error } = await supabase.from('school_events').insert({
-      school_id: schoolId,
-      ...form,
-      end_date: form.end_date || null,
-      venue: form.venue || null,
-      audience: form.audience || null,
-      organiser: form.organiser || null,
-      description: form.description || null,
-    });
-    if (error) setErr(error.message);
-    else {
-      setForm({title:'',category:'school',start_date:new Date().toISOString().slice(0,10),end_date:'',venue:'',audience:'',organiser:'',description:''});
-      await load();
-    }
-  }
-
-  return <div>
-    {err ? <p className="error">{err}</p> : null}
-    <div className="card" style={{marginBottom:18}}>
-      <h3 style={{marginTop:0}}>Add event</h3>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:10}}>
-        <input style={inputStyle} placeholder="Event title" value={form.title} onChange={e=>setForm(x=>({...x,title:e.target.value}))}/>
-        <select style={inputStyle} value={form.category} onChange={e=>setForm(x=>({...x,category:e.target.value}))}>
-          {['sports','academic','staff','community','parents','holiday','school','other'].map(x=><option key={x} value={x}>{x}</option>)}
-        </select>
-        <input type="date" style={inputStyle} value={form.start_date} onChange={e=>setForm(x=>({...x,start_date:e.target.value}))}/>
-        <input type="date" style={inputStyle} value={form.end_date} onChange={e=>setForm(x=>({...x,end_date:e.target.value}))}/>
-        <input style={inputStyle} placeholder="Venue" value={form.venue} onChange={e=>setForm(x=>({...x,venue:e.target.value}))}/>
-        <input style={inputStyle} placeholder="Audience" value={form.audience} onChange={e=>setForm(x=>({...x,audience:e.target.value}))}/>
-        <input style={inputStyle} placeholder="Organiser" value={form.organiser} onChange={e=>setForm(x=>({...x,organiser:e.target.value}))}/>
-      </div>
-      <textarea style={{...inputStyle,minHeight:80,marginTop:10}} placeholder="Description" value={form.description} onChange={e=>setForm(x=>({...x,description:e.target.value}))}/>
-      <button onClick={addEvent} style={{marginTop:10}}>Save event</button>
-    </div>
-    <div style={{display:'grid',gap:12}}>
-      {events.map(e=><article className="card" key={e.id}>
-        <strong>{e.title}</strong>
-        <div className="muted">{e.start_date}{e.end_date ? ` to ${e.end_date}` : ''} Ãƒâ€šÃ‚Â· {e.category} Ãƒâ€šÃ‚Â· {e.venue || 'Venue not set'}</div>
-        {e.description ? <p>{e.description}</p> : null}
-      </article>)}
-    </div>
-  </div>
-}
-
-function ContractorsPanel({ schoolId }) {
-  const [contractors,setContractors]=useState([]);
-  const [payments,setPayments]=useState([]);
-  const [form,setForm]=useState({contractor_name:'',company_name:'',service_type:'',phone:'',email:'',contract_reference:'',contract_start:'',contract_end:'',contract_value:'',payment_terms:'',notes:''});
-  const [payment,setPayment]=useState({contractor_id:'',payment_date:new Date().toISOString().slice(0,10),amount:'',payment_method:'bank',reference:'',description:'',approved_by:''});
-  const [err,setErr]=useState('');
-
-  async function load(){
-    const [c,p]=await Promise.all([
-      supabase.from('school_contractors').select('*').eq('school_id',schoolId).order('contractor_name'),
-      supabase.from('contractor_payments').select('*').eq('school_id',schoolId).order('payment_date',{ascending:false}),
-    ]);
-    setContractors(c.data||[]);setPayments(p.data||[]);
-    if(c.error||p.error)setErr(c.error?.message||p.error?.message);
-  }
-  useEffect(()=>{load()},[schoolId]);
-
-  async function addContractor(){
-    if(!form.contractor_name.trim()||!form.service_type.trim()){setErr('Enter contractor name and service type.');return}
-    const {error}=await supabase.from('school_contractors').insert({
-      school_id:schoolId,
-      ...form,
-      contract_start:form.contract_start||null,
-      contract_end:form.contract_end||null,
-      contract_value:form.contract_value?Number(form.contract_value):null,
-    });
-    if(error)setErr(error.message);else{
-      setForm({contractor_name:'',company_name:'',service_type:'',phone:'',email:'',contract_reference:'',contract_start:'',contract_end:'',contract_value:'',payment_terms:'',notes:''});
-      await load();
-    }
-  }
-
-  async function addPayment(){
-    if(!payment.contractor_id||!payment.amount){setErr('Select a contractor and enter an amount.');return}
-    const {error}=await supabase.from('contractor_payments').insert({
-      school_id:schoolId,
-      ...payment,
-      amount:Number(payment.amount),
-      reference:payment.reference||null,
-      description:payment.description||null,
-      approved_by:payment.approved_by||null,
-    });
-    if(error)setErr(error.message);else{
-      setPayment({contractor_id:'',payment_date:new Date().toISOString().slice(0,10),amount:'',payment_method:'bank',reference:'',description:'',approved_by:''});
-      await load();
-    }
-  }
-
-  function paid(id){return payments.filter(p=>p.contractor_id===id).reduce((s,p)=>s+Number(p.amount||0),0)}
-
-  return <div>
-    {err?<p className="error">{err}</p>:null}
-    <div className="card" style={{marginBottom:18}}>
-      <h3 style={{marginTop:0}}>Add contractor</h3>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:10}}>
-        {[
-          ['contractor_name','Contractor name'],
-          ['company_name','Company'],
-          ['service_type','Service type'],
-          ['phone','Phone'],
-          ['email','Email'],
-          ['contract_reference','Contract reference'],
-          ['payment_terms','Payment terms'],
-        ].map(([k,l])=><input key={k} style={inputStyle} placeholder={l} value={form[k]} onChange={e=>setForm(x=>({...x,[k]:e.target.value}))}/>)}
-        <input type="date" style={inputStyle} value={form.contract_start} onChange={e=>setForm(x=>({...x,contract_start:e.target.value}))}/>
-        <input type="date" style={inputStyle} value={form.contract_end} onChange={e=>setForm(x=>({...x,contract_end:e.target.value}))}/>
-        <input type="number" style={inputStyle} placeholder="Contract value" value={form.contract_value} onChange={e=>setForm(x=>({...x,contract_value:e.target.value}))}/>
-      </div>
-      <textarea style={{...inputStyle,minHeight:70,marginTop:10}} placeholder="Notes" value={form.notes} onChange={e=>setForm(x=>({...x,notes:e.target.value}))}/>
-      <button onClick={addContractor} style={{marginTop:10}}>Save contractor</button>
-    </div>
-
-    <div className="card" style={{marginBottom:18}}>
-      <h3 style={{marginTop:0}}>Record contractor payment</h3>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:10}}>
-        <select style={inputStyle} value={payment.contractor_id} onChange={e=>setPayment(x=>({...x,contractor_id:e.target.value}))}>
-          <option value="">Select contractor</option>
-          {contractors.map(c=><option key={c.id} value={c.id}>{c.contractor_name}</option>)}
-        </select>
-        <input type="date" style={inputStyle} value={payment.payment_date} onChange={e=>setPayment(x=>({...x,payment_date:e.target.value}))}/>
-        <input type="number" style={inputStyle} placeholder="Amount" value={payment.amount} onChange={e=>setPayment(x=>({...x,amount:e.target.value}))}/>
-        <select style={inputStyle} value={payment.payment_method} onChange={e=>setPayment(x=>({...x,payment_method:e.target.value}))}>
-          {['bank','cash','mobile_money','cheque','other'].map(x=><option key={x} value={x}>{x.replace('_',' ')}</option>)}
-        </select>
-        <input style={inputStyle} placeholder="Reference" value={payment.reference} onChange={e=>setPayment(x=>({...x,reference:e.target.value}))}/>
-        <input style={inputStyle} placeholder="Approved by" value={payment.approved_by} onChange={e=>setPayment(x=>({...x,approved_by:e.target.value}))}/>
-      </div>
-      <input style={{...inputStyle,marginTop:10}} placeholder="Payment description" value={payment.description} onChange={e=>setPayment(x=>({...x,description:e.target.value}))}/>
-      <button onClick={addPayment} style={{marginTop:10}}>Record payment</button>
-    </div>
-
-    <div style={{display:'grid',gap:12}}>
-      {contractors.map(c=>{
-        const total=paid(c.id);
-        const balance=c.contract_value!=null?Number(c.contract_value)-total:null;
-        return <article className="card" key={c.id}>
-          <strong>{c.contractor_name}</strong>
-          <div className="muted">{c.company_name||''} Ãƒâ€šÃ‚Â· {c.service_type} Ãƒâ€šÃ‚Â· {c.status}</div>
-          <div style={{marginTop:8}}>Contract value: {c.contract_value!=null?Number(c.contract_value).toLocaleString():'Not set'} Ãƒâ€šÃ‚Â· Paid: {total.toLocaleString()} Ãƒâ€šÃ‚Â· Balance: {balance!=null?balance.toLocaleString():'-'}</div>
-        </article>
-      })}
-    </div>
-  </div>
-}
-
-function FinanceDocumentsPanel({ schoolId, school, settings }) {
-  const [tab, setTab] = useState('invoices');
-  const [students, setStudents] = useState([]);
-  const [invoices, setInvoices] = useState([]);
-  const [receipts, setReceipts] = useState([]);
-  const [err, setErr] = useState('');
-  const [invoice, setInvoice] = useState({
-    student_id: '',
-    invoice_number: '',
-    invoice_date: new Date().toISOString().slice(0,10),
-    due_date: '',
-    issued_to: '',
-    email: '',
-    phone: '',
-    description: '',
-    amount: '',
-    currency: settings?.currency || 'USD',
-    notes: '',
-  });
-  const [receipt, setReceipt] = useState({
-    student_id: '',
-    invoice_id: '',
-    receipt_number: '',
-    receipt_date: new Date().toISOString().slice(0,10),
-    received_from: '',
-    email: '',
-    phone: '',
-    amount: '',
-    currency: settings?.currency || 'USD',
-    payment_method: 'cash',
-    payment_reference: '',
-    description: '',
-    notes: '',
-  });
-
-  async function load() {
-    const [studentResult, invoiceResult, receiptResult] = await Promise.all([
-      supabase.from('students').select('id,full_name').eq('school_id',schoolId).order('full_name'),
-      supabase.from('school_invoices').select('*').eq('school_id',schoolId).order('invoice_date',{ascending:false}),
-      supabase.from('school_receipts').select('*').eq('school_id',schoolId).order('receipt_date',{ascending:false}),
-    ]);
-    setStudents(studentResult.data || []);
-    setInvoices(invoiceResult.data || []);
-    setReceipts(receiptResult.data || []);
-    if (studentResult.error || invoiceResult.error || receiptResult.error) {
-      setErr(studentResult.error?.message || invoiceResult.error?.message || receiptResult.error?.message);
-    }
-  }
-
-  useEffect(()=>{ load(); },[schoolId]);
-
-  function nextNumber(prefix, rows, column) {
-    const year = new Date().getFullYear();
-    return `${prefix}-${year}-${String(rows.length + 1).padStart(4,'0')}`;
-  }
-
-  function selectStudent(id, kind) {
-    const student = students.find(item=>item.id===id);
-    if (kind === 'invoice') {
-      setInvoice(x=>({
-        ...x,
-        student_id:id,
-        issued_to:student?.full_name || '',
-        email:'',
-        phone:'',
-      }));
-    } else {
-      setReceipt(x=>({
-        ...x,
-        student_id:id,
-        received_from:student?.full_name || '',
-        email:'',
-        phone:'',
-      }));
-    }
-  }
-
-  async function createInvoice() {
-    if (!invoice.issued_to.trim() || !invoice.amount) {
-      setErr('Enter the recipient and invoice amount.');
-      return;
-    }
-    const amount = Number(invoice.amount);
-    const number = invoice.invoice_number || nextNumber('INV', invoices, 'invoice_number');
-    const { error } = await supabase.from('school_invoices').insert({
-      school_id:schoolId,
-      student_id:invoice.student_id || null,
-      invoice_number:number,
-      invoice_date:invoice.invoice_date,
-      due_date:invoice.due_date || null,
-      issued_to:invoice.issued_to,
-      email:invoice.email || null,
-      phone:invoice.phone || null,
-      description:invoice.description || null,
-      line_items:[{description:invoice.description || 'School charges',quantity:1,unit_price:amount,amount}],
-      subtotal:amount,
-      total:amount,
-      currency:invoice.currency,
-      status:'issued',
-      notes:invoice.notes || null,
-    });
-    if (error) setErr(error.message);
-    else {
-      setInvoice({...invoice,student_id:'',invoice_number:'',issued_to:'',email:'',phone:'',description:'',amount:'',due_date:'',notes:''});
-      await load();
-    }
-  }
-
-  async function createReceipt() {
-    if (!receipt.received_from.trim() || !receipt.amount) {
-      setErr('Enter who paid and the receipt amount.');
-      return;
-    }
-    const number = receipt.receipt_number || nextNumber('RCT', receipts, 'receipt_number');
-    const amount = Number(receipt.amount);
-    const { data:created, error } = await supabase.from('school_receipts').insert({
-      school_id:schoolId,
-      student_id:receipt.student_id || null,
-      invoice_id:receipt.invoice_id || null,
-      receipt_number:number,
-      receipt_date:receipt.receipt_date,
-      received_from:receipt.received_from,
-      email:receipt.email || null,
-      phone:receipt.phone || null,
-      amount,
-      currency:receipt.currency,
-      payment_method:receipt.payment_method,
-      payment_reference:receipt.payment_reference || null,
-      description:receipt.description || null,
-      notes:receipt.notes || null,
-    }).select().single();
-
-    if (error) setErr(error.message);
-    else {
-      if (receipt.invoice_id) {
-        const linked = invoices.find(item=>item.id===receipt.invoice_id);
-        if (linked) {
-          const paid = Number(linked.amount_paid || 0) + amount;
-          await supabase.from('school_invoices').update({
-            amount_paid:paid,
-            status:paid >= Number(linked.total || 0) ? 'paid' : 'part_paid',
-          }).eq('id',linked.id);
-        }
-      }
-      setReceipt({...receipt,student_id:'',invoice_id:'',receipt_number:'',received_from:'',email:'',phone:'',amount:'',payment_reference:'',description:'',notes:''});
-      await load();
-    }
-  }
-
-  function documentHtml(type, row) {
-    const isInvoice = type === 'invoice';
-    const number = isInvoice ? row.invoice_number : row.receipt_number;
-    const date = isInvoice ? row.invoice_date : row.receipt_date;
-    const person = isInvoice ? row.issued_to : row.received_from;
-    const amount = isInvoice ? row.total : row.amount;
-    return `
-      <html><head><title>${number}</title>
-      <style>
-        body{font-family:Arial,sans-serif;padding:40px;color:#1f2937}
-        .head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:3px solid #096df3;padding-bottom:20px}
-        h1{color:#041a4d;margin:0}.box{margin-top:28px}.total{font-size:24px;font-weight:700;color:#041a4d}
-        table{width:100%;border-collapse:collapse;margin-top:24px}td,th{padding:12px;border-bottom:1px solid #ddd;text-align:left}
-      </style></head><body>
-      <div class="head"><div><h1>${school?.name || 'School'}</h1><div>${school?.address || ''}</div></div><div><strong>${isInvoice ? 'INVOICE' : 'RECEIPT'}</strong><br>${number}<br>${date}</div></div>
-      <div class="box"><strong>${isInvoice ? 'Issued to' : 'Received from'}:</strong> ${person}</div>
-      <table><tr><th>Description</th><th>Amount</th></tr><tr><td>${row.description || (isInvoice ? 'School charges' : 'Payment received')}</td><td>${row.currency} ${Number(amount).toFixed(2)}</td></tr></table>
-      <p class="total">Total: ${row.currency} ${Number(amount).toFixed(2)}</p>
-      ${isInvoice && row.due_date ? `<p>Due date: ${row.due_date}</p>` : ''}
-      ${!isInvoice ? `<p>Payment method: ${row.payment_method || '-'}</p><p>Reference: ${row.payment_reference || '-'}</p>` : ''}
-      <p>${row.notes || ''}</p>
-      </body></html>`;
-  }
-
-  async function logDelivery(type,row,method,recipient) {
-    await supabase.from('school_document_deliveries').insert({
-      school_id:schoolId,
-      document_type:type,
-      document_id:row.id,
-      delivery_method:method,
-      recipient:recipient || null,
-      status:'prepared',
-    });
-  }
-
-  function printDoc(type,row) {
-    const win = window.open('', '_blank');
-    win.document.write(documentHtml(type,row));
-    win.document.close();
-    win.focus();
-    win.print();
-    logDelivery(type,row,'print','');
-  }
-
-  function emailDoc(type,row) {
-    const number = type==='invoice' ? row.invoice_number : row.receipt_number;
-    const person = type==='invoice' ? row.issued_to : row.received_from;
-    const amount = type==='invoice' ? row.total : row.amount;
-    const subject = encodeURIComponent(`${type==='invoice'?'Invoice':'Receipt'} ${number} from ${school?.name || 'School'}`);
-    const body = encodeURIComponent(
-      `Dear ${person},\n\nPlease find your ${type} details below:\nNumber: ${number}\nAmount: ${row.currency} ${Number(amount).toFixed(2)}\n${type==='invoice'&&row.due_date?`Due date: ${row.due_date}\n`:''}\nRegards,\n${school?.name || 'School'}`
-    );
-    logDelivery(type,row,'email',row.email);
-    window.location.href = `mailto:${row.email || ''}?subject=${subject}&body=${body}`;
-  }
-
-  function whatsappDoc(type,row) {
-    const number = type==='invoice' ? row.invoice_number : row.receipt_number;
-    const amount = type==='invoice' ? row.total : row.amount;
-    const text = encodeURIComponent(`${school?.name || 'School'} ${type}: ${number}. Amount: ${row.currency} ${Number(amount).toFixed(2)}.`);
-    const phone = String(row.phone || '').replace(/\D/g,'');
-    logDelivery(type,row,'whatsapp',phone);
-    window.open(`https://wa.me/${phone}?text=${text}`,'_blank');
-  }
-
-  return <div>
-    <div style={{display:'flex',gap:8,marginBottom:18}}>
-      <button className={tab==='invoices'?'':'ghost'} onClick={()=>setTab('invoices')}>Invoices</button>
-      <button className={tab==='receipts'?'':'ghost'} onClick={()=>setTab('receipts')}>Receipts</button>
-    </div>
-    {err?<p className="error">{err}</p>:null}
-
-    {tab==='invoices'?<div>
-      <div className="card" style={{marginBottom:18}}>
-        <h3 style={{marginTop:0}}>Create invoice</h3>
-        <select style={inputStyle} value={invoice.student_id} onChange={e=>selectStudent(e.target.value,'invoice')}>
-          <option value="">Select learner or enter recipient manually</option>
-          {students.map(s=><option key={s.id} value={s.id}>{s.full_name}</option>)}
-        </select>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:10,marginTop:10}}>
-          {[
-            ['invoice_number','Invoice number (automatic if blank)'],
-            ['issued_to','Issued to'],
-            ['email','Email'],
-            ['phone','Phone'],
-            ['description','Description'],
-            ['amount','Amount'],
-          ].map(([k,l])=><input key={k} type={k==='amount'?'number':'text'} style={inputStyle} placeholder={l} value={invoice[k]} onChange={e=>setInvoice(x=>({...x,[k]:e.target.value}))}/>)}
-          <input type="date" style={inputStyle} value={invoice.invoice_date} onChange={e=>setInvoice(x=>({...x,invoice_date:e.target.value}))}/>
-          <input type="date" style={inputStyle} value={invoice.due_date} onChange={e=>setInvoice(x=>({...x,due_date:e.target.value}))}/>
-        </div>
-        <button onClick={createInvoice} style={{marginTop:12}}>Issue invoice</button>
-      </div>
-      {invoices.map(row=><article className="card" key={row.id} style={{marginBottom:12}}>
-        <strong>{row.invoice_number}</strong> Ã¢â‚¬â€ {row.issued_to}
-        <div className="muted">{row.invoice_date} Ã‚Â· {row.currency} {Number(row.total).toFixed(2)} Ã‚Â· Balance {row.currency} {Number(row.balance).toFixed(2)} Ã‚Â· {row.status}</div>
-        <div style={{display:'flex',gap:8,marginTop:10,flexWrap:'wrap'}}>
-          <button onClick={()=>printDoc('invoice',row)}>Print / Save PDF</button>
-          <button className="ghost" onClick={()=>emailDoc('invoice',row)}>Email</button>
-          <button className="ghost" onClick={()=>whatsappDoc('invoice',row)}>WhatsApp</button>
-        </div>
-      </article>)}
-    </div>:null}
-
-    {tab==='receipts'?<div>
-      <div className="card" style={{marginBottom:18}}>
-        <h3 style={{marginTop:0}}>Create receipt</h3>
-        <select style={inputStyle} value={receipt.student_id} onChange={e=>selectStudent(e.target.value,'receipt')}>
-          <option value="">Select learner or enter payer manually</option>
-          {students.map(s=><option key={s.id} value={s.id}>{s.full_name}</option>)}
-        </select>
-        <select style={{...inputStyle,marginTop:10}} value={receipt.invoice_id} onChange={e=>setReceipt(x=>({...x,invoice_id:e.target.value}))}>
-          <option value="">Optional: link to invoice</option>
-          {invoices.filter(i=>i.status!=='paid'&&i.status!=='void').map(i=><option key={i.id} value={i.id}>{i.invoice_number} Ã¢â‚¬â€ {i.issued_to}</option>)}
-        </select>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:10,marginTop:10}}>
-          {[
-            ['receipt_number','Receipt number (automatic if blank)'],
-            ['received_from','Received from'],
-            ['email','Email'],
-            ['phone','Phone'],
-            ['amount','Amount'],
-            ['payment_reference','Payment reference'],
-            ['description','Description'],
-          ].map(([k,l])=><input key={k} type={k==='amount'?'number':'text'} style={inputStyle} placeholder={l} value={receipt[k]} onChange={e=>setReceipt(x=>({...x,[k]:e.target.value}))}/>)}
-          <input type="date" style={inputStyle} value={receipt.receipt_date} onChange={e=>setReceipt(x=>({...x,receipt_date:e.target.value}))}/>
-          <select style={inputStyle} value={receipt.payment_method} onChange={e=>setReceipt(x=>({...x,payment_method:e.target.value}))}>
-            {['cash','bank','mobile_money','card','cheque','other'].map(x=><option key={x} value={x}>{x.replace('_',' ')}</option>)}
-          </select>
-        </div>
-        <button onClick={createReceipt} style={{marginTop:12}}>Issue receipt</button>
-      </div>
-      {receipts.map(row=><article className="card" key={row.id} style={{marginBottom:12}}>
-        <strong>{row.receipt_number}</strong> Ã¢â‚¬â€ {row.received_from}
-        <div className="muted">{row.receipt_date} Ã‚Â· {row.currency} {Number(row.amount).toFixed(2)} Ã‚Â· {row.payment_method || '-'}</div>
-        <div style={{display:'flex',gap:8,marginTop:10,flexWrap:'wrap'}}>
-          <button onClick={()=>printDoc('receipt',row)}>Print / Save PDF</button>
-          <button className="ghost" onClick={()=>emailDoc('receipt',row)}>Email</button>
-          <button className="ghost" onClick={()=>whatsappDoc('receipt',row)}>WhatsApp</button>
-        </div>
-      </article>)}
-    </div>:null}
-  </div>
-}
-
-function PettyCashPanel({ schoolId }) {
-  const [rows,setRows]=useState([]);
-  const [form,setForm]=useState({
-    transaction_date:new Date().toISOString().slice(0,10),
-    transaction_type:'expense',
-    category:'',
-    description:'',
-    amount:'',
-    currency:'USD',
-    reference:'',
-    payee:'',
-    requested_by:'',
-    approved_by:'',
-    receipt_reference:'',
-    notes:'',
-  });
-  const [err,setErr]=useState('');
-
-  async function load(){
-    const {data,error}=await supabase.from('petty_cash_transactions').select('*').eq('school_id',schoolId).order('transaction_date',{ascending:false}).order('created_at',{ascending:false});
-    setRows(data||[]);
-    if(error)setErr(error.message);
-  }
-  useEffect(()=>{load()},[schoolId]);
-
-  async function save(){
-    if(!form.description.trim()||!form.amount){setErr('Enter a description and amount.');return}
-    const {error}=await supabase.from('petty_cash_transactions').insert({
-      school_id:schoolId,
-      ...form,
-      amount:Number(form.amount),
-      category:form.category||null,
-      reference:form.reference||null,
-      payee:form.payee||null,
-      requested_by:form.requested_by||null,
-      approved_by:form.approved_by||null,
-      receipt_reference:form.receipt_reference||null,
-      notes:form.notes||null,
-    });
-    if(error)setErr(error.message);else{
-      setForm({...form,description:'',amount:'',category:'',reference:'',payee:'',requested_by:'',approved_by:'',receipt_reference:'',notes:''});
-      await load();
-    }
-  }
-
-  const cashIn=rows.filter(r=>['opening_balance','cash_in','reimbursement','adjustment'].includes(r.transaction_type)).reduce((s,r)=>s+Number(r.amount||0),0);
-  const cashOut=rows.filter(r=>r.transaction_type==='expense').reduce((s,r)=>s+Number(r.amount||0),0);
-  const balance=cashIn-cashOut;
-
-  return <div>
-    {err?<p className="error">{err}</p>:null}
-    <div style={{display:'grid',gridTemplateColumns:'repeat(3,minmax(0,1fr))',gap:12,marginBottom:18}}>
-      {[['Cash in',cashIn],['Cash out',cashOut],['Balance',balance]].map(([l,v])=><div className="card" key={l}><div style={{fontSize:28,fontWeight:800}}>{Number(v).toFixed(2)}</div><div className="muted">{l}</div></div>)}
-    </div>
-    <div className="card" style={{marginBottom:18}}>
-      <h3 style={{marginTop:0}}>Record petty cash transaction</h3>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:10}}>
-        <input type="date" style={inputStyle} value={form.transaction_date} onChange={e=>setForm(x=>({...x,transaction_date:e.target.value}))}/>
-        <select style={inputStyle} value={form.transaction_type} onChange={e=>setForm(x=>({...x,transaction_type:e.target.value}))}>
-          {['opening_balance','cash_in','expense','reimbursement','adjustment'].map(x=><option key={x} value={x}>{x.replaceAll('_',' ')}</option>)}
-        </select>
-        {[
-          ['category','Category'],
-          ['description','Description'],
-          ['amount','Amount'],
-          ['reference','Reference'],
-          ['payee','Payee'],
-          ['requested_by','Requested by'],
-          ['approved_by','Approved by'],
-          ['receipt_reference','Receipt number'],
-        ].map(([k,l])=><input key={k} type={k==='amount'?'number':'text'} style={inputStyle} placeholder={l} value={form[k]} onChange={e=>setForm(x=>({...x,[k]:e.target.value}))}/>)}
-      </div>
-      <textarea style={{...inputStyle,minHeight:70,marginTop:10}} placeholder="Notes" value={form.notes} onChange={e=>setForm(x=>({...x,notes:e.target.value}))}/>
-      <button onClick={save} style={{marginTop:10}}>Save transaction</button>
-    </div>
-    <table><thead><tr><th>Date</th><th>Type</th><th>Description</th><th>Payee</th><th className="r">Amount</th></tr></thead>
-    <tbody>{rows.map(r=><tr key={r.id}><td>{r.transaction_date}</td><td>{r.transaction_type.replaceAll('_',' ')}</td><td>{r.description}</td><td>{r.payee||'-'}</td><td className="r">{r.currency} {Number(r.amount).toFixed(2)}</td></tr>)}</tbody></table>
-  </div>
-}
-
-function BudgetPanel({ schoolId, settings }) {
-  const currentYear = new Date().getFullYear();
-
-  const [budgets, setBudgets] = useState([]);
-  const [activeBudgetId, setActiveBudgetId] = useState('');
-  const [lines, setLines] = useState([]);
-  const [err, setErr] = useState('');
-
-  const [budgetForm, setBudgetForm] = useState({
-    financial_year: currentYear,
-    title: `${currentYear} Annual Budget`,
-    currency: settings?.currency || 'USD',
-    projected_learner_count: 0,
-    start_date: `${currentYear}-01-01`,
-    end_date: `${currentYear}-12-31`,
-    notes: '',
-  });
-
-  const [lineForm, setLineForm] = useState({
-    line_type: 'income',
-    category: 'Fees and levies',
-    subcategory: '',
-    source_type: 'fees',
-    description: '',
-    quantity: 1,
-    unit_rate: 0,
-    periods: 1,
-    assumptions: '',
-  });
-
-  const activeBudget =
-    budgets.find(item => item.id === activeBudgetId) || null;
-
-  async function load() {
-    const { data: budgetRows, error: budgetError } = await supabase
-      .from('school_budgets')
-      .select('*')
-      .eq('school_id', schoolId)
-      .order('financial_year', { ascending: false })
-      .order('version', { ascending: false });
-
-    if (budgetError) {
-      setErr(budgetError.message);
-      return;
-    }
-
-    setBudgets(budgetRows || []);
-
-    const selected =
-      activeBudgetId ||
-      budgetRows?.[0]?.id ||
-      '';
-
-    if (!activeBudgetId && selected) {
-      setActiveBudgetId(selected);
-    }
-
-    if (selected) {
-      const { data: lineRows, error: lineError } = await supabase
-        .from('school_budget_lines')
-        .select('*')
-        .eq('budget_id', selected)
-        .order('line_type')
-        .order('sort_order')
-        .order('created_at');
-
-      if (lineError) setErr(lineError.message);
-      else setLines(lineRows || []);
-    } else {
-      setLines([]);
-    }
-  }
-
-  useEffect(() => {
-    load();
-  }, [schoolId, activeBudgetId]);
-
-  async function createBudget() {
-    if (
-      !budgetForm.title.trim() ||
-      !budgetForm.financial_year
-    ) {
-      setErr('Enter a title and financial year.');
-      return;
-    }
-
-    const sameYear = budgets.filter(
-      item =>
-        Number(item.financial_year) ===
-        Number(budgetForm.financial_year)
-    );
-
-    const nextVersion =
-      sameYear.length > 0
-        ? Math.max(
-            ...sameYear.map(item =>
-              Number(item.version || 1)
-            )
-          ) + 1
-        : 1;
-
-    const { data, error } = await supabase
-      .from('school_budgets')
-      .insert({
-        school_id: schoolId,
-        financial_year:
-          Number(budgetForm.financial_year),
-        version: nextVersion,
-        title: budgetForm.title.trim(),
-        currency: budgetForm.currency,
-        status: 'draft',
-        start_date:
-          budgetForm.start_date || null,
-        end_date:
-          budgetForm.end_date || null,
-        projected_learner_count:
-          Number(
-            budgetForm.projected_learner_count ||
-              0
-          ),
-        notes: budgetForm.notes || null,
-      })
-      .select()
-      .single();
-
-    if (error) {
-      setErr(error.message);
-      return;
-    }
-
-    setActiveBudgetId(data.id);
-    await load();
-  }
-
-  async function addLine() {
-    if (
-      !activeBudgetId ||
-      !lineForm.description.trim()
-    ) {
-      setErr(
-        'Select a budget and enter a line description.'
-      );
-      return;
-    }
-
-    if (
-      activeBudget &&
-      ['approved', 'locked', 'archived'].includes(
-        activeBudget.status
-      )
-    ) {
-      setErr(
-        'This budget cannot be changed in its current status.'
-      );
-      return;
-    }
-
-    const { error } = await supabase
-      .from('school_budget_lines')
-      .insert({
-        budget_id: activeBudgetId,
-        school_id: schoolId,
-        line_type: lineForm.line_type,
-        category: lineForm.category,
-        subcategory:
-          lineForm.subcategory || null,
-        source_type:
-          lineForm.source_type || null,
-        description:
-          lineForm.description.trim(),
-        quantity: Number(
-          lineForm.quantity || 0
-        ),
-        unit_rate: Number(
-          lineForm.unit_rate || 0
-        ),
-        periods: Number(
-          lineForm.periods || 0
-        ),
-        assumptions:
-          lineForm.assumptions || null,
-        sort_order: lines.length + 1,
-      });
-
-    if (error) {
-      setErr(error.message);
-      return;
-    }
-
-    setLineForm(current => ({
-      ...current,
-      subcategory: '',
-      description: '',
-      unit_rate: 0,
-      assumptions: '',
-    }));
-
-    await load();
-  }
-
-  async function removeLine(id) {
-    if (
-      activeBudget &&
-      ['approved', 'locked', 'archived'].includes(
-        activeBudget.status
-      )
-    ) {
-      setErr(
-        'This budget cannot be changed in its current status.'
-      );
-      return;
-    }
-
-    const { error } = await supabase
-      .from('school_budget_lines')
-      .delete()
-      .eq('id', id);
-
-    if (error) setErr(error.message);
-    else await load();
-  }
-
-  async function changeStatus(status) {
-    if (!activeBudgetId) return;
-
-    const update = {
-      status,
-      updated_at: new Date().toISOString(),
-    };
-
-    if (status === 'submitted') {
-      update.submitted_at =
-        new Date().toISOString();
-    }
-
-    if (status === 'approved') {
-      update.approved_at =
-        new Date().toISOString();
-    }
-
-    const { error } = await supabase
-      .from('school_budgets')
-      .update(update)
-      .eq('id', activeBudgetId);
-
-    if (error) {
-      setErr(error.message);
-      return;
-    }
-
-    await supabase
-      .from('school_budget_approvals')
-      .insert({
-        budget_id: activeBudgetId,
-        school_id: schoolId,
-        action: status,
-      });
-
-    await load();
-  }
-
-  function createFeeProjection() {
-    setLineForm({
-      line_type: 'income',
-      category: 'Fees and levies',
-      subcategory: 'School fees',
-      source_type: 'fees',
-      description: 'Projected school fee income',
-      quantity:
-        activeBudget?.projected_learner_count ||
-        budgetForm.projected_learner_count ||
-        0,
-      unit_rate: 0,
-      periods: 3,
-      assumptions:
-        'Projected learners Ã— fee per learner Ã— school terms',
-    });
-  }
-
-  function createLevyProjection() {
-    setLineForm({
-      line_type: 'income',
-      category: 'Fees and levies',
-      subcategory: 'Levy',
-      source_type: 'levy',
-      description: 'Projected levy income',
-      quantity:
-        activeBudget?.projected_learner_count ||
-        budgetForm.projected_learner_count ||
-        0,
-      unit_rate: 0,
-      periods: 1,
-      assumptions:
-        'Projected learners Ã— annual levy',
-    });
-  }
-
-  const income = lines
-    .filter(item => item.line_type === 'income')
-    .reduce(
-      (sum, item) =>
-        sum + Number(item.amount || 0),
-      0
-    );
-
-  const expenses = lines
-    .filter(item => item.line_type === 'expense')
-    .reduce(
-      (sum, item) =>
-        sum + Number(item.amount || 0),
-      0
-    );
-
-  const surplus = income - expenses;
-
-  const expenseCategories = lines
-    .filter(item => item.line_type === 'expense')
-    .reduce((groups, item) => {
-      groups[item.category] =
-        (groups[item.category] || 0) +
-        Number(item.amount || 0);
-      return groups;
-    }, {});
-
-  const incomeCategories = [
-    'Fees and levies',
-    'Grants and donations',
-    'Fundraising',
-    'Facility income',
-    'Other income',
-  ];
-
-  const expenseCategoryOptions = [
-    'Staffing',
-    'Teaching and learning',
-    'Utilities',
-    'Maintenance',
-    'Administration',
-    'Sports and activities',
-    'Transport',
-    'Technology',
-    'Capital expenditure',
-    'Finance costs',
-    'Contingency',
-    'Other expenses',
-  ];
-
-  return (
-    <div>
-      {err ? <p className="error">{err}</p> : null}
-
-      <div className="card" style={{ marginBottom: 18 }}>
-        <h3 style={{ marginTop: 0 }}>
-          Create annual budget
-        </h3>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns:
-              'repeat(2,minmax(0,1fr))',
-            gap: 10,
-          }}
-        >
-          <input
-            type="number"
-            style={inputStyle}
-            value={budgetForm.financial_year}
-            onChange={event =>
-              setBudgetForm(current => ({
-                ...current,
-                financial_year:
-                  event.target.value,
-              }))
-            }
-            placeholder="Financial year"
-          />
-
-          <input
-            style={inputStyle}
-            value={budgetForm.title}
-            onChange={event =>
-              setBudgetForm(current => ({
-                ...current,
-                title: event.target.value,
-              }))
-            }
-            placeholder="Budget title"
-          />
-
-          <input
-            type="number"
-            style={inputStyle}
-            value={
-              budgetForm.projected_learner_count
-            }
-            onChange={event =>
-              setBudgetForm(current => ({
-                ...current,
-                projected_learner_count:
-                  event.target.value,
-              }))
-            }
-            placeholder="Projected learner count"
-          />
-
-          <input
-            style={inputStyle}
-            value={budgetForm.currency}
-            onChange={event =>
-              setBudgetForm(current => ({
-                ...current,
-                currency: event.target.value,
-              }))
-            }
-            placeholder="Currency"
-          />
-
-          <input
-            type="date"
-            style={inputStyle}
-            value={budgetForm.start_date}
-            onChange={event =>
-              setBudgetForm(current => ({
-                ...current,
-                start_date:
-                  event.target.value,
-              }))
-            }
-          />
-
-          <input
-            type="date"
-            style={inputStyle}
-            value={budgetForm.end_date}
-            onChange={event =>
-              setBudgetForm(current => ({
-                ...current,
-                end_date:
-                  event.target.value,
-              }))
-            }
-          />
-        </div>
-
-        <textarea
-          style={{
-            ...inputStyle,
-            minHeight: 70,
-            marginTop: 10,
-          }}
-          placeholder="Budget assumptions and notes"
-          value={budgetForm.notes}
-          onChange={event =>
-            setBudgetForm(current => ({
-              ...current,
-              notes: event.target.value,
-            }))
-          }
-        />
-
-        <button
-          onClick={createBudget}
-          style={{ marginTop: 10 }}
-        >
-          Create budget version
-        </button>
-      </div>
-
-      {budgets.length ? (
-        <div className="card" style={{ marginBottom: 18 }}>
-          <label style={labelStyle}>
-            Budget version
-          </label>
-
-          <select
-            style={inputStyle}
-            value={activeBudgetId}
-            onChange={event =>
-              setActiveBudgetId(
-                event.target.value
-              )
-            }
-          >
-            {budgets.map(item => (
-              <option key={item.id} value={item.id}>
-                {item.financial_year} Â· Version{' '}
-                {item.version} Â· {item.title} Â·{' '}
-                {item.status}
-              </option>
-            ))}
-          </select>
-        </div>
-      ) : null}
-
-      {activeBudget ? (
-        <>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns:
-                'repeat(3,minmax(0,1fr))',
-              gap: 12,
-              marginBottom: 18,
-            }}
-          >
-            {[
-              [
-                'Projected income',
-                income,
-              ],
-              [
-                'Planned expenditure',
-                expenses,
-              ],
-              [
-                surplus >= 0
-                  ? 'Projected surplus'
-                  : 'Projected deficit',
-                surplus,
-              ],
-            ].map(([label, value]) => (
-              <div className="card" key={label}>
-                <div
-                  style={{
-                    fontSize: 28,
-                    fontWeight: 800,
-                    color:
-                      label.includes('deficit')
-                        ? '#c0392b'
-                        : undefined,
-                  }}
-                >
-                  {activeBudget.currency}{' '}
-                  {Number(value).toFixed(2)}
-                </div>
-                <div className="muted">
-                  {label}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="card" style={{ marginBottom: 18 }}>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                gap: 12,
-                flexWrap: 'wrap',
-              }}
-            >
-              <div>
-                <strong>
-                  {activeBudget.title}
-                </strong>
-                <div className="muted">
-                  FY {activeBudget.financial_year}
-                  {' Â· '}
-                  Version {activeBudget.version}
-                  {' Â· '}
-                  Status {activeBudget.status}
-                </div>
-              </div>
-
-              <div
-                style={{
-                  display: 'flex',
-                  gap: 8,
-                  flexWrap: 'wrap',
-                }}
-              >
-                {activeBudget.status ===
-                'draft' ? (
-                  <button
-                    onClick={() =>
-                      changeStatus('submitted')
-                    }
-                  >
-                    Submit budget
-                  </button>
-                ) : null}
-
-                {activeBudget.status ===
-                'submitted' ? (
-                  <>
-                    <button
-                      onClick={() =>
-                        changeStatus('approved')
-                      }
-                    >
-                      Approve
-                    </button>
-                    <button
-                      className="ghost"
-                      onClick={() =>
-                        changeStatus('rejected')
-                      }
-                    >
-                      Reject
-                    </button>
-                  </>
-                ) : null}
-
-                {activeBudget.status ===
-                'approved' ? (
-                  <button
-                    onClick={() =>
-                      changeStatus('locked')
-                    }
-                  >
-                    Lock budget
-                  </button>
-                ) : null}
-              </div>
-            </div>
-          </div>
-
-          <div className="card" style={{ marginBottom: 18 }}>
-            <h3 style={{ marginTop: 0 }}>
-              Add budget line
-            </h3>
-
-            <div
-              style={{
-                display: 'flex',
-                gap: 8,
-                flexWrap: 'wrap',
-                marginBottom: 12,
-              }}
-            >
-              <button
-                type="button"
-                className="ghost"
-                onClick={createFeeProjection}
-              >
-                Add projected fees
-              </button>
-
-              <button
-                type="button"
-                className="ghost"
-                onClick={createLevyProjection}
-              >
-                Add projected levy
-              </button>
-            </div>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns:
-                  'repeat(2,minmax(0,1fr))',
-                gap: 10,
-              }}
-            >
-              <select
-                style={inputStyle}
-                value={lineForm.line_type}
-                onChange={event => {
-                  const lineType =
-                    event.target.value;
-
-                  setLineForm(current => ({
-                    ...current,
-                    line_type: lineType,
-                    category:
-                      lineType === 'income'
-                        ? incomeCategories[0]
-                        : expenseCategoryOptions[0],
-                    source_type:
-                      lineType === 'income'
-                        ? 'other_income'
-                        : 'planned_expense',
-                  }));
-                }}
-              >
-                <option value="income">
-                  Income
-                </option>
-                <option value="expense">
-                  Expense
-                </option>
-              </select>
-
-              <select
-                style={inputStyle}
-                value={lineForm.category}
-                onChange={event =>
-                  setLineForm(current => ({
-                    ...current,
-                    category:
-                      event.target.value,
-                  }))
-                }
-              >
-                {(lineForm.line_type ===
-                'income'
-                  ? incomeCategories
-                  : expenseCategoryOptions
-                ).map(item => (
-                  <option
-                    key={item}
-                    value={item}
-                  >
-                    {item}
-                  </option>
-                ))}
-              </select>
-
-              <input
-                style={inputStyle}
-                placeholder="Subcategory"
-                value={lineForm.subcategory}
-                onChange={event =>
-                  setLineForm(current => ({
-                    ...current,
-                    subcategory:
-                      event.target.value,
-                  }))
-                }
-              />
-
-              <input
-                style={inputStyle}
-                placeholder="Description"
-                value={lineForm.description}
-                onChange={event =>
-                  setLineForm(current => ({
-                    ...current,
-                    description:
-                      event.target.value,
-                  }))
-                }
-              />
-
-              <input
-                type="number"
-                step="0.01"
-                style={inputStyle}
-                placeholder="Quantity / learner count"
-                value={lineForm.quantity}
-                onChange={event =>
-                  setLineForm(current => ({
-                    ...current,
-                    quantity:
-                      event.target.value,
-                  }))
-                }
-              />
-
-              <input
-                type="number"
-                step="0.01"
-                style={inputStyle}
-                placeholder="Rate per unit"
-                value={lineForm.unit_rate}
-                onChange={event =>
-                  setLineForm(current => ({
-                    ...current,
-                    unit_rate:
-                      event.target.value,
-                  }))
-                }
-              />
-
-              <input
-                type="number"
-                step="0.01"
-                style={inputStyle}
-                placeholder="Periods / terms"
-                value={lineForm.periods}
-                onChange={event =>
-                  setLineForm(current => ({
-                    ...current,
-                    periods:
-                      event.target.value,
-                  }))
-                }
-              />
-
-              <input
-                style={inputStyle}
-                placeholder="Assumptions"
-                value={lineForm.assumptions}
-                onChange={event =>
-                  setLineForm(current => ({
-                    ...current,
-                    assumptions:
-                      event.target.value,
-                  }))
-                }
-              />
-            </div>
-
-            <div
-              style={{
-                marginTop: 12,
-                padding: 12,
-                borderRadius: 10,
-                background: '#eef5ff',
-              }}
-            >
-              Calculated amount:{' '}
-              <strong>
-                {activeBudget.currency}{' '}
-                {(
-                  Number(
-                    lineForm.quantity || 0
-                  ) *
-                  Number(
-                    lineForm.unit_rate || 0
-                  ) *
-                  Number(
-                    lineForm.periods || 0
-                  )
-                ).toFixed(2)}
-              </strong>
-            </div>
-
-            <button
-              onClick={addLine}
-              style={{ marginTop: 12 }}
-            >
-              Add budget line
-            </button>
-          </div>
-
-          <div className="card" style={{ marginBottom: 18 }}>
-            <h3 style={{ marginTop: 0 }}>
-              Budget detail
-            </h3>
-
-            <table>
-              <thead>
-                <tr>
-                  <th>Type</th>
-                  <th>Category</th>
-                  <th>Description</th>
-                  <th>Calculation</th>
-                  <th className="r">Amount</th>
-                  <th></th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {lines.map(item => (
-                  <tr key={item.id}>
-                    <td
-                      style={{
-                        textTransform:
-                          'capitalize',
-                      }}
-                    >
-                      {item.line_type}
-                    </td>
-
-                    <td>
-                      {item.category}
-                      {item.subcategory
-                        ? ` Â· ${item.subcategory}`
-                        : ''}
-                    </td>
-
-                    <td>
-                      {item.description}
-                      {item.assumptions ? (
-                        <div
-                          className="muted"
-                          style={{ fontSize: 12 }}
-                        >
-                          {item.assumptions}
-                        </div>
-                      ) : null}
-                    </td>
-
-                    <td>
-                      {Number(
-                        item.quantity
-                      ).toFixed(2)}
-                      {' Ã— '}
-                      {Number(
-                        item.unit_rate
-                      ).toFixed(2)}
-                      {' Ã— '}
-                      {Number(
-                        item.periods
-                      ).toFixed(2)}
-                    </td>
-
-                    <td className="r">
-                      {activeBudget.currency}{' '}
-                      {Number(
-                        item.amount || 0
-                      ).toFixed(2)}
-                    </td>
-
-                    <td className="r">
-                      {[
-                        'draft',
-                        'rejected',
-                      ].includes(
-                        activeBudget.status
-                      ) ? (
-                        <button
-                          className="ghost"
-                          onClick={() =>
-                            removeLine(item.id)
-                          }
-                        >
-                          Remove
-                        </button>
-                      ) : null}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {Object.keys(expenseCategories)
-            .length ? (
-            <div className="card">
-              <h3 style={{ marginTop: 0 }}>
-                Planned expenditure allocation
-              </h3>
-
-              {Object.entries(
-                expenseCategories
-              ).map(([category, amount]) => (
-                <div
-                  key={category}
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns:
-                      '1fr auto',
-                    gap: 12,
-                    padding: '10px 0',
-                    borderBottom:
-                      '1px solid #e5e7eb',
-                  }}
-                >
-                  <span>{category}</span>
-
-                  <strong>
-                    {activeBudget.currency}{' '}
-                    {Number(amount).toFixed(2)}
-                    {' Â· '}
-                    {expenses > 0
-                      ? (
-                          (Number(amount) /
-                            expenses) *
-                          100
-                        ).toFixed(1)
-                      : '0.0'}
-                    %
-                  </strong>
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </>
-      ) : (
-        <p className="muted">
-          Create a budget version to begin.
-        </p>
-      )}
-    </div>
-  );
 }
 
 function SchoolBillingPanel({ schoolId }) {
