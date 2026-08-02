@@ -6,6 +6,8 @@ import PersonnelPanel from '../../../components/PersonnelPanel';
 import GovernanceBoardPanel from '../../../components/GovernanceBoardPanel';
 import CommunicationCentre from '../../../components/CommunicationCentre';
 import AdminExecutiveDashboard from '../../../components/AdminExecutiveDashboard';
+import AdminSidebar from '../../../components/portal/AdminSidebar';
+import PageHeader from '../../../components/ui/PageHeader';
 
 function installApp() {
   const p = typeof window !== 'undefined' ? window.__cbPrompt : null;
@@ -305,25 +307,47 @@ const subToday = new Date().toISOString().slice(0, 10);
   if (!O && subStatus.code === 'locked') return <SubscriptionLock due={subStatus.due} />;
   return (<div className="shell">
     {!O && (subStatus.code === 'due_soon' || subStatus.code === 'overdue') && !subModalOff && (<div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: 20 }}><div className="card" style={{ maxWidth: 400, textAlign: 'center' }}><div style={{ fontWeight: 800, fontSize: 19, marginBottom: 6, color: subStatus.code === 'overdue' ? '#c0392b' : '#8a6d1a' }}>{subStatus.code === 'overdue' ? 'Subscription overdue' : 'Subscription due soon'}</div><p className="muted">{subStatus.code === 'overdue' ? ('Your subscription was due on ' + subStatus.due + '. Please pay to keep access.') : ('Your subscription is due on ' + subStatus.due + '.')}</p><div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 12 }}><button onClick={() => { setNav('mybilling'); setOpenGroup('setup'); setSubModalOff(true); }}>Pay now</button><button className="ghost" onClick={() => setSubModalOff(true)}>Later</button></div></div></div>)}
-    <aside className="sidebar">
-      <div className="side-brand"><img src="/chalkboard-sidebar-mark.png" alt="Chalkboard" /></div>
-      <nav className="side-nav">
-        <button className={'side-item' + (nav === 'dashboard' ? ' active' : '')} onClick={() => setNav('dashboard')}><span className="si"></span>Dashboard</button>
-        {groups.map(g => (<div key={g.key}>
-          <button className="side-group" onClick={() => setOpenGroup(openGroup === g.key ? null : g.key)}><span className="si">{g.icon}</span><span style={{ flex: 1 }}>{g.label}</span><span style={{ fontSize: 10 }}>{openGroup === g.key ? '' : ''}</span></button>
-          {openGroup === g.key && g.items.map(it => (<button key={it[0]} className={'side-item sub-item' + (nav === it[0] ? ' active' : '')} onClick={() => goto(it[0])}><span className="si">{it[2]}</span>{it[1]}</button>))}
-        </div>))}
-      </nav>
-      <div style={{ fontSize: 12, color: '#5b6570', padding: '8px 12px', wordBreak: 'break-all' }}>{session.user.email}{isTeacher ? '  teacher' : ''}</div>
-      <button className="side-item" onClick={installApp}><span className="si"></span>Download app</button>
-      <button className="side-item" onClick={() => supabase.auth.signOut()} style={{ color: '#c0392b' }}><span className="si"></span>Sign out</button>
-    </aside>
+    <AdminSidebar
+      nav={nav}
+      groups={groups}
+      openGroup={openGroup}
+      onToggleGroup={setOpenGroup}
+      onNavigate={goto}
+      email={session.user.email}
+      isTeacher={isTeacher}
+      onInstall={installApp}
+      onSignOut={() => supabase.auth.signOut()}
+    />
     <main className="main">
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 18 }}>
-        <h1>{title}</h1>
-          <ExportToolbar title={title || 'Chalkboard'} scopeSelector=".main" />
-        {canPick && <select value={schoolId || ''} onChange={e => setSchoolId(e.target.value)} style={{ width: 'auto', minWidth: 200 }}>{schools.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select>}
-      </div>
+      <PageHeader
+        title={title}
+        actions={
+          <ExportToolbar
+            title={title || 'Chalkboard'}
+            scopeSelector=".main"
+          />
+        }
+        selector={
+          canPick ? (
+            <select
+              value={schoolId || ''}
+              onChange={event =>
+                setSchoolId(event.target.value)
+              }
+              style={{
+                width: 'auto',
+                minWidth: 200,
+              }}
+            >
+              {schools.map(item => (
+                <option key={item.id} value={item.id}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          ) : null
+        }
+      />
       {!O && (subStatus.code === 'due_soon' || subStatus.code === 'overdue') && (<div style={{ background: subStatus.code === 'overdue' ? '#fdeaea' : '#fff8e1', border: '1px solid ' + (subStatus.code === 'overdue' ? '#f3c2c2' : '#f4d58a'), color: subStatus.code === 'overdue' ? '#c0392b' : '#8a6d1a', padding: '10px 14px', borderRadius: 8, fontSize: 14, marginBottom: 16 }}>{subStatus.code === 'overdue' ? 'Subscription overdue (due ' + subStatus.due + '). Please pay to avoid losing access.' : 'Subscription due on ' + subStatus.due + '.'}</div>)}
       {!schoolId ? <p className="muted">No school selected.</p> :
         nav === 'billing' ? <BillingPanel /> :
