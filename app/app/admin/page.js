@@ -8,6 +8,9 @@ import CommunicationCentre from '../../../components/CommunicationCentre';
 import AdminDashboard from '../../../components/admin/dashboard/AdminDashboard';
 import AdminSidebar from '../../../components/portal/AdminSidebar';
 import PageHeader from '../../../components/ui/PageHeader';
+import ClassesPanel from '../../../components/admin/school-setup/ClassesPanel';
+import SubjectsPanel from '../../../components/admin/school-setup/SubjectsPanel';
+import SchoolProfilePanel from '../../../components/admin/school-setup/SchoolProfilePanel';
 
 function installApp() {
   const p = typeof window !== 'undefined' ? window.__cbPrompt : null;
@@ -372,7 +375,7 @@ const subToday = new Date().toISOString().slice(0, 10);
         nav === 'finance' ? <FinancePanel schoolId={schoolId} /> :
         nav === 'inventory' ? <InventoryPanel schoolId={schoolId} school={school} settings={settings} /> :
         nav === 'assets' ? <AssetsPanel schoolId={schoolId} school={school} settings={settings} /> :
-        nav === 'school' ? <SchoolSettingsPanel schoolId={schoolId} school={school} settings={settings} onChange={loadSchoolMeta} /> :
+        nav === 'school' ? <SchoolProfilePanel schoolId={schoolId} school={school} settings={settings} onChange={loadSchoolMeta} /> :
         nav === 'subjects' ? <SubjectsPanel schoolId={schoolId} subjects={subjects} onChange={loadSubjects} /> :
         nav === 'marks' ? <MarksPanel schoolId={schoolId} classes={available} subjects={subjects} teacherId={session.user.id} level={(settings && settings.level) || 'secondary'} /> :
         nav === 'reportcards' ? <ReportCardsPanel schoolId={schoolId} classes={available} subjects={subjects} school={school} settings={settings} level={(settings && settings.level) || 'secondary'} /> :
@@ -384,31 +387,6 @@ const subToday = new Date().toISOString().slice(0, 10);
     </main>
   </div>);
 }
-
-function ClassesPanel({ schoolId, classes, onChange }) {
-  const [name, setName] = useState(''); const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
-  async function add() { if (!name.trim()) return; setBusy(true); setErr('');
-    const { error } = await supabase.from('classes').insert({ school_id: schoolId, name: name.trim() });
-    if (error) setErr(error.message); else { setName(''); onChange(); } setBusy(false); }
-  async function remove(id) { await supabase.from('classes').delete().eq('id', id); onChange(); }
-  return (<div>
-    <p className="muted" style={{ marginTop: 0 }}>Set up your classes once. Teachers then pick the classes they teach, and students are added under each class.</p>
-    <div className="card" style={{ marginBottom: 18 }}>
-      <div style={{ fontWeight: 700, marginBottom: 10 }}>Add a class</div>
-      <div style={{ display: 'flex', gap: 10, alignItems: 'end' }}>
-        <div style={{ flex: 1 }}><label style={labelStyle}>Class name</label><input style={inputStyle} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Form 3A" /></div>
-        <button onClick={add} disabled={busy}>{busy ? 'Adding' : 'Add class'}</button>
-      </div>
-      {err && <p className="error">{err}</p>}
-    </div>
-    <table><thead><tr><th>Class</th><th></th></tr></thead><tbody>
-      {classes.map(c => (<tr key={c.id}><td className="strong">{c.name}</td><td className="r"><button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={() => remove(c.id)}>Remove</button></td></tr>))}
-      {classes.length === 0 && <tr><td colSpan="2" className="muted">No classes yet  add one above.</td></tr>}
-    </tbody></table>
-  </div>);
-}
-
-function chip(on) { return { padding: '6px 12px', borderRadius: 20, border: '1px solid ' + (on ? '#2f7a52' : '#dde1e6'), background: on ? '#2f7a52' : '#fff', color: on ? '#fff' : '#5b6570', cursor: 'pointer', fontWeight: 600, fontSize: 13 }; }
 
 function TeachersPanel({ schoolId, classes, subjects }) {
   const [teachers, setTeachers] = useState([]);
@@ -1188,26 +1166,6 @@ function ReportsPanel({ schoolId, classes, school, settings }) {
 const termOptions = (() => { const y = new Date().getFullYear(); const o = []; [y, y - 1].forEach(yy => [1, 2, 3].forEach(t => o.push('Term ' + t + ' ' + yy))); return o; })();
 function gradeFor(score, level) { if (score === '' || score == null) return ''; const n = Number(score); if (isNaN(n)) return ''; if (level === 'primary') { if (n >= 90) return '1'; if (n >= 80) return '2'; if (n >= 70) return '3'; if (n >= 60) return '4'; if (n >= 50) return '5'; if (n >= 40) return '6'; if (n >= 30) return '7'; if (n >= 20) return '8'; return '9'; } if (n >= 75) return 'A'; if (n >= 65) return 'B'; if (n >= 50) return 'C'; if (n >= 40) return 'D'; if (n >= 30) return 'E'; return 'F'; }
 
-function SubjectsPanel({ schoolId, subjects, onChange }) {
-  const [name, setName] = useState(''); const [busy, setBusy] = useState(false); const [err, setErr] = useState('');
-  async function add() { if (!name.trim()) return; setBusy(true); setErr('');
-    const { error } = await supabase.from('subjects').insert({ school_id: schoolId, name: name.trim() });
-    if (error) setErr(error.message); else { setName(''); onChange(); } setBusy(false); }
-  async function remove(id) { await supabase.from('subjects').delete().eq('id', id); onChange(); }
-  return (<div>
-    <p className="muted" style={{ marginTop: 0 }}>Set up the subjects taught at your school. Teachers enter marks against these.</p>
-    <div className="card" style={{ marginBottom: 18 }}>
-      <div style={{ fontWeight: 700, marginBottom: 10 }}>Add a subject</div>
-      <div style={{ display: 'flex', gap: 10, alignItems: 'end' }}><div style={{ flex: 1 }}><label style={labelStyle}>Subject name</label><input style={inputStyle} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Mathematics" /></div><button onClick={add} disabled={busy}>{busy ? 'Adding' : 'Add subject'}</button></div>
-      {err && <p className="error">{err}</p>}
-    </div>
-    <table><thead><tr><th>Subject</th><th></th></tr></thead><tbody>
-      {subjects.map(s => (<tr key={s.id}><td className="strong">{s.name}</td><td className="r"><button className="ghost" style={{ padding: '4px 10px', fontSize: 13 }} onClick={() => remove(s.id)}>Remove</button></td></tr>))}
-      {subjects.length === 0 && <tr><td colSpan="2" className="muted">No subjects yet  add one above.</td></tr>}
-    </tbody></table>
-  </div>);
-}
-
 function MarksPanel({ schoolId, classes, subjects, teacherId, level }) {
   const [classId, setClassId] = useState(''); const [subjectId, setSubjectId] = useState(''); const [term, setTerm] = useState(termOptions[0]);
   const [students, setLearners] = useState([]); const [rowData, setRowData] = useState({});
@@ -1340,40 +1298,6 @@ function ReportCardsPanel({ schoolId, classes, subjects, school, settings, level
       </div>)}
   </div>);
 }
-
-function SchoolSettingsPanel({ schoolId, school, settings, onChange }) {
-  const [f, setF] = useState({ address: '', phone: '', email: '', color: '#2f7a52', logo: '', level: 'secondary' });
-  const [busy, setBusy] = useState(false); const [saved, setSaved] = useState(false); const [err, setErr] = useState('');
-  useEffect(() => { if (settings) setF({ address: settings.address || '', phone: settings.phone || '', email: settings.email || '', color: settings.color || '#2f7a52', logo: settings.logo || '', level: settings.level || 'secondary' }); }, [settings]);
-  function set(k, v) { setF(o => ({ ...o, [k]: v })); }
-  function onLogo(e) { const file = e.target.files[0]; if (!file) return; if (file.size > 300000) { setErr('Logo too large  use an image under ~300KB.'); return; } setErr(''); const r = new FileReader(); r.onload = () => set('logo', r.result); r.readAsDataURL(file); }
-  async function save() {
-    setBusy(true); setErr(''); setSaved(false);
-    const { error } = await supabase.from('school_settings').upsert({ school_id: schoolId, address: f.address || null, phone: f.phone || null, email: f.email || null, color: f.color || null, logo: f.logo || null, level: f.level || 'secondary', updated_at: new Date().toISOString() }, { onConflict: 'school_id' });
-    if (error) setErr(error.message); else { setSaved(true); setTimeout(() => setSaved(false), 2000); onChange(); }
-    setBusy(false);
-  }
-  return (<div>
-    <p className="muted" style={{ marginTop: 0 }}>Set your school's letterhead once. It prints at the top of every report and card.</p>
-    <div className="card" style={{ maxWidth: 640 }}>
-      <div style={{ display: 'grid', gap: 12, gridTemplateColumns: '1fr 1fr' }}>
-        <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>School name</label><input style={{ ...inputStyle, background: '#f3f5f7' }} value={school ? school.name : ''} disabled /></div>
-        <div style={{ gridColumn: '1 / -1' }}><label style={labelStyle}>Address</label><input style={inputStyle} value={f.address} onChange={e => set('address', e.target.value)} placeholder="e.g. 123 Main Rd, Chivhu" /></div>
-        <div><label style={labelStyle}>Phone</label><input style={inputStyle} value={f.phone} onChange={e => set('phone', e.target.value)} placeholder="+263 ..." /></div>
-        <div><label style={labelStyle}>Email</label><input style={inputStyle} value={f.email} onChange={e => set('email', e.target.value)} placeholder="info@school.co.zw" /></div>
-        <div><label style={labelStyle}>School level</label><select style={inputStyle} value={f.level} onChange={e => set('level', e.target.value)}><option value="secondary">Secondary (AF grades)</option><option value="primary">Primary (units)</option></select></div>
-        <div><label style={labelStyle}>School colour</label><input type="color" style={{ ...inputStyle, height: 44, padding: 4 }} value={f.color} onChange={e => set('color', e.target.value)} /></div>
-        <div><label style={labelStyle}>Logo (small image)</label><input type="file" accept="image/*" onChange={onLogo} style={{ fontSize: 13 }} /></div>
-      </div>
-      {f.logo && <div style={{ marginTop: 12 }}><img src={f.logo} alt="logo" style={{ height: 56, border: '1px solid #dde1e6', borderRadius: 8, padding: 4, background: '#fff' }} /></div>}
-      {err && <p className="error">{err}</p>}
-      <div style={{ marginTop: 16 }}><button onClick={save} disabled={busy}>{busy ? 'Saving' : (saved ? 'Saved ' : 'Save letterhead')}</button></div>
-    </div>
-  </div>);
-}
-
-function statCard(value, label, color) { return { value, label, color }; }
-function StatRow({ items }) { return (<div style={{ display: 'flex', gap: 14, marginBottom: 18, flexWrap: 'wrap' }}>{items.map((it, i) => (<div key={i} style={{ background: '#fff', border: '1px solid #dde1e6', borderRadius: 10, padding: '14px 18px', minWidth: 150 }}><div style={{ fontSize: 22, fontWeight: 700, color: it.color || '#1f2328' }}>{it.value}</div><div style={{ fontSize: 12.5, color: '#5b6570' }}>{it.label}</div></div>))}</div>); }
 
 function FinancePanel({ schoolId }) {
   const [rows, setRows] = useState([]);

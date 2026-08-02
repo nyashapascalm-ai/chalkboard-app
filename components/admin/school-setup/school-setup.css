@@ -1,0 +1,172 @@
+/* School Setup feature */
+.feature-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.inline-create-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.inline-create-form button,
+.form-actions button,
+.compact-action,
+.file-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.management-list {
+  display: grid;
+}
+
+.management-list-row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--cb-line);
+}
+
+.management-list-row:first-child {
+  padding-top: 0;
+}
+
+.management-list-row:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.management-list-icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--cb-primary);
+  background: #edf3ff;
+}
+
+.management-list-copy {
+  display: grid;
+  gap: 2px;
+}
+
+.management-list-copy strong {
+  color: var(--cb-ink);
+}
+
+.management-list-copy span {
+  color: var(--cb-muted);
+  font-size: 12px;
+}
+
+.compact-action {
+  min-height: 34px;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.profile-layout {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
+}
+
+.school-logo-editor {
+  display: grid;
+  justify-items: center;
+  gap: 9px;
+  color: var(--cb-muted);
+  font-size: 11px;
+  text-align: center;
+}
+
+.school-logo-preview {
+  display: grid;
+  width: 150px;
+  height: 150px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid var(--cb-line);
+  border-radius: 16px;
+  color: var(--cb-primary);
+  background: #f8f9fb;
+}
+
+.school-logo-preview img {
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  object-fit: contain;
+}
+
+.file-action {
+  min-height: 38px;
+  padding: 7px 11px;
+  border: 1px solid #cfd8e5;
+  border-radius: 9px;
+  color: var(--cb-navy);
+  background: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.file-action:hover {
+  color: var(--cb-primary);
+  background: #f4f7fc;
+}
+
+.file-action input {
+  display: none;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.form-span-2 {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+
+@media (max-width: 760px) {
+  .inline-create-form,
+  .profile-layout,
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-span-2 {
+    grid-column: auto;
+  }
+
+  .school-logo-editor {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .management-list-row {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+
+  .management-list-row .compact-action {
+    grid-column: 2;
+    justify-self: start;
+  }
+}

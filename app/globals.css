@@ -1,3 +1,4 @@
+@import "../components/admin/school-setup/school-setup.css";
 @import "../components/ui/modular-shell.css";
 :root {
   --cb-primary: #1e5ef7;
