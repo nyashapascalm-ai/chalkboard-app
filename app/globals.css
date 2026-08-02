@@ -1,3 +1,4 @@
+@import "../styles/chalkboard-erp-theme.css";
 :root{
   --bg:#f3f5f7; --card:#ffffff; --ink:#1f2328; --muted:#5b6570; --line:#dde1e6;
   --accent:#2f7a52; --accent2:#1e4a38; --danger:#c0392b;
