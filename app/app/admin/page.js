@@ -40,7 +40,7 @@ export default function Home() {
   useEffect(() => {
     if (typeof window === 'undefined') return;
     if (!document.querySelector('link[rel="manifest"]')) { const l = document.createElement('link'); l.rel = 'manifest'; l.href = '/manifest.json'; document.head.appendChild(l); }
-    if (!document.querySelector('meta[name="theme-color"]')) { const m = document.createElement('meta'); m.name = 'theme-color'; m.content = '#2f7a52'; document.head.appendChild(m); }
+    if (!document.querySelector('meta[name="theme-color"]')) { const m = document.createElement('meta'); m.name = 'theme-color'; m.content = '#1E5EF7'; document.head.appendChild(m); }
     if (!document.querySelector('link[rel="apple-touch-icon"]')) { const a = document.createElement('link'); a.rel = 'apple-touch-icon'; a.href = '/apple-touch-icon.png'; document.head.appendChild(a); }
     window.addEventListener('beforeinstallprompt', ev => { ev.preventDefault(); window.__cbPrompt = ev; });
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
@@ -168,6 +168,11 @@ function Console({ session, role, canPick, initialSchool }) {
     }
   })(); }, [schoolId]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+    }
+  }, [nav]);
   const available = isTeacher ? allClasses.filter(c => myIds.includes(c.id)) : allClasses;
 
   const A = !isTeacher;
@@ -259,7 +264,6 @@ function Console({ session, role, canPick, initialSchool }) {
 const groupOf = k => { const g = groups.find(gr => gr.items.some(it => it[0] === k)); return g ? g.key : null; };
   const [openGroup, setOpenGroup] = useState(groupOf(nav));
   const goto = k => { setNav(k); const g = groupOf(k); if (g) setOpenGroup(g); };
-  const grpHdr = { display: 'flex', alignItems: 'center', gap: 11, padding: '9px 12px', borderRadius: 8, fontSize: 11.5, fontWeight: 700, letterSpacing: '.04em', textTransform: 'uppercase', color: '#8a94a0', cursor: 'pointer', border: 0, background: 'transparent', textAlign: 'left', width: '100%', fontFamily: 'inherit' };
   const title = {
     dashboard: 'Dashboard',
     mybilling: 'Subscription',
@@ -306,8 +310,8 @@ const subToday = new Date().toISOString().slice(0, 10);
       <nav className="side-nav">
         <button className={'side-item' + (nav === 'dashboard' ? ' active' : '')} onClick={() => setNav('dashboard')}><span className="si"></span>Dashboard</button>
         {groups.map(g => (<div key={g.key}>
-          <button style={grpHdr} onClick={() => setOpenGroup(openGroup === g.key ? null : g.key)}><span className="si">{g.icon}</span><span style={{ flex: 1 }}>{g.label}</span><span style={{ fontSize: 10 }}>{openGroup === g.key ? '' : ''}</span></button>
-          {openGroup === g.key && g.items.map(it => (<button key={it[0]} className={'side-item' + (nav === it[0] ? ' active' : '')} style={{ paddingLeft: 24 }} onClick={() => goto(it[0])}><span className="si">{it[2]}</span>{it[1]}</button>))}
+          <button className="side-group" onClick={() => setOpenGroup(openGroup === g.key ? null : g.key)}><span className="si">{g.icon}</span><span style={{ flex: 1 }}>{g.label}</span><span style={{ fontSize: 10 }}>{openGroup === g.key ? '' : ''}</span></button>
+          {openGroup === g.key && g.items.map(it => (<button key={it[0]} className={'side-item sub-item' + (nav === it[0] ? ' active' : '')} onClick={() => goto(it[0])}><span className="si">{it[2]}</span>{it[1]}</button>))}
         </div>))}
       </nav>
       <div style={{ fontSize: 12, color: '#5b6570', padding: '8px 12px', wordBreak: 'break-all' }}>{session.user.email}{isTeacher ? '  teacher' : ''}</div>
